@@ -1,3 +1,8 @@
+# 链接
+
+- [XState 中文文档](https://ouweiya.github.io/xstate-zh)
+- [XState 官方文档](https://stately.ai/docs)
+
 # 欢迎来到 Stately 文档
 
 这个仓库包含了 Stately 的登陆页面，包括我们的博客和 Stately Studio 和 XState 的文档。
