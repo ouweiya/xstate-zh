@@ -2,85 +2,85 @@
 title: Stately Studio
 ---
 
-Stately Studio is a suite of tools for building app logic, including the Editor, [developer tools for XState](developer-tools.mdx), and much more coming soon.
+Stately Studio 是一套用于构建应用逻辑的工具，包括编辑器、[XState 的开发者工具](developer-tools.mdx)等，更多功能即将推出。
 
 <p>
   <ThemedImage
-    alt="A dog walk machine open in Stately Studio’s editor. The dog walk machine has cute puppy images for each state, showing a dog walking and running. The speed up event is selected, and information and options for that transition is shown in an inspector panel on the right."
+    alt="在 Stately Studio 的编辑器中打开的狗步行机。狗步行机在每个状态下都有可爱的狗狗图片，显示狗在行走和奔跑。选择了加速事件，右侧的检查面板中显示了该转换的信息和选项。"
     sources={{
-      light: '/studio.png',
-      dark: '/studio-dm.png',
+      light: '/xstate-zh/studio.png',
+      dark: '/xstate-zh/studio-dm.png',
     }}
   />
 </p>
 
-You can use [Stately Studio’s editor](/studio.mdx#stately-studios-editor) to model your logic using state machines and statecharts visually; no code required! Collaborate on your machines with coworkers and friends with [shared projects in teams](/#projects-and-teams). Use the [XState VS Code extension](xstate-vscode-extension.mdx) to use the editor with your codebase inside your code editor, or [export](/#export) your code from Stately Studio into your codebase.
+你可以使用 [Stately Studio 的编辑器](/studio.mdx#stately-studios-editor) 通过状态机和状态图以可视化方式建模你的逻辑；无需编写代码！与同事和朋友通过[团队中的共享项目](/#projects-and-teams)协作。使用 [XState VS Code 扩展](xstate-vscode-extension.mdx) 在代码编辑器中与代码库一起使用编辑器，或将代码从 Stately Studio [导出](/#export) 到你的代码库中。
 
 :::tip
 
-What are state machines and statecharts? We’re glad you asked! [Check out our no-code introduction to state machines and statecharts](state-machines-and-statecharts.mdx).
+什么是状态机和状态图？我们很高兴你问了！[查看我们对状态机和状态图的无代码介绍](state-machines-and-statecharts.mdx)。
 
 :::
 
-## Stately Studio’s editor
+## Stately Studio 的编辑器
 
-Stately Studio’s editor supports everything you need to visually build state machines and statecharts. The editor currently has two modes; [**Design** mode](design-mode.mdx) for creating your machines and [**Simulate** mode](simulate-mode.mdx) for simulating how your machine works.
+Stately Studio 的编辑器支持你需要的所有功能来可视化构建状态机和状态图。编辑器目前有两种模式；用于创建机器的 [**设计** 模式](design-mode.mdx) 和用于模拟机器工作方式的 [**模拟** 模式](simulate-mode.mdx)。
 
 :::video
 
-[Learn how to use Stately in our quick introduction video (7m36s)](https://www.youtube.com/watch?v=EzYIerEutgk).
+[观看我们的快速介绍视频 (7分36秒) 了解如何使用 Stately](https://www.youtube.com/watch?v=EzYIerEutgk)。
 
 :::
 
-### Quick start tutorials
+### 快速入门教程
 
-You can access quick start tutorials from the blue <HelpCircle size={12} /> Help button in the editor.
+你可以从编辑器中的蓝色 <HelpCircle size={12} /> 帮助按钮访问快速入门教程。
 
-When you first visit the Editor, you’ll be shown two short videos (7m36s) as a quick start guide. You can access these videos again anytime from:
+当你第一次访问编辑器时，会显示两个简短的视频 (7分36秒) 作为快速入门指南。你可以随时从以下位置再次访问这些视频：
 
-- Editor menu > Help > <GraduationCap size={12} /> **Learn Stately**.
-- The <HelpCircle size={12} /> Help button > <GraduationCap size={12} /> **Learn Stately**.
+- 编辑器菜单 > 帮助 > <GraduationCap size={12} /> **学习 Stately**。
+- <HelpCircle size={12} /> 帮助按钮 > <GraduationCap size={12} /> **学习 Stately**。
 
-### Projects and teams
+### 项目和团队
 
 <p>
   <ThemedImage
-    alt="Stately Studio Projects page for the Voyager team, showing a list of four projects, one with public machines, two with private machines, and one with unlisted machines."
+    alt="Voyager 团队的 Stately Studio 项目页面，显示了四个项目的列表，一个有公共机器，两个有私有机器，一个有未列出的机器。"
     sources={{
-      light: '/projects.png',
-      dark: '/projects-dm.png',
+      light: '/xstate-zh/projects.png',
+      dark: '/xstate-zh/projects-dm.png',
     }}
   />
 </p>
 
-As a [premium user](https://stately.ai/pricing), you can create and join teams in Stately Studio to share your machines and collaborate on private team projects. [Read more about Projects](projects.mdx) and [Teams](teams.mdx).
+作为 [高级用户](https://stately.ai/pricing)，你可以在 Stately Studio 中创建和加入团队，以共享你的机器并在私有团队项目上协作。[阅读更多关于项目](projects.mdx) 和 [团队](teams.mdx) 的信息。
 
 <p>
   <ThemedImage
-    alt="Stately Studio Team page for the Voyager team, showing Captain Janeway with the owner and Admin role, Commander Chakotay with an Admin role, Lieutenant Tuvok, Lieutenant Torres, and Lieutenant Paris with Editor roles, and Ensign Kim with a Viewer role."
+    alt="Voyager 团队的 Stately Studio 团队页面，显示了拥有者和管理员角色的 Janeway 舰长，管理员角色的 Chakotay 指挥官，编辑角色的 Tuvok 中尉、Torres 中尉和 Paris 中尉，以及查看者角色的 Kim 少尉。"
     sources={{
-      light: '/teams.png',
-      dark: '/teams-dm.png',
+      light: '/xstate-zh/teams.png',
+      dark: '/xstate-zh/teams-dm.png',
     }}
   />
 </p>
 
-### Discover machines
+### 发现机器
 
-Are you seeking inspiration for your machine? Or do you want to learn from how somebody else models their machines? The [Discover page](https://stately.ai/registry/discover) lists all the public machines created with Stately Studio. [Read more about the Discover page](discover.mdx).
+你在寻找你的机器的灵感吗？或者你想学习别人如何建模他们的机器？[发现页面](https://stately.ai/registry/discover) 列出了所有使用 Stately Studio 创建的公共机器。[阅读更多关于发现页面](discover.mdx) 的信息。
 
 <p>
   <ThemedImage
-    alt="Stately Studio Discover page showing the search results for “auth”, filtered by editor machines under 10 states, showing 173 results."
+    alt="Stately Studio 发现页面显示了“auth”的搜索结果，过滤器为状态少于 10 的编辑器机器，显示了 173 个结果。"
     sources={{
-      light: '/discover.png',
-      dark: '/discover-dm.png',
+      light: '/xstate-zh/discover.png',
+      dark: '/xstate-zh/discover-dm.png',
     }}
   />
 </p>
 
-## Our roadmap
+## 我们的路线图
 
-Do you want to request a feature in Stately Studio? [Check out our roadmap](https://feedback.stately.ai) to post your feature ideas and upvote other features. Our roadmap also shows you the features we have planned and those already in progress.
+你想在 Stately Studio 中请求一个功能吗？[查看我们的路线图](https://feedback.stately.ai) 以发布你的功能想法并为其他功能投票。我们的路线图还显示了我们计划的功能和正在进行的功能。
 
-You can also keep up with the Stately team’s work in progress at our regular [office hour live streams](https://youtube.com/statelyai).
+你还可以通过我们定期的[办公时间直播](https://youtube.com/statelyai) 了解 Stately 团队的工作进展。

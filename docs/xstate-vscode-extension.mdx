@@ -1,52 +1,52 @@
 ---
-title: 'XState VS Code extension'
+title: 'XState VS Code 扩展'
 ---
 
-# XState VS Code extension
+# XState VS Code 扩展
 
-The [XState VS Code extension](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode) enhances the XState development experience by providing VS Code users with autocomplete, typegen, linting, and a visual editor inside VS Code.
+[XState VS Code 扩展](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode) 通过在 VS Code 中提供自动补全、类型生成、代码检查和可视化编辑器，增强了 XState 的开发体验。
 
 :::tip
 
-If you don’t use VS Code but use an open source code editor that supports VS Code extensions, you can [download the XState VS Code extension from the OpenVSX registry](https://open-vsx.org/extension/statelyai/stately-vscode).
+如果你不使用 VS Code，但使用支持 VS Code 扩展的开源代码编辑器，可以从 [OpenVSX 注册表](https://open-vsx.org/extension/statelyai/stately-vscode) 下载 XState VS Code 扩展。
 
 :::
 
-## Installation
+## 安装
 
-1. Open the command palette with `shift` + `cmd/ctrl` + `p`.
-2. Search for the Install Extensions command and hit enter to open the Extensions search.
-3. Search for XState to find the XState VS Code extension and install the extension using the Install button.
-4. Ensure you have [VS Code setup to insert spaces](https://code.visualstudio.com/docs/editor/codebasics#_indentation); we have noticed problems when tabs are used for indentation.
+1. 使用 `shift` + `cmd/ctrl` + `p` 打开命令面板。
+2. 搜索 Install Extensions 命令并按回车键打开扩展搜索。
+3. 搜索 XState 以找到 XState VS Code 扩展，并使用安装按钮安装扩展。
+4. 确保你已设置 [VS Code 插入空格](https://code.visualstudio.com/docs/editor/codebasics#_indentation)；我们注意到使用制表符缩进时会出现问题。
 
-Once installed, you can run `XState: Open Visual Editor` from the command palette to open any machine at your cursor’s location.
+安装完成后，你可以从命令面板运行 `XState: Open Visual Editor` 以打开光标位置的任何机器。
 
-If you have code lens enabled (this can be enabled using `editor.codeLens` setting), ‘Open Visual Editor’ will also float above each `createMachine` call.
+如果启用了代码透镜（可以使用 `editor.codeLens` 设置启用），‘Open Visual Editor’ 也会浮动在每个 `createMachine` 调用上方。
 
-You can also [download the VS Code extension from the VS Code marketplace](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode) or [download the VS Code extension from the Open VSX marketplace](https://open-vsx.org/extension/statelyai/stately-vscode).
+你也可以从 [VS Code 市场](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode) 或 [Open VSX 市场](https://open-vsx.org/extension/statelyai/stately-vscode) 下载 VS Code 扩展。
 
-## Features
+## 功能
 
-- **Visually edit machines**. Edit any XState machine with drag-and-drop using the integrated [Stately Visual editor](https://stately.ai/editor).
-- **Autocomplete**. Intelligent suggestions for transition targets and initial states.
-- **Linting**. Highlights errors and potential bugs in your XState machine definitions.
-- **Jump to definition**. Navigate around machines easily with jump to definition on targets, actions, guards, actors and more.
+- **可视化编辑机器**。使用集成的 [Stately Visual editor](https://stately.ai/editor) 拖放编辑任何 XState 机器。
+- **自动补全**。为转换目标和初始状态提供智能建议。
+- **代码检查**。突出显示 XState 机器定义中的错误和潜在问题。
+- **跳转到定义**。通过跳转到目标、动作、守卫、演员等定义，轻松导航机器。
 
-## TypeScript typegen
+## TypeScript 类型生成
 
-You can automatically generate intelligent typings for XState with our VS Code extension and [command line interface](developer-tools.mdx#xstate-cli-command-line-interface). [Read more about how to use typegen, and our recommended best practices, on the Typegen page](typegen.mdx).
+你可以使用我们的 VS Code 扩展和 [命令行界面](developer-tools.mdx#xstate-cli-command-line-interface) 自动生成智能类型。[阅读更多关于如何使用类型生成以及我们的推荐最佳实践，请参阅类型生成页面](typegen.mdx)。
 
-## `xsm` snippet
+## `xsm` 代码片段
 
-Use the `xsm` snippet to generate the code required for your state machine quickly. [Watch the ‘XState + VS Code: xsm snippet’ video (1m23s)](https://www.youtube.com/watch?v=Gk3mdlqadYM) for a demo.
+使用 `xsm` 代码片段快速生成所需的状态机代码。[观看 ‘XState + VS Code: xsm 代码片段’ 视频（1分23秒）](https://www.youtube.com/watch?v=Gk3mdlqadYM) 以获取演示。
 
-## Refactors
+## 重构
 
-When hovering over a named action, guard or actor in a machine, press the lightbulb icon to view available refactors.
+当鼠标悬停在机器中的命名动作、守卫或演员上时，按下灯泡图标以查看可用的重构选项。
 
-## Ignoring machines
+## 忽略机器
 
-If you’d like to ignore linting/autocomplete on a machine, add an `// xstate-ignore-next-line` comment on the line above the machine:
+如果你想忽略机器上的代码检查/自动补全，在机器上方添加 `// xstate-ignore-next-line` 注释：
 
 ```js
 // xstate-ignore-next-line
@@ -55,9 +55,9 @@ createMachine({});
 
 :::tip
 
-## Machine layout persistence
+## 机器布局持久化
 
-Upon opening an XState machine in VS Code, you may notice a long `@xstate-layout` comment inserted in the code just above the call to `createMachine()`.
+在 VS Code 中打开 XState 机器时，你可能会注意到在 `createMachine()` 调用上方插入了一个长的 `@xstate-layout` 注释。
 
 ```js
 const machine =
@@ -65,12 +65,12 @@ const machine =
 createMachine({...});
 ```
 
-This layout string is for persisting manual changes you make to the machine’s layout and is automatically updated by the XState Extension whenever layout changes occur. It is not intended to be human-readable nor manually edited. When updates to this string are made by the extension, the file is not saved until a manual save is performed. The layout algorithm is able to interpret this string and automatically format the machine's layout whenever it is re-opened in Stately Studio’s editor.
+此布局字符串用于持久化您对机器布局所做的手动更改，并且每当布局发生变化时，XState 扩展会自动更新它。它并非旨在供人类阅读或手动编辑。当扩展对该字符串进行更新时，文件不会自动保存，直到手动保存为止。布局算法能够解释此字符串，并在 Stately Studio 的编辑器中重新打开机器时自动格式化机器的布局。
 
 :::
 
 :::warning
 
-**Caution**: if you use tab based-indentation in VS Code the extension might not work. [Setup VS Code to insert spaces](https://code.visualstudio.com/docs/editor/codebasics#_indentation) automatically.
+**注意**：如果您在 VS Code 中使用基于制表符的缩进，扩展可能无法正常工作。[设置 VS Code 以自动插入空格](https://code.visualstudio.com/docs/editor/codebasics#_indentation)。
 
 :::

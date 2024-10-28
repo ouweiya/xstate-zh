@@ -1,20 +1,20 @@
 ---
-title: History states
+title: 历史状态
 ---
 
-A history state is a special type of state (a _pseudostate_) that remembers the last [child state](parent-states.mdx) that was active before its parent state is exited. When a transition from outside the parent state targets a history state, the remembered child state is entered.
+历史状态是一种特殊类型的状态（称为伪状态），它记住父状态退出之前最后一个活跃的[子状态](parent-states.mdx)。当从父状态外部的转换目标是历史状态时，记住的子状态将被进入。
 
-This allows machines to "remember" where they left off when exiting and reentering a parent state.
+这允许状态机在退出和重新进入父状态时“记住”它们离开的地方。
 
-- If no child state remembered, history goes to `.target` state, if it is specified
-- Otherwise, go to [initial state](initial-states.mdx)
+- 如果没有记住的子状态，历史状态将进入`.target`状态（如果指定了）
+- 否则，进入[初始状态](initial-states.mdx)
 
-A history state returns the parent state to its most recently active child state. The box with an **H** inside represents the history state.
+历史状态将父状态返回到其最近活跃的子状态。带有**H**的框代表历史状态。
 
-The history state can be deep or shallow:
+历史状态可以是深的或浅的：
 
-- A shallow history state remembers the immediate child’s state.
-- A deep history state remembers the deepest active state or states inside its child states.
+- 浅历史状态记住直接的子状态。
+- 深历史状态记住其子状态内最深的活跃状态或状态。
 
 ```ts
 const checkoutMachine = createMachine({
@@ -40,20 +40,20 @@ const checkoutMachine = createMachine({
 });
 ```
 
-## Shallow vs. deep history
+## 浅历史状态 vs. 深历史状态
 
-- Shallow history states only remember the last active direct child state.
-- Deep history states remember all active descendant states.
+- 浅历史状态只记住最后一个活跃的直接子状态。
+- 深历史状态记住所有活跃的后代状态。
 
-## History target
+## 历史状态目标
 
-- Normally, history states target the most recent child state of its parent state
-- If the history state is entered but the parent state was never visited, the parent's initial state is entered.
-- However, you can add a `target: 'childKey'` to specify the default child state that should be entered
+- 通常，历史状态会目标其父状态的最近子状态
+- 如果进入历史状态时父状态从未被访问过，则进入父状态的初始状态。
+- 但是，你可以添加 `target: 'childKey'` 来指定应进入的默认子状态
 
-## History states cheatsheet
+## 历史状态速查表
 
-### Cheatsheet: create a history state (shallow by default)
+### 速查表：创建一个历史状态（默认是浅历史状态）
 
 ```ts
 const machine = createMachine({
@@ -67,7 +67,7 @@ const machine = createMachine({
 });
 ```
 
-### Cheatsheet: create a deep history state
+### 速查表：创建一个深历史状态
 
 ```ts
 const machine = createMachine({
@@ -84,7 +84,7 @@ const machine = createMachine({
 });
 ```
 
-### Cheatsheet: create a history state with a target
+### 速查表：创建一个带有目标的历史状态
 
 ```ts
 const machine = createMachine({

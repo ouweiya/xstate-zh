@@ -1,31 +1,31 @@
 ---
-title: Generate test paths
+title: 生成测试路径
 ---
 
-You can generate test path code for your state machines from the <ClipboardCheck size={18}/> **Tests** panel, which you can use to implement tests in your code. Both setup code and test code for each path are generated.
+你可以从 <ClipboardCheck size={18}/> **测试** 面板生成状态机的测试路径代码，这些代码可以用于在你的代码中实现测试。每个路径的设置代码和测试代码都会生成。
 
-This feature is in beta and [we’d love your feedback](https://feedback.stately.ai).
+此功能处于测试阶段，[我们期待你的反馈](https://feedback.stately.ai)。
 
 :::studio
 
-**Generate test paths** is a premium feature of Stately Studio. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+**生成测试路径** 是 Stately Studio 的高级功能。你可以通过免费试用来体验 Stately Studio 的高级计划。[查看我们的专业计划功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx) 或 [升级你现有的计划](https://stately.ai/registry/billing)。
 
 :::
 
-## Path generation strategy
+## 路径生成策略
 
-You can choose between two path generation strategies:
+你可以选择两种路径生成策略：
 
-- **Shortest path**: Generate paths that cover the shortest possible paths through your state machine and minimize the number of actions required to test functionality.
-- **Simplest path**: Generate paths that cover the simple paths, without repeated states, through your state machine and help verify that basic functionality is working as expected.
+- **最短路径**：生成覆盖状态机中最短路径的路径，最小化测试功能所需的操作次数。
+- **最简单路径**：生成覆盖简单路径（没有重复状态）的路径，帮助验证基本功能是否正常工作。
 
-## Testing frameworks
+## 测试框架
 
-Generate test paths currently supports [Playwright](https://playwright.dev/) and custom testing framework formats. We plan to add more testing frameworks (including Puppeteer, Cypress, and even other languages) in the future.
+生成测试路径目前支持 [Playwright](https://playwright.dev/) 和自定义测试框架格式。我们计划在未来添加更多的测试框架（包括 Puppeteer、Cypress，甚至其他语言）。
 
-## Options
+## 选项
 
-- **Reduce duplicate paths** generates fewer paths that also cover other paths.
-- **Prefer transition coverage** generates paths that cover all transitions in your state machine.
-- **Highlight paths** enables highlighting the paths on the canvas when you hover over its test path description.
-- **AI-generated test titles** (experimental) generates more readable test titles based on your state machine. AI-generated test titles send your state machine to OpenAI to generate the titles.
+- **减少重复路径** 生成较少的路径，同时覆盖其他路径。
+- **优先转换覆盖** 生成覆盖状态机中所有转换的路径。
+- **高亮路径** 在你悬停在测试路径描述上时，在画布上高亮显示路径。
+- **AI生成的测试标题**（实验性）基于你的状态机生成更易读的测试标题。AI生成的测试标题会将你的状态机发送到 OpenAI 以生成标题。

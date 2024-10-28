@@ -1,22 +1,22 @@
 ---
-title: Parallel states
+title: 并行状态
 ---
 
-In statecharts, a parallel state is a state that has multiple child states (also known as **regions**) that are all active at the same time. This is different from a [parent state](parent-states.mdx), where only _one_ child state is active at a time.
+在状态图中，并行状态是具有多个子状态（也称为**区域**）的状态，这些子状态同时处于活动状态。这与[父状态](parent-states.mdx)不同，在父状态中一次只有_一个_子状态处于活动状态。
 
-Parallel states have the following characteristics:
+并行状态具有以下特征：
 
-- Entering a parallel state will also simultaneously enter all of its regions.
-- Exiting a parallel state will also simultaneously exit all of its regions.
-- An event received in a parallel state is simultaneously received & handled by all of its regions.
+- 进入并行状态时，其所有区域也将同时进入。
+- 退出并行状态时，其所有区域也将同时退出。
+- 在并行状态中接收到的事件将同时被其所有区域接收和处理。
 
 :::studio
 
-You can easily visualize and simulate parallel states in Stately’s editor. [Read more about parallel states in Stately’s editor](/docs/editor-states-and-transitions/#parallel-states).
+您可以在 Stately 的编辑器中轻松可视化和模拟并行状态。[阅读更多关于 Stately 编辑器中的并行状态](/docs/editor-states-and-transitions/#parallel-states)。
 
 :::
 
-Here is a music player example with a parallel state consisting of two regions, one for handling playing the track and one for handling the volume:
+以下是一个具有并行状态的音乐播放器示例，其中包含两个区域，一个用于处理播放轨道，一个用于处理音量：
 
 ```ts
 import { createMachine, assign } from 'xstate';
@@ -57,27 +57,27 @@ const playerMachine = createMachine({
   embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=733de338-26cb-40a5-a0b5-b76bfc0405c3"
 />
 
-## Parallel state value
+## 并行状态值
 
-The [state value](states.mdx#state-value) of a parallel state is an object with the state values of each of its regions.
+并行状态的[状态值](states.mdx#state-value)是一个包含其每个区域状态值的对象。
 
 ```ts
 const playerActor = createActor(playerMachine);
 playerActor.start();
 
 console.log(playerActor.getSnapshot().value);
-// logs the object:
+// 输出对象：
 // {
 //   track: 'paused',
 //   volume: 'normal'
 // }
 ```
 
-## Parallel onDone transition
+## 并行状态的 onDone 转换
 
-When all regions of a parallel state have reached their final states, the `onDone` transition of the parallel state is taken.
+当并行状态的所有区域都达到其最终状态时，将执行并行状态的 `onDone` 转换。
 
-In this example, the `onDone` transition of the parallel state is taken when both regions have reached their final states; that is, when `'grindingBeans'` reaches the `'grindingBeans.beansGround'` state and `'boilingWater'` reaches the `'boilingWater.waterBoiled'` state.
+在此示例中，当两个区域都达到其最终状态时，将执行并行状态的 `onDone` 转换；也就是说，当 `'grindingBeans'` 达到 `'grindingBeans.beansGround'` 状态和 `'boilingWater'` 达到 `'boilingWater.waterBoiled'` 状态时。
 
 ```ts
 import { createMachine } from "xstate";
@@ -135,18 +135,17 @@ export const machine = createMachine({
 
 <EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=187dcde8-efed-4106-bfa7-59afadb2297f&mode=Simulate" />
 
-## Modeling
+## 建模
 
-_Coming soon_
+_即将推出_
 
-- Avoid transitions between regions
-- Used for separation of concerns that _may_ affect each other (i.e. synchronization)
-- If completely separate, prefer `invoke` instead
+- 避免区域之间的转换
+- 用于可能相互影响的关注点分离（即同步）
+- 如果完全独立，优先使用 `invoke`
 
+## 并行状态备忘单
 
-## Parallel states cheatsheet
-
-### Cheatsheet: create a parallel state
+### 备忘单：创建并行状态
 
 ```ts
 import { createMachine } from "xstate";
@@ -161,7 +160,7 @@ const machine = createMachine({
       three: {/* ... */}
     },
     onDone: {
-      // Taken when all regions have reached their final states
+      // 当所有区域都达到其最终状态时执行
     }
   }
 });

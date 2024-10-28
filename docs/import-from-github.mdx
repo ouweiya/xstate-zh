@@ -1,114 +1,113 @@
 ---
-title: Connect GitHub repo
-description: 'Sync your machines from GitHub with Stately Studio.'
+title: 连接 GitHub 仓库
+description: '使用 Stately Studio 从 GitHub 同步你的机器。'
 ---
 
-You can connect a GitHub repo to a new project in Stately Studio, keeping updates between GitHub and Stately Studio in sync. Connecting a GitHub repo allows you to import your existing machines from GitHub and push changes to your machines back to your repo as pull requests.
+你可以将 GitHub 仓库连接到 Stately Studio 中的新项目，从而保持 GitHub 和 Stately Studio 之间的更新同步。连接 GitHub 仓库允许你从 GitHub 导入现有的机器，并将对机器的更改作为拉取请求推送回你的仓库。
 
 :::studio
 
-Connect GitHub repo is a premium feature of Stately Studio. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+连接 GitHub 仓库是 Stately Studio 的高级功能。你可以通过免费试用来体验 Stately Studio 的高级计划。[查看我们专业计划的功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx)或[升级你现有的计划](https://stately.ai/registry/billing)。
 
 :::
 
 :::info
-While this feature is in beta, it works best when connecting less than
-100 files. For larger repos, we recommend creating single-file PRs.
-Read about that feature [here](/blog/2024-02-16-changelog#make-github-pull-requests-for-single-files-from-inside-stately-studio).
+在此功能处于测试阶段时，连接少于 100 个文件的仓库效果最佳。对于较大的仓库，我们建议创建单文件的拉取请求。
+在此处阅读该功能的相关信息 [here](/blog/2024-02-16-changelog#make-github-pull-requests-for-single-files-from-inside-stately-studio)。
 :::
 
-## Connect GitHub repo
+## 连接 GitHub 仓库
 
-Use the **Connect GitHub repo** button found in the Projects dashboard to start connecting a GitHub repo. There are three steps to setting up your GitHub repo as a connected project:
+使用项目仪表板中的 **连接 GitHub 仓库** 按钮开始连接 GitHub 仓库。设置 GitHub 仓库为连接项目有三个步骤：
 
-1. Select the repo. You can choose the repos based on your GitHub permissions.
-2. Select the branch. You can choose any branch in your repo.
-3. Choose the files you want to sync. You can sync any JavaScript or TypeScript files, but only XState machines will be imported.
+1. 选择仓库。你可以根据 GitHub 权限选择仓库。
+2. 选择分支。你可以选择仓库中的任何分支。
+3. 选择要同步的文件。你可以同步任何 JavaScript 或 TypeScript 文件，但只有 XState 机器会被导入。
 
 :::tip
 
-Choose the XState version for your synced machines from the dropdown menu in the <Code size={18}/> **Code** panel.
+在 <Code size={18}/> **代码** 面板的下拉菜单中选择同步机器的 XState 版本。
 
 :::
 
-### Auto-sync
+### 自动同步
 
-Enabling **auto-sync** will automatically fetch the latest changes from your connected repository every time you open or refresh the project in the Studio.
+启用 **自动同步** 将在每次你在 Studio 中打开或刷新项目时自动获取来自连接仓库的最新更改。
 
-Disable auto-sync from the GitHub options from the <Github size={18}/> repository name in the footer of the left drawer.
+从左侧抽屉底部的 <Github size={18}/> 仓库名称中的 GitHub 选项中禁用自动同步。
 
-### Path for new files
+### 新文件路径
 
-You can choose a **Path for new files** for when you create new machines in this connected project. These machines will be added at this relative path from the root of your repo. The default path is **src/stately-studio** and will be created in your repo the first time you add new machines to a pull request.
+你可以选择在连接项目中创建新机器时的新文件路径。这些机器将添加到仓库根目录的相对路径中。默认路径是 **src/stately-studio**，并将在你第一次将新机器添加到拉取请求时在仓库中创建。
 
-### Create pull request
+### 创建拉取请求
 
-Open the GitHub options from the <Github size={18}/> repository name in the footer of the left drawer. You can create pull requests from the GitHub options for any changes made to your machine.
+从左侧抽屉底部的 <Github size={18}/> 仓库名称中的 GitHub 选项中打开 GitHub 选项。你可以从 GitHub 选项中为对机器所做的任何更改创建拉取请求。
 
-#### Update pull request
+#### 更新拉取请求
 
-If you have already created a pull request for your machine, you can update the pull request with any changes you have made in the Studio. Open the GitHub options from the <Github size={18}/> repository name in the footer of the left drawer and choose **Update pull request**.
+如果你已经为机器创建了拉取请求，可以使用 Studio 中所做的任何更改更新拉取请求。从左侧抽屉底部的 <Github size={18}/> 仓库名称中的 GitHub 选项中打开 GitHub 选项并选择 **更新拉取请求**。
 
-### Sync multiple branches
+### 同步多个分支
 
-You can sync multiple branches in your GitHub repo to the same project in Stately Studio. Open the GitHub branch options from the branch name in the footer of the left drawer to choose additional branches.
+你可以将 GitHub 仓库中的多个分支同步到 Stately Studio 中的同一个项目。从左侧抽屉底部的分支名称中的 GitHub 分支选项中打开 GitHub 分支选项以选择其他分支。
 
-### Sync new machines created in Stately Studio
+### 同步在 Stately Studio 中创建的新机器
 
-Creating a new machine in Stately Studio in a connected project will flag the machine in your Machines list as **Not synced with GitHub**. You can sync the machine with your GitHub repo by [creating a pull request from the GitHub options](#create-pull-request) from the <Github size={18}/> repository name in the footer of the left drawer.
+在连接项目中在 Stately Studio 中创建新机器将会在你的机器列表中标记该机器为 **未与 GitHub 同步**。你可以通过从左侧抽屉底部的 <Github size={18}/> 仓库名称中的 GitHub 选项中[创建拉取请求](#create-pull-request)来同步机器与 GitHub 仓库。
 
-Your new machine will be added to your repo at the [**Path for new files**](#path-for-new-files) you have chosen.
+你的新机器将添加到你选择的[**新文件路径**](#path-for-new-files)中。
 
-### Sync changes to machines from GitHub
+### 从 GitHub 同步对机器的更改
 
-If you have [auto-sync enabled](#auto-sync), any changes made to your GitHub repo will be synced to your project in Stately Studio when you open or refresh the project in the Studio.
+如果你启用了[自动同步](#auto-sync)，在你打开或刷新 Studio 中的项目时，任何对 GitHub 仓库所做的更改将同步到 Stately Studio 中的项目。
 
-If you don’t have auto-sync enabled, you can sync any changes made to your GitHub repo using **Sync now** in the GitHub options from the <Github size={18}/> repository name in the footer of the left drawer.
+如果你没有启用自动同步，可以使用左侧抽屉底部的 <Github size={18}/> 仓库名称中的 GitHub 选项中的 **立即同步** 来同步对 GitHub 仓库所做的任何更改。
 
-## GitHub permissions
+## GitHub 权限
 
-Importing your GitHub repos with **Connect GitHub repo** or importing a machine with a GitHub URL will prompt you to give our GitHub integration access to your GitHub repositories. You can choose from **Automatic setup** or **Personal access token**.
+使用 **连接 GitHub 仓库** 导入你的 GitHub 仓库或使用 GitHub URL 导入机器将提示你授予我们的 GitHub 集成访问你的 GitHub 仓库的权限。你可以选择 **自动设置** 或 **个人访问令牌**。
 
-### Automatic setup
+### 自动设置
 
-Automatic setup will enable access to all the repositories your GitHub user can access. You can [provide your own personal access token](#personal-access-token) if you need more granular control.
+自动设置将启用对你的 GitHub 用户可以访问的所有仓库的访问权限。如果你需要更细粒度的控制，可以[提供你自己的个人访问令牌](#personal-access-token)。
 
-### GitHub personal access token
+### GitHub 个人访问令牌
 
-For more granular control, you can provide a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). You can create a personal access token in your GitHub account settings under [Developer Settings](https://github.com/settings/tokens).
+为了更细粒度的控制，你可以提供[个人访问令牌](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)。你可以在 GitHub 账户设置中的[开发者设置](https://github.com/settings/tokens)下创建个人访问令牌。
 
-To ensure GitHub Sync works correctly, you must grant the following permissions to your personal access token:
+为了确保 GitHub 同步正常工作，你必须为你的个人访问令牌授予以下权限：
 
-- **Contents**: Allow **Read and write** access so Stately Studio can import your machines and create files for machines added in the Studio.
-- **Pull requests**: Allow **Read and write** access so Stately Studio can create pull requests for you (optional).
+- **内容**：允许 **读写** 访问，以便 Stately Studio 可以导入你的机器并为在 Studio 中添加的机器创建文件。
+- **拉取请求**：允许 **读写** 访问，以便 Stately Studio 可以为你创建拉取请求（可选）。
 
-You can update your personal access token from your user <Settings size={18}/> **Settings** in Stately Studio anytime.
+你可以随时从 Stately Studio 中的用户 <Settings size={18}/> **设置** 更新你的个人访问令牌。
 
-## Import machine from a GitHub URL
+## 从 GitHub URL 导入机器
 
-If you want to quickly import a machine, or multiple machines, from a GitHub file without syncing, you can import from a GitHub URL.
+如果你想快速从 GitHub 文件导入一个或多个机器而不进行同步，可以从 GitHub URL 导入。
 
-1. Open a file containing one or more machines on GitHub.
-2. Modify the URL in the browser’s address bar to replace the `.com` with `.stately.ai`.
-3. The editor will then display your imported machine.
-4. **Save** the machine to enable editing and easily find your machine in your projects later.
+1. 在 GitHub 上打开包含一个或多个机器的文件。
+2. 修改浏览器地址栏中的 URL，将 `.com` 替换为 `.stately.ai`。
+3. 编辑器将显示你导入的机器。
+4. **保存** 机器以启用编辑，并在以后轻松找到你的机器。
 
-Importing from a GitHub URL works with files in any branch in your private repositories, public repositories, and files in pull requests.
+从 GitHub URL 导入适用于任何分支中的文件，包括私人仓库、公共仓库和拉取请求中的文件。
 
-### Pull requests
+### 拉取请求
 
-Once you’ve made changes to your imported machine, you can use the **Create pull request** button to create a PR back to the source GitHub repository. If you want to make a pull request from your imported machine, you’ll need to provide a [GitHub personal access token](#github-personal-access-token).
+一旦你对导入的机器进行了更改，可以使用 **创建拉取请求** 按钮创建回到源 GitHub 仓库的拉取请求。如果你想从导入的机器创建拉取请求，需要提供[GitHub 个人访问令牌](#github-personal-access-token)。
 
-### Bookmarklet
+### 书签小工具
 
-Use the bookmarklet below to import single file machines from GitHub with one click.
+使用下面的书签小工具一键从 GitHub 导入单文件机器。
 
-1. Add a new bookmark to your browser
-2. Set the bookmark’s web address to the following:
+1. 添加一个新的书签到你的浏览器
+2. 将书签的网页地址设置为以下内容：
    `javascript:(function(){ location.href = 'https://github.stately.ai/' + window.location.pathname;})();`
-3. Click the bookmarklet when viewing a GitHub file containing one or more machines to import that machine to Stately Studio.
+3. 在查看包含一个或多个机器的 GitHub 文件时点击书签小工具，将该机器导入到 Stately Studio。
 
-Or drag the following bookmarklet link to your bookmarks:
+或者将以下书签小工具链接拖到你的书签栏：
 
 <a
   style={{
@@ -121,14 +120,14 @@ Or drag the following bookmarklet link to your bookmarks:
   GitHub → Stately
 </a>
 
-### Example
+### 示例
 
-When your machine is hosted at GitHub:
-`https://github.com/username/repo/blob/main/apps/superMachine.ts`, update the URL to
-`https://github.stately.ai/username/repo/blob/main/apps/superMachine.ts` and Stately Studio will start the import.
+当你的机器托管在 GitHub 上时：
+`https://github.com/username/repo/blob/main/apps/superMachine.ts`，将 URL 更新为
+`https://github.stately.ai/username/repo/blob/main/apps/superMachine.ts`，Stately Studio 将开始导入。
 
 :::info
 
-Read more in [our blog post about importing a machine from a GitHub URL](https://stately.ai/blog/2023-02-06-github-import-machines).
+在[我们的博客文章中阅读更多关于从 GitHub URL 导入机器的信息](https://stately.ai/blog/2023-02-06-github-import-machines)。
 
 :::

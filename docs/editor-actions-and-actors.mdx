@@ -1,74 +1,74 @@
 ---
-title: 'Actions and actors in Stately’s editor'
-description: 'Learn how to use exit actions, entry actions, and transition actions, and invoke actors in Stately’s editor.'
+title: '在 Stately 编辑器中的动作和参与者'
+description: '了解如何在 Stately 编辑器中使用退出动作、进入动作和转换动作，并调用参与者。'
 ---
 
-# Actions and actors
+# 动作和参与者
 
-While the state machine is running, it can execute effects called actions. Actions are executed when a transition is triggered. Actions are “fire-and-forget effects”; once the machine has fired the action, it continues processing the transition and forgets the action. You can also fire actions when a state is entered or exited. [Read more about actions](/docs/actions).
+当状态机运行时，它可以执行称为动作的效果。动作在转换触发时执行。动作是“触发即忘的效果”；一旦机器触发了动作，它就会继续处理转换并忘记该动作。你也可以在状态进入或退出时触发动作。[阅读更多关于动作的信息](/docs/actions)。
 
-State machines can invoke actors as longer-running processes that can receive events, send events, and change their behavior based on the events they receive. You can invoke actors on entry to a state and stop on exit. [Read more about actors](actors.mdx).
+状态机可以调用参与者作为较长时间运行的进程，这些进程可以接收事件、发送事件，并根据接收到的事件改变其行为。你可以在进入状态时调用参与者，并在退出时停止。[阅读更多关于参与者的信息](actors.mdx)。
 
-<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?code=834448b4-3b8b-4de9-8b2e-353fd2b342de&mode=design&machineId=000b2694-2267-413c-8477-988cc750d581" title="Demo of actions and actors"/>
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?code=834448b4-3b8b-4de9-8b2e-353fd2b342de&mode=design&machineId=000b2694-2267-413c-8477-988cc750d581" title="动作和参与者的演示"/>
 
-## Add actions
+## 添加动作
 
-- Select a state or transition and use <Zap size={18} /> **Action**.
-- Select a state and use <Plus size={18} /> **Entry action** or **Exit action**.
-- Select a state or transition, open the <Info size={18} /> **Details** panel from the right tool menu, and use the <Plus size={18} /> **Effect** or <Plus size={18} /> **Action**  button and choose **Add entry action**, **Add exit action**, or **Add action**.
+- 选择一个状态或转换并使用 <Zap size={18} /> **动作**。
+- 选择一个状态并使用 <Plus size={18} /> **进入动作** 或 **退出动作**。
+- 选择一个状态或转换，从右侧工具菜单打开 <Info size={18} /> **详细信息** 面板，并使用 <Plus size={18} /> **效果** 或 <Plus size={18} /> **动作** 按钮，然后选择 **添加进入动作**、**添加退出动作** 或 **添加动作**。
 
-Use the <Edit size={18} /> edit icon button to open the <Code size={18} /> **Sources** panel and add custom implementation code. Actions are created as custom actions by default, but you can also use [XState built-in actions](#xstate-built-in-actions).
+使用 <Edit size={18} /> 编辑图标按钮打开 <Code size={18} /> **源代码** 面板并添加自定义实现代码。动作默认创建为自定义动作，但你也可以使用 [XState 内置动作](#xstate-built-in-actions)。
 
-To remove an action, use the <kbd>Backspace</kbd> key, *right-click* and choose **Delete**, or use the <Trash size={18} /> delete icon button in the **Details** panel.
+要删除一个动作，使用 <kbd>Backspace</kbd> 键，*右键单击*并选择 **删除**，或使用 **详细信息** 面板中的 <Trash size={18} /> 删除图标按钮。
 
-### Add action parameters
+### 添加动作参数
 
-You can add action parameters by selecting the action and using add <Plus size={18} /> **parameter**.
+你可以通过选择动作并使用 <Plus size={18} /> **参数** 来添加动作参数。
 
-## Add invoked actors
+## 添加调用的参与者
 
-You can invoke multiple actors on a single state. Top-level final states cannot have invoked actors. [Read more about invoking actors](invoke.mdx).
+你可以在单个状态上调用多个参与者。顶级最终状态不能有调用的参与者。[阅读更多关于调用参与者的信息](invoke.mdx)。
 
 <EmbedMachine
   embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=66f77051-089e-4b0a-9fa9-42e1f7598135"
-  name="video player"
+  name="视频播放器"
 />
 
-In the video player above, the *startVideo* actor is invoked when the video player is in the *Opened* state.
+在上面的视频播放器中，当视频播放器处于 *打开* 状态时，会调用 *startVideo* 参与者。
 
-### Invoke actors on a state
+### 在状态上调用参与者
 
-- Select a state and use <PlayCircle size={18} /> **Invoke**.
-- Select a state, open the state <Info size={18} /> **Details** panel from the right tool menu, and use the <Plus size={18} /> **Effect** button and choose **Add invoked actor**.
+- 选择一个状态并使用 <PlayCircle size={18} /> **调用**。
+- 选择一个状态，从右侧工具菜单打开状态 <Info size={18} /> **详细信息** 面板，并使用 <Plus size={18} /> **效果** 按钮，然后选择 **添加调用的参与者**。
 
-Use the <Edit size={18} /> edit icon button to open the <Code size={18}/ > **Sources** panel and enter the actor’s source logic. 
+使用 <Edit size={18} /> 编辑图标按钮打开 <Code size={18}/ > **源代码** 面板并输入参与者的源逻辑。
 
-Provide your actor with an ID so it can be used with the [`sendTo` or `stop` actions](#xstate-built-in-actions) to stop and send events to the actor. You can add actor input by selecting the actor and using add <Plus size={18} /> **input property**.
+为你的参与者提供一个 ID，以便可以使用 [`sendTo` 或 `stop` 动作](#xstate-built-in-actions)来停止并向参与者发送事件。你可以通过选择参与者并使用 <Plus size={18} /> **输入属性** 来添加参与者输入。
 
-To remove an actor, use the <kbd>Backspace</kbd> key, *right-click* and choose **Delete**, or use the <Trash size={18} /> delete icon button in the **Details** panel.
+要删除一个参与者，使用 <kbd>Backspace</kbd> 键，*右键单击*并选择 **删除**，或使用 **详细信息** 面板中的 <Trash size={18} /> 删除图标按钮。
 
-#### Invoke done and invoke error events
+#### 调用完成和调用错误事件
 
-**Invoke done events** and **invoke error events** transition from a state once its invocation has been completed or returns an error. The source state must have an invoked actor to create an invoke done or invoke error event.
+**调用完成事件** 和 **调用错误事件** 在调用完成或返回错误后从状态转换。源状态必须有一个调用的参与者才能创建调用完成或调用错误事件。
 
-- Select the state with an invoked actor and create a new transition from that state. The first new transition will be created as an invoke done event. 
-- Subsequent new transitions will be created as invoke error events.
+- 选择具有调用参与者的状态并从该状态创建一个新转换。第一个新转换将创建为调用完成事件。
+- 后续的新转换将创建为调用错误事件。
 
-To change an invoke done or invoke error event back into a regular transition, Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* the transition, and from **Event type**, choose **Always**.
+要将调用完成或调用错误事件改回常规转换，使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 转换，并从 **事件类型** 中选择 **始终**。
 
-### XState built-in actions
+### XState 内置动作
 
-You can use the following built-in XState actions from the logic templates in the <Code size={18}/> **[Sources](sources.mdx)** panel, which will be formatted in your [exported code](export-as-code.mdx). The options are:
+你可以使用 <Code size={18}/> **[源代码](sources.mdx)** 面板中的逻辑模板中的以下内置 XState 动作，这些动作将在你的 [导出代码](export-as-code.mdx) 中格式化。选项有：
 
-- [assign](/docs/actions/#assign-action): assigns data to the state context.
-- [raise](/docs/actions/#raise-action): raises an event that is received by the same machine.
-- [log](/docs/actions/#log-action): an easy way to log messages to the console.
-- [sendTo](/docs/actions/#send-to-action): sends an event to a specific actor.
-- [stop](/docs/actions/#stop-action): stops a child actor.
+- [assign](/docs/actions/#assign-action)：将数据分配给状态上下文。
+- [raise](/docs/actions/#raise-action)：引发一个事件，该事件由同一机器接收。
+- [log](/docs/actions/#log-action)：一种简单的方式将消息记录到控制台。
+- [sendTo](/docs/actions/#send-to-action)：将事件发送到特定参与者。
+- [stop](/docs/actions/#stop-action)：停止一个子参与者。
 
-- [Read more about actions in XState](actions.mdx).
-- [Read more about actors in XState](actors.mdx).
+- [阅读更多关于 XState 中的动作](actions.mdx)。
+- [阅读更多关于 XState 中的参与者](actors.mdx)。
 
-### Spawning actors in Stately’s editor
+### 在 Stately 编辑器中生成参与者
 
-_Coming soon_
+_即将推出_

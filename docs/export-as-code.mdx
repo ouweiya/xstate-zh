@@ -1,43 +1,42 @@
 ---
-title: Export as code
+title: 导出为代码
 ---
 
-Exporting as code is useful if you want to use your machine with [XState](xstate.mdx) inside your codebase or if you want to duplicate your machine without using **Fork**.
+如果你想在代码库中使用 [XState](xstate.mdx) 或者想在不使用 **Fork** 的情况下复制你的状态机，导出为代码是非常有用的。
 
 :::new
 
-You can now [generate a React app from your machine](generate-react.mdx).
+你现在可以 [从你的状态机生成一个 React 应用](generate-react.mdx)。
 
 :::
 
-Every feature of your state machine will be included in the code, except for [colors](colors.mdx) and [notes](annotations.mdx). Your last used export settings will be remembered next time you open the <Code size={18} /> **Code** panel.
+状态机的每个功能都会包含在代码中，除了 [颜色](colors.mdx) 和 [注释](annotations.mdx)。下次打开 <Code size={18} /> **代码** 面板时，会记住你上次使用的导出设置。
 
-## Export formats
+## 导出格式
 
-You can export as code from <Code size={18} /> **Code** panel or the <MoreHorizontal size={18} /> menu alongside the machine name in the machines list. 
+你可以从 <Code size={18} /> **代码** 面板或机器列表中机器名称旁边的 <MoreHorizontal size={18} /> 菜单中导出为代码。
 
-Use the **XState version 5 beta** toggle to choose between code supported by XState version 4 and XState version 5. Copy the code to your clipboard with the <Copy size={18} /> copy button.
+使用 **XState 版本 5 测试版** 切换按钮在 XState 版本 4 和 XState 版本 5 支持的代码之间进行选择。使用 <Copy size={18} /> 复制按钮将代码复制到剪贴板。
 
-- JSON code for use with XState
-- JavaScript code for use with XState
-- TypeScript code for use with XState
-- Markdown (*beta*) for use in documentation ([available on premium plans](studio-pro-plan.mdx))
-- Stories (*beta*) for use in requirements and documentation ([available on premium plans](studio-pro-plan.mdx))
-- [Mermaid](https://mermaid.js.org) code and diagrams for use in GitHub, GitLab, and anywhere Mermaid is supported
-
+- 用于 XState 的 JSON 代码
+- 用于 XState 的 JavaScript 代码
+- 用于 XState 的 TypeScript 代码
+- 用于文档的 Markdown (*测试版*) ([在高级计划中可用](studio-pro-plan.mdx))
+- 用于需求和文档的 Stories (*测试版*) ([在高级计划中可用](studio-pro-plan.mdx))
+- 用于 GitHub、GitLab 以及任何支持 Mermaid 的地方的 [Mermaid](https://mermaid.js.org) 代码和图表
 
 :::studio
 
-You can also [import from code](import-from-code.mdx) from <Code size={18} /> **Code** panel or the <MoreHorizontal size={18} /> menu alongside the machine name in the machines list.
+你也可以从 <Code size={18} /> **代码** 面板或机器列表中机器名称旁边的 <MoreHorizontal size={18} /> 菜单中 [从代码导入](import-from-code.mdx)。
 
 :::
 
-### Export to CodeSandbox and StackBlitz
+### 导出到 CodeSandbox 和 StackBlitz
 
-You can export your machines to CodeSandbox and StackBlitz from the <Code size={18} /> **Code** panel. The machine will be exported in your chosen format as a basic JavaScript app that uses XState to run the machine.
+你可以从 <Code size={18} /> **代码** 面板将你的状态机导出到 CodeSandbox 和 StackBlitz。状态机将以你选择的格式导出为一个使用 XState 运行状态机的基本 JavaScript 应用。
 
 :::tip
 
-Wrap your Mermaid code in a fenced code block with the `mermaid` language identifier to [share your diagram on GitHub](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams) and [share your diagram on GitLab](https://handbook.gitlab.com/handbook/tools-and-tips/mermaid/).
+将你的 Mermaid 代码包裹在带有 `mermaid` 语言标识符的围栏代码块中，以便 [在 GitHub 上分享你的图表](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams) 和 [在 GitLab 上分享你的图表](https://handbook.gitlab.com/handbook/tools-and-tips/mermaid/)。
 
 :::

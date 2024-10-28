@@ -2,15 +2,15 @@
 title: '@xstate/store'
 ---
 
-XState Store is a small library for simple state management in JavaScript/TypeScript applications. It is meant for updating store data using **events** for vanilla JavaScript/TypeScript apps, React apps, and more. It is comparable to libraries like Zustand, Redux, and Pinia. For more complex state management, you should use [XState](./xstate.mdx) instead, or you can [use XState Store with XState](#using-xstate-store-with-xstate).
+XState Store 是一个用于在 JavaScript/TypeScript 应用程序中进行简单状态管理的小型库。它旨在通过 **事件** 更新存储数据，适用于纯 JavaScript/TypeScript 应用程序、React 应用程序等。它类似于 Zustand、Redux 和 Pinia 等库。对于更复杂的状态管理，您应该使用 [XState](./xstate.mdx)，或者您可以 [将 XState Store 与 XState 一起使用](#using-xstate-store-with-xstate)。
 
 :::info
 
-The `@xstate/store` library requires TypeScript version 5.4 or above.
+`@xstate/store` 库需要 TypeScript 版本 5.4 或更高版本。
 
 :::
 
-## Installation
+## 安装
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -38,15 +38,15 @@ yarn add @xstate/store
 </TabItem>
 </Tabs>
 
-## Quick start
+## 快速开始
 
 ```ts
 import { createStore } from '@xstate/store';
 
 const store = createStore({
-  // Initial context
+  // 初始上下文
   context: { count: 0, name: 'David' },
-  // Transitions
+  // 转换
   on: {
     inc: {
       count: (context) => context.count + 1,
@@ -60,40 +60,40 @@ const store = createStore({
   },
 });
 
-// Get the current state (snapshot)
+// 获取当前状态（快照）
 console.log(store.getSnapshot());
 // => {
 //   status: 'active',
 //   context: { count: 0, name: 'David' }
 // }
 
-// Subscribe to snapshot changes
+// 订阅快照变化
 store.subscribe((snapshot) => {
   console.log(snapshot.context);
 });
 
-// Send an event
+// 发送事件
 store.send({ type: 'inc' });
-// logs { count: 1, name: 'David' }
+// 输出 { count: 1, name: 'David' }
 
 store.send({ type: 'add', num: 10 });
-// logs { count: 11, name: 'David' }
+// 输出 { count: 11, name: 'David' }
 
 store.send({ type: 'changeName', newName: 'Jenny' });
-// logs { count: 11, name: 'Jenny' }
+// 输出 { count: 11, name: 'Jenny' }
 ```
 
-## Creating a store
+## 创建一个 store
 
-To create a store, you need to pass an object to the `createStore(…)` function with the following properties:
+要创建一个 store，您需要将一个对象传递给 `createStore(…)` 函数，该对象具有以下属性：
 
-1. The initial `context`
-2. An `on` object for transitions (event handlers) where:
+1. 初始 `context`
+2. 一个 `on` 对象用于转换（事件处理程序），其中：
 
-- The keys are the event types (e.g. `"inc"`, `"add"`, `"changeName"`)
-- The values are the `context` updates to apply when the event is sent to the store, as either an object or a function.
+- 键是事件类型（例如 `"inc"`、`"add"`、`"changeName"`）
+- 值是发送事件到 store 时要应用的 `context` 更新，可以是对象或函数。
 
-Updating `context` in transitions is similar to using the [`assign` action](./context.mdx) in XState. You can update specific `context` properties by using an object:
+在转换中更新 `context` 类似于在 XState 中使用 [`assign` 动作](./context.mdx)。您可以使用对象更新特定的 `context` 属性：
 
 ```ts
 import { createStore } from '@xstate/store';
@@ -104,7 +104,7 @@ const store = createStore({
     // highlight-start
     inc: {
       count: (context, event: { by: number }) => context.count + event.by,
-      // Static values do not need to be wrapped in a function
+      // 静态值不需要包裹在函数中
       incremented: true,
     },
     // highlight-end
@@ -134,7 +134,8 @@ const store = createStore({
 });
 ```
 
-You can spread the `...context` when updating the entire `context` with a function. This is useful when you want to preserve other properties in the `context`:
+您可以在使用函数更新整个 `context` 时展开 `...context`。这在您希望保留 `context` 中的其他属性时非常有用：
+
 
 ```ts
 import { createStore } from '@xstate/store';
@@ -144,7 +145,7 @@ const store = createStore({
   on: {
     reset: (context, event) => {
       // highlight-start
-      // You can use `...context` to preserve other properties
+      // 您可以使用 `...context` 来保留其他属性
       return {
         ...context,
         count: 0,
@@ -158,11 +159,11 @@ const store = createStore({
 <details>
 <summary>
 
-Note: Deprecated <code>createStore(context, transitions)</code> API
+注意：已弃用的 <code>createStore(context, transitions)</code> API
 
 </summary>
 
-The previous version of `createStore` took two arguments: an initial context and an object of event handlers. This API is still supported but deprecated. Here's an example of the old usage:
+以前版本的 `createStore` 接受两个参数：初始上下文和事件处理程序对象。此 API 仍然受支持，但已弃用。以下是旧用法的示例：
 
 ```ts
 import { createStore } from '@xstate/store';
@@ -183,18 +184,19 @@ const donutStore = createStore(
 );
 ```
 
-We recommend using the new API for better type inference and more explicit configuration.
+我们建议使用新的 API 以获得更好的类型推断和更明确的配置。
+
 
 </details>
 
-## Transition functions
+## 转换函数
 
-A transition function is a function that takes the current `context` and an `event` object, and returns:
+转换函数是一个接受当前 `context` 和 `event` 对象的函数，并返回：
 
-- The partial or entire `context` object to update (if using a function assigner)
-- The context property value to update (if using an object assigner).
+- 要更新的部分或整个 `context` 对象（如果使用函数赋值器）
+- 要更新的 `context` 属性值（如果使用对象赋值器）
 
-For strong typing, you should specify the payload type of the `event` object in the transition function.
+为了强类型，您应该在转换函数中指定 `event` 对象的负载类型。
 
 ```ts
 import { createStore } from '@xstate/store';
@@ -219,18 +221,18 @@ const store = createStore({
 
 store.send({
   type: 'updateName',
-  name: 'Jenny', // Strongly-typed as `string`
+  name: 'Jenny', // 强类型为 `string`
 });
 
 store.send({
   type: 'inc',
-  by: 10, // Strongly-typed as `number`
+  by: 10, // 强类型为 `number`
 });
 ```
 
-## Emitting events
+## 触发事件
 
-You can emit events from transitions by using the `emit` method from the 3rd argument of the transition function:
+您可以通过在转换函数的第三个参数中使用 `emit` 方法来触发事件：
 
 ```ts
 import { createStore } from '@xstate/store';
@@ -259,24 +261,24 @@ const store = createStore({
 // highlight-start
 const sub = store.on('incremented', (event) => {
   console.log(`Emitted by ${event.by}`);
-  // => logs "Emitted by 10"
+  // => 输出 "Emitted by 10"
 });
 // highlight-end
 
 store.send({ type: 'inc', by: 10 });
 
-// Stop listening for emitted events
+// 停止监听发出的事件
 // highlight-next-line
 sub.unsubscribe();
 ```
 
-You can listen for emitted events using the `store.on(...)` method, which creates a subscription that you can later unsubscribe from. This method is type-safe, ensuring that you receive the correct event object for the emitted event type you're listening for.
+您可以使用 `store.on(...)` 方法监听发出的事件，该方法会创建一个订阅，您可以稍后取消订阅。此方法是类型安全的，确保您接收到的事件对象是您正在监听的发出事件类型的正确对象。
 
-Note that you can strongly type emitted events in the `types.emitted` property of the store config object, just like in XState. This ensures type safety when emitting and listening for events.
+请注意，您可以在 store 配置对象的 `types.emitted` 属性中强类型发出的事件，就像在 XState 中一样。这确保了在发出和监听事件时的类型安全。
 
-## Inspection
+## 检查
 
-Just like with XState, you can use the [Inspect API](./inspection.mdx) to inspect events sent to the store and state transitions within the store by using the .inspect method:
+就像在 XState 中一样，您可以使用 [Inspect API](./inspection.mdx) 通过 .inspect 方法检查发送到 store 的事件和 store 内的状态转换：
 
 ```ts
 const store = createStore({
@@ -285,8 +287,8 @@ const store = createStore({
 
 // highlight-start
 store.inspect((inspectionEvent) => {
-  // type: '@xstate.snapshot' or
-  // type: '@xstate.event'
+  // 类型: '@xstate.snapshot' 或
+  // 类型: '@xstate.event'
   console.log(inspectionEvent);
 });
 // highlight-end
@@ -294,22 +296,22 @@ store.inspect((inspectionEvent) => {
 
 :::info
 
-Since the store is automatically started, inspectors will immediately receive the initial state snapshot.
+由于 store 会自动启动，检查器将立即接收到初始状态快照。
 
 :::
 
-The `.inspect(…)` method returns a subscription object:
+`.inspect(…)` 方法返回一个订阅对象：
 
 ```ts
 const sub = store.inspect((inspectionEvent) => {
   console.log(inspectionEvent);
 });
 
-// Stop listening for inspection events
+// 停止监听检查事件
 sub.unsubscribe();
 ```
 
-You can use the [Stately Inspector](./inspector.mdx) to inspect and visualize the state of the store.
+您可以使用 [Stately Inspector](./inspector.mdx) 来检查和可视化 store 的状态。
 
 ```ts
 // highlight-next-line
@@ -330,9 +332,9 @@ const inspector = createBrowserInspector({
 store.inspect(inspector);
 ```
 
-## Using Immer
+## 使用 Immer
 
-If you want to use [Immer](https://immerjs.github.io/immer/) to update the `context`, you can do so by passing in the `produce` function as the first argument to `createStoreWithProducer(producer, …)`.
+如果您想使用 [Immer](https://immerjs.github.io/immer/) 来更新 `context`，可以通过将 `produce` 函数作为第一个参数传递给 `createStoreWithProducer(producer, …)` 来实现。
 
 ```ts
 import { createStoreWithProducer } from '@xstate/store';
@@ -341,7 +343,7 @@ import { produce } from 'immer';
 
 const store = createStoreWithProducer(
   // highlight-start
-  // Producer
+  // 生产者
   produce,
   // highlight-end
   {
@@ -349,13 +351,13 @@ const store = createStoreWithProducer(
     on: {
       inc: (context, event: { by: number }) => {
         // highlight-start
-        // No return; handled by Immer
+        // 无需返回值；由 Immer 处理
         context.count += event.by;
         // highlight-end
       },
       addTodo: (context, event: { todo: string }) => {
         // highlight-start
-        // No return; handled by Immer
+        // 无需返回值；由 Immer 处理
         context.todos.push(event.todo);
         // highlight-end
       },
@@ -366,18 +368,18 @@ const store = createStoreWithProducer(
 // ...
 ```
 
-Note that you cannot use the object assigner syntax when using `createStoreFromProducer(…)`, nor is it even necessary.
+请注意，当使用 `createStoreFromProducer(…)` 时，您不能使用对象赋值器语法，也没有必要。
 
-## Usage with React
+## 在 React 中使用
 
-If you are using React, you can use the `useSelector(store, selector)` hook to subscribe to the store and get the current state.
+如果您使用 React，可以使用 `useSelector(store, selector)` 钩子订阅 store 并获取当前状态。
 
 ```tsx
 import { createStore } from '@xstate/store';
 // highlight-next-line
 import { useSelector } from '@xstate/store/react';
 
-// Create a store
+// 创建一个 store
 const store = createStore({
   context: { count: 0, name: 'David' },
   on: {
@@ -387,12 +389,12 @@ const store = createStore({
   },
 });
 
-// Use the `useSelector` hook to subscribe to the store
+// 使用 `useSelector` 钩子订阅 store
 function Component(props) {
   // highlight-next-line
   const count = useSelector(store, (state) => state.context.count);
 
-  // This component displays the count and has a button to increment it
+  // 该组件显示计数并有一个按钮来增加计数
   return (
     <div>
       // highlight-start Count: {count}
@@ -403,17 +405,17 @@ function Component(props) {
 }
 ```
 
-A store can be shared with multiple components, which will all receive the same snapshot from the store instance. Stores are useful for global state management.
+一个 store 可以与多个组件共享，这些组件将从 store 实例接收相同的快照。Stores 对于全局状态管理非常有用。
 
-## Usage with Solid
+## 与 Solid 一起使用
 
-_Documentation coming soon!_
+_文档即将推出！_
 
-## Using XState Store with XState
+## 将 XState Store 与 XState 一起使用
 
-You may notice that stores are very similar to [actors in XState](./actors.mdx). This is very much by design. XState's actors are very powerful, but may also be too complex for simple use cases, which is why `@xstate/store` exists.
+您可能会注意到 stores 与 [XState 中的 actors](./actors.mdx) 非常相似。这是有意为之的。XState 的 actors 非常强大，但对于简单的用例可能过于复杂，这就是 `@xstate/store` 存在的原因。
 
-However, if you have existing XState code, and you enjoy the simplicity of creating store logic with `@xstate/store`, you can use the `fromStore(context, transitions)` actor logic creator to create XState-compatible store logic that can be passed to the `createActor(storeLogic)` function:
+然而，如果您有现有的 XState 代码，并且喜欢使用 `@xstate/store` 创建 store 逻辑的简便性，您可以使用 `fromStore(context, transitions)` actor 逻辑创建器来创建 XState 兼容的 store 逻辑，并将其传递给 `createActor(storeLogic)` 函数：
 
 ```ts
 // highlight-start
@@ -421,7 +423,7 @@ import { fromStore } from '@xstate/store';
 import { createActor } from 'xstate';
 // highlight-end
 
-// Instead of:
+// 替换为：
 // const store = createStore( ... };
 const storeLogic = fromStore({
   context: { count: 0, incremented: false /* ... */ },
@@ -429,7 +431,7 @@ const storeLogic = fromStore({
     // highlight-start
     inc: {
       count: (context, event) => context.count + 1,
-      // Static values do not need to be wrapped in a function
+      // 静态值不需要包裹在函数中
       incremented: true,
     },
     // highlight-end
@@ -447,10 +449,10 @@ store.send({
 });
 ```
 
-In short, you can convert `createStore(…)` to `fromStore(…)` just by changing one line of code. Note that `fromStore(…)` returns _store logic_, and not a store actor instance. Store logic is passed to `createActor(storeLogic)` to create a store actor instance:
+简而言之，您可以通过更改一行代码将 `createStore(…)` 转换为 `fromStore(…)`。请注意，`fromStore(…)` 返回的是 _store 逻辑_，而不是 store actor 实例。Store 逻辑传递给 `createActor(storeLogic)` 以创建 store actor 实例：
 
 ```ts
-// Instead of:
+// 替换为：
 // const store = createStore({
 const storeLogic = fromStore({
   context: {
@@ -461,11 +463,11 @@ const storeLogic = fromStore({
   },
 });
 
-// Create the store (actor)
+// 创建 store（actor）
 const storeActor = createActor(storeLogic);
 ```
 
-Using `fromStore(…)` to create store actor logic also has the advantage of allowing you to provide `input` by using a context function that takes in the `input` and _returns_ the initial `context`:
+使用 `fromStore(…)` 创建 store actor 逻辑的另一个优点是允许您通过使用接受 `input` 并返回初始 `context` 的上下文函数来提供 `input`：
 
 ```ts
 import { fromStore } from '@xstate/store';
@@ -487,26 +489,26 @@ const actor = createActor(storeLogic, {
 });
 ```
 
-## Converting stores to state machines
+## 将 stores 转换为状态机
 
-If you have a store that you want to convert to a state machine in XState, you can convert it in a straightforward way:
+如果您有一个 store 想要转换为 XState 中的状态机，可以通过以下方式进行转换：
 
-1. Use `createMachine(…)` (imported from `xstate`) instead of `createStore(…)` (imported from `@xstate/store`) to create a state machine.
-1. Wrap the assignments in an `assign(…)` action creator (imported from `xstate`) and move that to the `actions` property of the transition.
-1. Destructure `context` and `event` from the first argument instead of them being separate arguments.
+1. 使用 `createMachine(…)`（从 `xstate` 导入）代替 `createStore(…)`（从 `@xstate/store` 导入）来创建状态机。
+2. 将赋值操作包装在 `assign(…)` 动作创建器中（从 `xstate` 导入），并将其移动到转换的 `actions` 属性中。
+3. 从第一个参数中解构 `context` 和 `event`，而不是将它们作为单独的参数。
 
-For example, here is our store before conversion:
+例如，这是转换前的 store：
 
 ```ts
 import { createMachine } from 'xstate';
 
-// 1. Use `createMachine(…)` instead of `createStore(…)`
+// 1. 使用 `createMachine(…)` 代替 `createStore(…)`
 const store = createStore({
   context: { count: 0, name: 'David' },
   on: {
     inc: {
-      // 2. Wrap the assignments in `assign(…)`
-      // 3. Destructure `context` and `event` from the first argument
+      // 2. 将赋值操作包装在 `assign(…)` 中
+      // 3. 从第一个参数中解构 `context` 和 `event`
       count: (context, event: { by: number }) => context.count + event.by,
     },
   },
@@ -517,7 +519,8 @@ const machine = createMachine({
 });
 ```
 
-And here is the store as a state machine after conversion:
+以下是转换后的状态机：
+
 
 ```ts
 import { createMachine } from 'xstate';
@@ -530,7 +533,7 @@ import { createMachine } from 'xstate';
 //     }
 //   });
 
-// 1. Use `createMachine(…)` instead of `createStore(…)`
+// 1. 使用 `createMachine(…)` 代替 `createStore(…)`
 const machine = createMachine({
   context: {
     count: 0,
@@ -538,9 +541,9 @@ const machine = createMachine({
   },
   on: {
     inc: {
-      // 2. Wrap the assignments in `assign(…)`
+      // 2. 将赋值操作包装在 `assign(…)` 中
       actions: assign({
-        // 3. Destructure `context` and `event` from the first argument
+        // 3. 从第一个参数中解构 `context` 和 `event`
         count: ({ context, event }) => context.count + event.by,
       }),
     },
@@ -548,7 +551,7 @@ const machine = createMachine({
 });
 ```
 
-For stronger typing, use the [`setup(…)` function](./setup.mdx) to strongly type the `context` and `events`:
+为了更强的类型检查，请使用 [`setup(…)` 函数](./setup.mdx) 来强类型化 `context` 和 `events`：
 
 ```ts
 import { setup } from 'xstate';
@@ -561,15 +564,15 @@ const machine = setup({
   },
   // highlight-end
 }).createMachine({
-  // Same as the previous example
+  // 与前面的示例相同
 });
 ```
 
-## Comparison
+## 比较
 
-This section compares XState Store to other popular state management libraries in TypeScript. It is meant for reference purposes only, and not intended to favor one approach over the other. The examples are copied from [Zustand's comparison docs](https://docs.pmnd.rs/zustand/getting-started/comparison).
+本节将 XState Store 与其他流行的 TypeScript 状态管理库进行比较。此比较仅供参考，并不旨在偏袒任何一种方法。示例代码摘自 [Zustand 的比较文档](https://docs.pmnd.rs/zustand/getting-started/comparison)。
 
-### Compare to Zustand
+### 与 Zustand 的比较
 
 **Zustand**
 

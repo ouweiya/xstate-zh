@@ -4,23 +4,23 @@ title: Inspector
 
 # Stately Inspector
 
-Stately Inspector is a tool that allows you to inspect your application’s state visually. It primarily works with frontend applications using XState but can also work with backend code and code that uses any state management solution.
+Stately Inspector 是一个允许您直观地检查应用程序状态的工具。它主要适用于使用 XState 的前端应用程序，但也可以与后端代码和使用任何状态管理解决方案的代码一起使用。
 
 :::new
 
-[Read about our recent release of Stately Inspector on our blog](/blog/2024-01-15-stately-inspector/).
+[阅读我们关于 Stately Inspector 的最新发布博客](/blog/2024-01-15-stately-inspector/)。
 
 :::
 
-## Install Stately Inspector
+## 安装 Stately Inspector
 
-To inspect applications with Stately Inspector, install [Stately Inspect](https://github.com/statelyai/inspect) from npm via `@statelyai/inspect`:
+要使用 Stately Inspector 检查应用程序，请从 npm 安装 [Stately Inspect](https://github.com/statelyai/inspect) via `@statelyai/inspect`:
 
 ```bash
 npm install @statelyai/inspect
 ```
 
-Then import the relevant inspector creator into your app. The creator is used to create an inspector (e.g., a browser or WebSocket inspector) that you can use to either connect to XState actors and/or manually send inspection events to Stately Inspector:
+然后将相关的 inspector 创建器导入到您的应用程序中。创建器用于创建一个 inspector（例如，浏览器或 WebSocket inspector），您可以使用它来连接到 XState actors 和/或手动发送检查事件到 Stately Inspector：
 
 ```ts
 import { createActor } from 'xstate';
@@ -42,26 +42,26 @@ const actor = createActor(machine, {
 actor.start();
 ```
 
-When you run your app, a new tab or popup window will open with the Inspector.
+当您运行应用程序时，将会打开一个包含 Inspector 的新标签页或弹出窗口。
 
 :::tip
 
-When using the browser inspector, ensure that the popup window is not blocked by your browser’s popup blocker.
+使用浏览器 inspector 时，请确保浏览器的弹出窗口未被阻止。
 
 :::
 
-## Inspector options
+## Inspector 选项
 
-You can pass the following options to the browser inspector:
+您可以将以下选项传递给浏览器 inspector：
 
-- `filter` - a function that takes an inspection event and returns `true` if the event should be sent to the Stately Inspector.
-- `serialize` - a function that takes an inspection event and allows you to serialize it before sending it to the Stately Inspector.
-- `autoStart` - whether to automatically start the inspector. Defaults to `true`.
-  - If `autoStart: false`, you can start the inspector by calling `inspector.start()`.
-- `url` - the URL of the Stately Inspector to open. Defaults to `https://stately.ai/inspector`.
-- `iframe` - the `<iframe>` element to use for the inspector. Defaults to `null`.
+- `filter` - 一个函数，接受一个检查事件并返回 `true`，如果该事件应发送到 Stately Inspector。
+- `serialize` - 一个函数，接受一个检查事件并允许您在发送到 Stately Inspector 之前对其进行序列化。
+- `autoStart` - 是否自动启动 inspector。默认为 `true`。
+  - 如果 `autoStart: false`，您可以通过调用 `inspector.start()` 来启动 inspector。
+- `url` - 要打开的 Stately Inspector 的 URL。默认为 `https://stately.ai/inspector`。
+- `iframe` - 用于 inspector 的 `<iframe>` 元素。默认为 `null`。
 
-**Example usage:**
+**示例用法:**
 
 ```ts
 import { createBrowserInspector } from '@statelyai/inspect';
@@ -69,7 +69,7 @@ import { createBrowserInspector } from '@statelyai/inspect';
 const inspector = createBrowserInspector({
   filter: (inspEvent) => {
     if (inspEvent.type === '@xstate.event') {
-      // Skip mouse drag events
+      // 跳过鼠标拖动事件
       return inspEvent.event.type !== 'mouse.drag';
     }
     return true;
@@ -78,44 +78,44 @@ const inspector = createBrowserInspector({
 })
 ```
 
-## Sending inspection events
+## 发送检查事件
 
-The `@statelyai/inspect` package will send inspection events to the connected Stately Inspector. There are currently three kinds of events sent:
+`@statelyai/inspect` 包将会发送检查事件到连接的 Stately Inspector。目前有三种类型的事件会被发送：
 
-- Actor creation events
-- Actor-to-actor communication events
-- Actor snapshot changes
+- Actor 创建事件
+- Actor 之间的通信事件
+- Actor 快照变化
 
-When you pass in the `inspect` option to the actor options in XState’s `createActor(machine, options)` function, it will automatically send all of these inspection events.
+当您在 XState 的 `createActor(machine, options)` 函数中传递 `inspect` 选项时，它将自动发送所有这些检查事件。
 
-For usage with other state management solutions, you can manually send inspection events using the following methods:
+对于其他状态管理解决方案，您可以使用以下方法手动发送检查事件：
 
-- `inspector.actor(actor, snapshot, info)` - send actor creation events
-- `inspector.event(actor, event, info)` - send actor-to-actor communication events
-- `inspector.snapshot(actor, snapshot, info)` - send actor snapshot changes
+- `inspector.actor(actor, snapshot, info)` - 发送 actor 创建事件
+- `inspector.event(actor, event, info)` - 发送 actor 之间的通信事件
+- `inspector.snapshot(actor, snapshot, info)` - 发送 actor 快照变化
 
 ```ts
 import { createBrowserInspector } from '@statelyai/inspect';
 
 const inspector = createBrowserInspector();
 
-// Imagine a todo app...
+// 想象一个待办事项应用...
 inspector.actor('todos');
 
-// When a todo is created
+// 当创建一个待办事项时
 inspector.actor('todo-1', {
   context: { status: 'active' }
 });
 
-// When a user completes a todo
+// 当用户完成一个待办事项时
 inspector.event('todo-1', { type: 'todo.complete' });
 
-// When a todo changes
+// 当待办事项发生变化时
 inspector.snapshot('todo-1', {
   context: { status: 'completed' }
 });
 
-// When the todos actor (not the user) sends an event to a todo
+// 当 todos actor（而不是用户）向待办事项发送事件时
 inspector.event('todo-1', { type: 'todo.update' }, {
   source: 'todos'
 });
@@ -124,8 +124,9 @@ inspector.event('todo-1', { type: 'todo.update' }, {
 
 ```
 
-The three types of inspection events contain everything that Stately Inspector needs to generate two kinds of real-time diagrams automatically:
+这三种类型的检查事件包含了 Stately Inspector 生成两种实时图表所需的所有信息：
 
-- **State machine diagrams** (if a state machine definition is provided)
-- **Sequence diagrams**
+- **状态机图**（如果提供了状态机定义）
+- **序列图**
+
 

@@ -1,196 +1,196 @@
 ---
-title: 'States and transitions in Stately’s editor'
-description: 'Learn how to use states and transitions, including parent states, parallel states, guards, delayed transitions and eventless transitions in Stately’s editor.'
+title: 'Stately 编辑器中的状态和转换'
+description: '了解如何在 Stately 编辑器中使用状态和转换，包括父状态、并行状态、守卫、延迟转换和无事件转换。'
 ---
 
-# States and transitions
+# 状态和转换
 
-State machines help us model how a process goes from state to state when an event occurs. At their most basic, state machines are made up of these states, events, and the transitions between them.
+状态机帮助我们建模一个过程在事件发生时如何从一个状态转换到另一个状态。最基本的状态机由这些状态、事件和它们之间的转换组成。
 
 :::tip
 
-Want to learn more about the concepts of state machines? [Check out our introduction to state machines and statecharts](state-machines-and-statecharts.mdx).
+想了解更多关于状态机的概念吗？[查看我们关于状态机和状态图的介绍](state-machines-and-statecharts.mdx)。
 
 :::
 
-## States
+## 状态
 
-In Stately’s editor, the rounded rectangle boxes are states. There are a few different types of states:
+在 Stately 编辑器中，圆角矩形框表示状态。有几种不同类型的状态：
 
-- **Normal** states don’t have any special properties.
-- [**Initial states**](#initial-states) are the first states the machine enters when it starts.
-- [**Final states**](#final-states) are the last states the machine enters before it stops.
-- [**Parent states**](#parent-and-child-states) can contain more states, known as child states.
-- [**Parallel states**](#parallel-states) are parent states that have multiple child states that are all active at the same time.
-- [**History states**](#history-states) are parent states that remember which child state was active when the parent state was exited and re-enter that child state when the parent state is re-entered.
+- **普通**状态没有任何特殊属性。
+- [**初始状态**](#initial-states) 是机器启动时进入的第一个状态。
+- [**最终状态**](#final-states) 是机器在停止前进入的最后一个状态。
+- [**父状态**](#parent-and-child-states) 可以包含更多状态，称为子状态。
+- [**并行状态**](#parallel-states) 是具有多个子状态的父状态，这些子状态同时处于活动状态。
+- [**历史状态**](#history-states) 是记住父状态退出时哪个子状态处于活动状态的父状态，并在重新进入父状态时重新进入该子状态。
 
-<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=61fa1504-a92c-4730-a87d-3ee9dd5d6e33&mode=design" title="Demoing states"/>
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=61fa1504-a92c-4730-a87d-3ee9dd5d6e33&mode=design" title="演示状态"/>
 
-You can invoke other state machines or actors on a state, or trigger an action when a state is entered or exited. [Read more about actions and actors in Stately’s editor](editor-actions-and-actors.mdx).
+你可以在状态上调用其他状态机或参与者，或在状态进入或退出时触发一个动作。[阅读更多关于 Stately 编辑器中的动作和参与者](editor-actions-and-actors.mdx)。
 
-In Stately’s editor, you can also add [descriptions](descriptions.mdx), [colors](colors.mdx), and [tags](tags.mdx) to states.
+在 Stately 编辑器中，你还可以为状态添加[描述](descriptions.mdx)、[颜色](colors.mdx)和[标签](tags.mdx)。
 
-### Create a state
+### 创建状态
 
-- Double-click anywhere on the canvas to create a new state there.
-- Select an existing state and use <Plus size={18} /> **child state** to add a new state inside.
+- 双击画布上的任意位置以在那里创建一个新状态。
+- 选择一个现有状态并使用 <Plus size={18} /> **子状态** 在其中添加一个新状态。
 
-#### Delete a state
+#### 删除状态
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* on a selected state, and choose **Delete** to delete the selected state.
-- Use the <kbd>Backspace</kbd> key to delete the selected state.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*选定的状态，然后选择 **删除** 以删除选定的状态。
+- 使用 <kbd>Backspace</kbd> 键删除选定的状态。
 
-### Parent and child states
+### 父状态和子状态
 
-States can contain more states, also known as child states. These child states are only active when the parent state is active. [Read more about parent and child states](parent-states.mdx).
+状态可以包含更多状态，也称为子状态。只有在父状态处于活动状态时，这些子状态才处于活动状态。[阅读更多关于父状态和子状态的信息](parent-states.mdx)。
 
-To add a child state:
+要添加子状态：
 
-- Select an existing state and use <Plus size={18} /> **child state** to add a new state inside.
-- If a state already contains child states, you can double-click inside the parent state to create another child state.
-- Copy a state or group of states and transitions, and paste them onto their new parent state.
-- Reparent a child state by selecting the child and choosing a new parent state from inside the state <Info size={18} /> **Details** panel.
+- 选择一个现有状态并使用 <Plus size={18} /> **子状态** 在其中添加一个新状态。
+- 如果一个状态已经包含子状态，你可以双击父状态内部以创建另一个子状态。
+- 复制一个状态或一组状态和转换，并将它们粘贴到新的父状态上。
+- 通过选择子状态并从状态 <Info size={18} /> **详细信息** 面板中选择一个新的父状态来重新设置子状态的父状态。
 
-### Initial states
+### 初始状态
 
-When a state machine starts, it enters the **initial state** first. In Stately’s editor, the filled circle with an arrow icon represents the initial state.
+当状态机启动时，它首先进入**初始状态**。在 Stately 编辑器中，带有箭头图标的实心圆表示初始状态。
 
-Machines can only have one top-level initial state. Each parent state has its own initial state. If you have unreachable states, it might be because there is no initial state. [Read more about initial states](initial-states.mdx).
+机器只能有一个顶级初始状态。每个父状态都有自己的初始状态。如果你有无法到达的状态，可能是因为没有初始状态。[阅读更多关于初始状态的信息](initial-states.mdx)。
 
-To set a state as the initial state:
+要将状态设置为初始状态：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a state and choose Mark as initial state.
-- Select the parent state, open the state <Info size={18} /> **Details** panel, and choose the desired initial state from the **Initial state** menu.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个状态，然后选择标记为初始状态。
+- 选择父状态，打开状态 <Info size={18} /> **详细信息** 面板，并从 **初始状态** 菜单中选择所需的初始状态。
 
-### Final states
+### 最终状态
 
-When a machine reaches the final state, it can no longer receive any events, and anything running inside it is canceled and cleaned up.
+当机器到达最终状态时，它将不再接收任何事件，内部运行的任何内容都将被取消和清理。
 
-To turn a state into a final state:
+要将状态转换为最终状态：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a state, and from **State type**, choose **Final state**.
-- Select the state, open the state <Info size={18} /> **Details** panel, and choose the **Final** state option.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个状态，然后从 **状态类型** 中选择 **最终状态**。
+- 选择状态，打开状态 <Info size={18} /> **详细信息** 面板，并选择 **最终** 状态选项。
 
-If you want your machine to transition from a parent state when its final child state is reached, use a [state done event](#state-done-event).
+如果你希望机器在其最终子状态到达时从父状态转换，请使用[状态完成事件](#state-done-event)。
 
-### Parallel states
+### 并行状态
 
-In statecharts, a parallel state is a state that has multiple child states (also known as **regions**) that are all active at the same time. [Read more about parallel states](parallel-states.mdx). A dashed line borders each region.
+在状态图中，并行状态是具有多个子状态（也称为**区域**）的状态，这些子状态同时处于活动状态。[阅读更多关于并行状态的信息](parallel-states.mdx)。每个区域都有虚线边框。
 
-To turn a parent state into a parallel state:
+要将父状态转换为并行状态：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a parent state, and from **State type**, choose **Parallel state**.
-- Select the parent state, open the state <Info size={18} /> **Details** panel, and choose the **Parallel** state option.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个父状态，然后从 **状态类型** 中选择 **并行状态**。
+- 选择父状态，打开状态 <Info size={18} /> **详细信息** 面板，并选择 **并行** 状态选项。
 
-### History states
+### 历史状态
 
-A history state remembers the last child state that was active before its parent state was exited. When a transition from outside the parent state targets a history state, the remembered child state is entered. [Read more about history states](history-states.mdx).
+历史状态会记住其父状态退出前最后一个活动的子状态。当从父状态外部的转换目标指向历史状态时，会进入记住的子状态。阅读更多关于历史状态的信息。
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a state, and from **State type**, choose **History state**.
-- Select the parent state, open the state <Info size={18} /> **Details** panel, and choose the **History** state option.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个状态，然后从 **状态类型** 中选择 **历史状态**。
+- 选择父状态，打开状态 <Info size={18} /> **详细信息** 面板，并选择 **历史** 状态选项。
 
-### Unreachable states
+### 无法到达的状态
 
-A <AlertTriangle size={18}/> warning icon indicates an unreachable state. The state is unreachable because it isn’t connected to the [initial state](#initial-states) by a [transition](#transitions-and-events).
+<AlertTriangle size={18}/> 警告图标表示无法到达的状态。状态无法到达是因为它没有通过转换连接到初始状态。
 
-## Transitions and events
+## 转换和事件
 
-A machine moves from state to state through transitions. Transitions are caused by events; when an event happens, the machine transitions to the next state.
+机器通过转换从一个状态移动到另一个状态。转换是由事件引起的；当事件发生时，机器转换到下一个状态。
 
-In Stately’s editor, the arrows are transitions, and the rounded rectangles on the arrow’s lines are events. Each transition has a *source* state, which comes before the transition, and a *target* state, which comes after the transition. The transition’s arrow starts from the source state and points to the target state.
+在 Stately 的编辑器中，箭头表示转换，箭头线上的圆角矩形表示事件。每个转换都有一个*源*状态，即转换之前的状态，以及一个*目标*状态，即转换之后的状态。转换的箭头从源状态开始，指向目标状态。
 
-There are a few different types of transitions:
-- **Normal** transitions are triggered by an event.
-- [**Guarded transitions**](#add-guards) are triggered by an event, but only if a specified condition is met.
-- [**Delayed transitions**](#delayed-after-transitions) (also known as *after* transitions) are triggered by an event, but only after a specified time interval.
-- [**Eventless transitions**](#eventless-always-transitions) (also known as *always* transitions) are triggered by a timer or other condition, and don’t have an event.
+有几种不同类型的转换：
+- **普通**转换由事件触发。
+- **受保护的转换**由事件触发，但只有在满足指定条件时才会发生。
+- **延迟转换**（也称为*after*转换）由事件触发，但只有在指定的时间间隔之后才会发生。
+- **无事件转换**（也称为*always*转换）由计时器或其他条件触发，不需要事件。
 
-<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?code=834448b4-3b8b-4de9-8b2e-353fd2b342de&mode=design&machineId=50c0ee06-8297-4b79-95d1-b1abf779d757" title="Demoing transitions"/>
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?code=834448b4-3b8b-4de9-8b2e-353fd2b342de&mode=design&machineId=50c0ee06-8297-4b79-95d1-b1abf779d757" title="演示转换"/>
 
-### Create a transition and event
+### 创建转换和事件
 
-- Click a handle on any state to create a transition, event, and target state.
-- Drag from a source state’s handle to the target state’s handle to connect them with a transition and event.
+- 点击任意状态上的句柄以创建转换、事件和目标状态。
+- 从源状态的句柄拖动到目标状态的句柄以用转换和事件连接它们。
 
-#### Delete a transition
+#### 删除转换
 
-Deleting a state will also delete any transitions with that state as a source.
+删除状态也会删除以该状态为源的任何转换。
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* on a selected transition, and choose **Delete** to delete the selected transition.
-- Use the <kbd>Backspace</kbd> key to delete the selected transition.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*选定的转换，然后选择 **删除** 以删除选定的转换。
+- 使用 <kbd>Backspace</kbd> 键删除选定的转换。
 
-### Changing transition source and target
+### 更改转换源和目标
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* the transition and choose **Switch source and target**.
-- Drag the transition handle from one state to a different state.
-- Select a transition, open the transition <Info size={18} /> **Details** panel from the right tool menu, and choose a new source or target state from the dropdown menus.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*转换，然后选择 **切换源和目标**。
+- 从一个状态拖动转换句柄到另一个状态。
+- 选择一个转换，从右侧工具菜单打开转换 <Info size={18} /> **详细信息** 面板，然后从下拉菜单中选择新的源或目标状态。
 
-### Delayed (after) transitions
+### 延迟（after）转换
 
-**Delayed transitions** are transitions that only happen after a set amount of time. If another event occurs before the end of the timer, the transition doesn’t complete. [Read more about delayed transitions](delayed-transitions.mdx).
+**延迟转换** 是在设定的时间之后才会发生的转换。如果在计时器结束前发生了另一个事件，转换不会完成。阅读更多关于延迟转换的信息。
 
-In Stately’s editor, delayed transitions are labeled “after.” Delayed transitions have a default time interval of 500ms (0.5 seconds).
+在 Stately 的编辑器中，延迟转换标记为“after”。延迟转换的默认时间间隔为500毫秒（0.5秒）。
 
-To make a transition into a delayed transition:
+将转换变为延迟转换：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition, and from **Event type**, choose **After**.
-- Select an event, open the transition <Info size={18} /> **Details** panel from the right tool menu, and choose **After** from the **Trigger** dropdown menus.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个转换，然后从 **事件类型** 中选择 **After**。
+- 选择一个事件，从右侧工具菜单打开转换 <Info size={18} /> **详细信息** 面板，然后从 **触发器** 下拉菜单中选择 **After**。
 
-Your delay time interval will be displayed in a human-readable format on hover. For example, 15000ms will be displayed as 15 seconds.
+悬停时，延迟时间间隔将以人类可读的格式显示。例如，15000毫秒将显示为15秒。
 
-To set the delay interval:
+设置延迟时间间隔：
 
-- Use the text input on the delayed transition to specify the interval in milliseconds (ms).
-- Select the transition delayed transition, open the transition <Info size={18} /> **Details** panel from the right tool menu, and specify the interval in milliseconds (ms) in the **Delay** text input.
+- 使用延迟转换上的文本输入框指定时间间隔（以毫秒为单位）。
+- 选择延迟转换，从右侧工具菜单打开转换 <Info size={18} /> **详细信息** 面板，然后在 **延迟** 文本输入框中指定时间间隔（以毫秒为单位）。
 
-To make a delayed transition into a regular transition, use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition, and from **Event type**, choose **Event**.
+将延迟转换变为普通转换，使用 <MoreHorizontal size={18} /> 三点菜单或*右键单击*一个转换，然后从 **事件类型** 中选择 **事件**。
 
-### Eventless (always) transitions
+### 无事件（always）转换
 
-**Eventless transitions** are transitions that are *always* taken when the transition is enabled. In Stately’s editor, delayed transitions are labeled “always.” [Read more about eventless transitions](eventless-transitions.mdx).
+**无事件转换** 是指在转换启用时 *总是* 发生的转换。在 Stately 的编辑器中，延迟转换被标记为“always”。[阅读更多关于无事件转换的信息](eventless-transitions.mdx)。
 
-To make a transition into an eventless transition:
+将转换变为无事件转换的方法：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition, and from **Event type**, choose **Always**.
-- Select an event, open the transition <Info size={18} /> **Details** panel from the right tool menu, and choose **Always** from the **Trigger** dropdown menus.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 转换，然后从 **事件类型** 中选择 **Always**。
+- 选择一个事件，打开右侧工具菜单中的转换 <Info size={18} /> **详细信息** 面板，然后从 **触发器** 下拉菜单中选择 **Always**。
 
-To make an eventless transition into a regular transition, use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition, and from **Event type**, choose **Event**.
+将无事件转换变为常规转换的方法，使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 转换，然后从 **事件类型** 中选择 **Event**。
 
-### State done event
+### 状态完成事件
 
-Use a state done event to transition from a parent state when its final child state is reached. [Read more about state done events](state-done-events.mdx).
+使用状态完成事件在其最终子状态到达时从父状态进行转换。[阅读更多关于状态完成事件的信息](state-done-events.mdx)。
 
-To turn an event into a state done event:
+将事件变为状态完成事件的方法：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* an event, and from **Event type**, choose **State Done event**.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 事件，然后从 **事件类型** 中选择 **State Done event**。
 
-To make a state done event into a regular transition, use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition, and from **Event type**, choose **Event**.
+将状态完成事件变为常规转换的方法，使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 转换，然后从 **事件类型** 中选择 **Event**。
 
-### Self-transitions
+### 自转换
 
-A **self-transition** is when a state transitions back to itself, and is useful for changing context and/or executing actions without changing the finite state. You can also use self-transitions to restart a state. [Read more about self-transitions](/docs/transitions/#self-transitions).
+**自转换** 是指状态转换回自身，这对于更改上下文和/或执行操作而不更改有限状态非常有用。您还可以使用自转换重新启动状态。[阅读更多关于自转换的信息](/docs/transitions/#self-transitions)。
 
-To create a self-transition:
+创建自转换的方法：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* an existing event, and choose **Make self transition**. The transition will be connected back to the source state.
-- Select an existing event, open the transition <Info size={18} /> **Details** panel from the right tool menu, and choose the same state from the source and target dropdown menus.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 现有事件，然后选择 **Make self transition**。转换将连接回源状态。
+- 选择一个现有事件，打开右侧工具菜单中的转换 <Info size={18} /> **详细信息** 面板，然后从源和目标下拉菜单中选择相同的状态。
 
-## Add guards
+## 添加守卫
 
-A **guarded transition** is a transition that is only enabled if its condition is evaluated to be `true`. [Read more about guarded transitions](guards.mdx).
+**守卫转换** 是指只有在其条件评估为 `true` 时才启用的转换。[阅读更多关于守卫转换的信息](guards.mdx)。
 
-In Stately’s editor, guards are numbered in the order they are checked and labeled with “if” or “else if” along with their condition. Multiple guards on the same events are connected with a dotted line.
+在 Stately 的编辑器中，守卫按检查顺序编号，并标有“if”或“else if”以及其条件。多个守卫在同一事件上通过虚线连接。
 
-To add a guard:
+添加守卫的方法：
 
-- Select a transition and use the <Plus size={18} /> **Add guard** to add a new guard to the transition. Use the text input to add the guard’s condition.
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* a transition and use **Add guard** to add a guard to the transition. Use the text input to add the guard’s condition.
-- Select an existing transition, open the transition <Info size={18} /> **Details** panel from the right tool menu, and enter the guard’s condition into the **Guard** text input.
+- 选择一个转换并使用 <Plus size={18} /> **添加守卫** 来为转换添加新的守卫。使用文本输入框添加守卫的条件。
+- 使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 转换并使用 **添加守卫** 为转换添加守卫。使用文本输入框添加守卫的条件。
+- 选择一个现有转换，打开右侧工具菜单中的转换 <Info size={18} /> **详细信息** 面板，然后在 **守卫** 文本输入框中输入守卫的条件。
 
-To reorder guards:
+重新排序守卫的方法：
 
-- Use the <MoreHorizontal size={18} /> triple dot menu or *right-click* the guarded transition, and from the **Reorder guards** menu, choose **Move up** or **Move down**.
+- 使用 <MoreHorizontal size={18} /> 三点菜单或 *右键单击* 守卫转换，然后从 **重新排序守卫** 菜单中选择 **上移** 或 **下移**。
 
-To delete a guard, remove its condition from the text input.
+删除守卫的方法，从文本输入框中删除其条件。
 
-You can add implementation code to your guards from the <Code size={18}/> **[Sources](sources.mdx)** panel.
+您可以从 <Code size={18}/> **[Sources](sources.mdx)** 面板中为您的守卫添加实现代码。

@@ -1,53 +1,53 @@
 ---
-title: Generate with AI
+title: 使用 AI 生成
 ---
 
-**Generate with AI** is an experimental feature that helps you auto-create machines from text descriptions. You can generate a flow for a new machine or use the flow description to describe how you want to modify your current flow.
+**使用 AI 生成** 是一个实验性功能，可以帮助你从文本描述中自动创建机器。你可以为新机器生成一个流程，或者使用流程描述来描述你想要如何修改当前流程。
 
 :::tip
 
-Community users can try generate flow with a limited number of generations each month. [Upgrade your existing plan](https://stately.ai/registry/billing) to get many more generations.
+社区用户每月可以尝试有限次数的生成流程。[升级你的现有计划](https://stately.ai/registry/billing) 以获得更多的生成次数。
 
 :::
 
 :::studio
 
-**Generate with AI** is a premium feature of Stately Studio. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+**使用 AI 生成** 是 Stately Studio 的高级功能。你可以通过免费试用来尝试 Stately Studio 的高级计划。[查看我们的专业计划功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx) 或 [升级你的现有计划](https://stately.ai/registry/billing)。
 
 :::
 
-You have a limited number of generations available to use each month. The number of available generations is reset at the beginning of each calendar month.
+你每月可以使用有限次数的生成。可用的生成次数在每月初重置。
 
-There are many reasons you might want to generate your flows, including:
+你可能想要生成流程的原因有很多，包括：
 
-- You have a complex machine in mind and want to get started quickly
-- You want an example of a state machine for a particular flow
-- You’re new and want to get an idea of how you can model state machines
+- 你有一个复杂的机器想法，想要快速开始
+- 你想要一个特定流程的状态机示例
+- 你是新手，想要了解如何建模状态机
 
 <YouTube id="wjZE39wCZXo" />
 
-## Generate a new flow
+## 生成新流程
 
-Generating a new flow will overwrite your current machine with an all-new flow created from your text description.
+生成新流程将用从你的文本描述中创建的全新流程覆盖你当前的机器。
 
-1. Choose <Sparkles size={18} /> **Generate with AI** when creating a new machine or use the <Sparkles size={18} /> sparkles icon button in the canvas tools to open the generate flow dialog.
-2. Enter a text description of the flow you want to generate in as much detail as possible, and use the **Generate** button to generate your flow.
+1. 在创建新机器时选择 <Sparkles size={18} /> **使用 AI 生成** 或使用画布工具中的 <Sparkles size={18} /> 闪光图标按钮打开生成流程对话框。
+2. 输入你想要生成的流程的详细文本描述，并使用 **生成** 按钮生成你的流程。
 
-When you generate an all-new flow, only your prompt text is sent to OpenAI.
+当你生成全新流程时，只有你的提示文本会发送到 OpenAI。
 
-## Generate from current flow
+## 从当前流程生成
 
-1. Use the <Sparkles size={18} /> sparkles icon button in the canvas tools to open the generate flow dialog.
-2. Ensure **Generate from current flow** is selected to modify your current machine.
-3. Enter a text description of the flow you want to generate in as much detail as possible, and use the **Generate** button to generate your flow.
+1. 使用画布工具中的 <Sparkles size={18} /> 闪光图标按钮打开生成流程对话框。
+2. 确保选择了 **从当前流程生成** 以修改你的当前机器。
+3. 输入你想要生成的流程的详细文本描述，并使用 **生成** 按钮生成你的流程。
 
-When you use **Generate from current flow**, we share your machine definition with OpenAI to help build the response.
+当你使用 **从当前流程生成** 时，我们会与 OpenAI 共享你的机器定义以帮助生成响应。
 
-## View history
+## 查看历史记录
 
-You can view a history of text descriptions used to generate flows for the current machine. Use the **View history** button inside the **Generate flow** dialog to find your **Prompt history**.
+你可以查看用于生成当前机器流程的文本描述历史记录。使用 **生成流程** 对话框中的 **查看历史记录** 按钮查找你的 **提示历史记录**。
 
-- Use **Open flow** to preview the [version](versions.mdx) of the machine generated from the selected prompt.
-- Use **Copy to prompt** to copy the selected prompt into the text description area of the **Generate flow** dialog.
+- 使用 **打开流程** 预览从所选提示生成的[版本](versions.mdx)。
+- 使用 **复制到提示** 将所选提示复制到 **生成流程** 对话框的文本描述区域。
 
-A new [version](versions.mdx) is auto-saved every time you generate a flow. Use the <History size={18} /> **Versions** panel and switch the **Show auto-saved versions** toggle on to browse auto-saved versions of your current machine.
+每次生成流程时都会自动保存一个新[版本](versions.mdx)。使用 <History size={18} /> **版本** 面板并打开 **显示自动保存的版本** 切换开关以浏览当前机器的自动保存版本。

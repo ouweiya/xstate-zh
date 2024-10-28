@@ -1,87 +1,87 @@
 ---
-title: Glossary
+title: 术语表
 ---
 
-This glossary is an alphabetical guide to the most common terms in statecharts and state machines.
+本术语表是状态图和状态机中最常见术语的字母顺序指南。
 
 :::tip
 
-Looking for more detailed information on these concepts? [Read the introduction to state machines and statecharts](state-machines-and-statecharts.mdx).
+想了解这些概念的更多详细信息？[阅读状态机和状态图的介绍](state-machines-and-statecharts.mdx)。
 
 :::
 
-## Actions
+## 动作
 
-An [action](actions.mdx) is an effect that is executed during a state transition. Actions are “fire-and-forget effects”; once the machine has fired the action, it moves on and forgets the action.
+[动作](actions.mdx) 是在状态转换期间执行的效果。动作是“即发即弃的效果”；一旦机器触发了动作，它就会继续前进并忘记该动作。
 
-## Actors
+## 执行者
 
-When you run a state machine, it becomes an [actor](actors.mdx), which is a running process that can receive events, send events, and change its behavior based on the events it receives, which can cause effects outside of the actor.
+当你运行一个状态机时，它会变成一个[执行者](actors.mdx)，这是一个可以接收事件、发送事件并根据接收到的事件改变其行为的运行过程，这可能会导致执行者之外的效果。
 
-## After transitions
+## 延迟转换
 
-See [delayed transitions](/#delayed-transitions).
+参见[延迟转换](/#delayed-transitions)。
 
-## Always transitions
+## 无事件转换
 
-See [eventless transitions](/#eventless-transitions).
+参见[无事件转换](/#eventless-transitions)。
 
-## Compound states
+## 复合状态
 
-See [parent and child states](/#parent-and-child-states).
+参见[父状态和子状态](/#parent-and-child-states)。
 
-## Context
+## 上下文
 
-[Context](context.mdx) is the place that contextual data is stored in a state machine actor.
+[上下文](context.mdx) 是存储在状态机执行者中的上下文数据的位置。
 
-## Delayed transitions
+## 延迟转换
 
-[Delayed transitions](delayed-transitions.mdx) are transitions that only happen after a specified interval of time. If another event happens before the end of the timer, the transition doesn’t complete. Delayed transitions are labeled “after” and often referred to as “after” transitions.
+[延迟转换](delayed-transitions.mdx) 是仅在指定时间间隔后发生的转换。如果在计时器结束前发生了另一个事件，则转换不会完成。延迟转换标记为“after”，通常称为“after”转换。
 
-## Eventless transitions
+## 无事件转换
 
-[Eventless transitions](eventless-transitions.mdx) are transitions without events. These transitions are *always* taken after any transition in their state is enabled. No event is necessary to trigger the transition. Eventless transitions are labeled “always” and often referred to as “always” transitions.
+[无事件转换](eventless-transitions.mdx) 是没有事件的转换。这些转换在其状态中的任何转换启用后*总是*发生。不需要事件来触发转换。无事件转换标记为“always”，通常称为“always”转换。
 
-## Final state
+## 终态
 
-When a machine reaches the [final state](final-states.mdx), it can no longer receive any events, and anything running inside it is canceled and cleaned up. A machine can have multiple final states or no final states.
+当机器达到[终态](final-states.mdx)时，它不能再接收任何事件，内部运行的任何东西都会被取消和清理。机器可以有多个终态或没有终态。
 
-## Guards
+## 守卫
 
-A [guard](guards.mdx) is a condition that the machine checks when it goes through an event. If the condition is true, the machine follows the transition to the next state. If the condition is false, the machine follows the rest of the conditions to the next state. Any transition can be a guarded transition.
+[守卫](guards.mdx) 是机器在经历事件时检查的条件。如果条件为真，机器会遵循转换到下一个状态。如果条件为假，机器会遵循其余的条件到下一个状态。任何转换都可以是守卫转换。
 
-## History state
+## 历史状态
 
-A [history state](history-states.mdx) returns the parent state to its most recently active child state.
+[历史状态](history-states.mdx) 将父状态返回到其最近活动的子状态。
 
-## Initial state
+## 初始状态
 
-When a state machine starts, it enters the [**initial state**](initial-states.mdx) first. A machine can only have one top-level initial state.
+当状态机启动时，它首先进入[**初始状态**](initial-states.mdx)。机器只能有一个顶级初始状态。
 
-## Invoked actors
+## 调用的执行者
 
-An [invoked actor](actors.mdx) is an actor that can execute its own actions and communicate with the machine. These invoked actors are started in a state and stopped when the state is exited.
+[调用的执行者](actors.mdx) 是可以执行自己的动作并与机器通信的执行者。这些调用的执行者在一个状态中启动，并在状态退出时停止。
 
-## Parallel states
+## 并行状态
 
-A [parallel state](parallel-states.mdx) is a state separated into multiple regions of child states, where each region is active simultaneously.
+[并行状态](parallel-states.mdx) 是分为多个子状态区域的状态，每个区域同时处于活动状态。
 
-## Parent and child states
+## 父状态和子状态
 
-States can contain more states, also known as [child states](parent-states.mdx). These child states are only active when the parent state is active. Child states are nested inside their parent states. Parent states are also known as compound states.
+状态可以包含更多状态，也称为[子状态](parent-states.mdx)。这些子状态仅在父状态处于活动状态时才处于活动状态。子状态嵌套在其父状态内。父状态也称为复合状态。
 
-## States
+## 状态
 
-A [state](states.mdx) describes the status of the machine. A state can be as simple as _active_ and _inactive_. These states are finite; the machine can only move through the pre-defined states. A state machine can only be in one state at a time.
+[状态](states.mdx) 描述了机器的状态。状态可以简单到_活动_和_非活动_。这些状态是有限的；机器只能通过预定义的状态移动。状态机一次只能处于一个状态。
 
-## Statecharts
+## 状态图
 
-[Statecharts](state-machines-and-statecharts.mdx) are a visual extension to state machines enabling you to model more complex logic, including hierarchy, concurrency, and communication.
+[状态图](state-machines-and-statecharts.mdx) 是状态机的可视化扩展，使你能够建模更复杂的逻辑，包括层次结构、并发和通信。
 
-## State machines
+## 状态机
 
-A [state machine](state-machines-and-statecharts.mdx) is a model that describes how the state of a process transitions to another state when an event occurs. State machines make building reliable software easier because they prevent impossible states and undesired transitions. When you run a state machine, it becomes an [actor](actors.mdx).
+[状态机](state-machines-and-statecharts.mdx) 是一种模型，描述了当事件发生时过程的状态如何转换到另一个状态。状态机使构建可靠的软件变得更容易，因为它们防止了不可能的状态和不希望的转换。当你运行一个状态机时，它会变成一个[执行者](actors.mdx)。
 
-## Transitions and events
+## 转换和事件
 
-A machine moves from state to state through [transitions](transitions.mdx). Transitions are caused by events; when an event happens, the machine transitions to the next state. Transitions are “deterministic”; each combination of state and event always points to the same next state.
+机器通过[转换](transitions.mdx) 从一个状态移动到另一个状态。转换是由事件引起的；当事件发生时，机器转换到下一个状态。转换是“确定性的”；每个状态和事件的组合总是指向相同的下一个状态。

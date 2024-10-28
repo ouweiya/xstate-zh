@@ -1,48 +1,48 @@
 ---
-title: Machine restore
+title: 机器恢复
 ---
 
-The Studio is built using a server-client architecture.
-Whenever you edit a machine, we will persist these changes to our database, ready for you to use when you return - on any device with an internet connection.
+Studio 使用服务器-客户端架构构建。
+每当您编辑机器时，我们会将这些更改持久化到我们的数据库中，随时供您在任何有互联网连接的设备上使用。
 
-![Simplified drawing of the Stately Studio architecture described above.](/studio_architecture_challenges.png)
+![上图为 Stately Studio 架构的简化图。](/studio_architecture_challenges.png)
 
-But what happens with your edits if your internet connection fails or the Stately backend is having problems?
-This is where machine restore comes into play.
+但是，如果您的互联网连接失败或 Stately 后端出现问题，您的编辑会发生什么？
+这就是机器恢复发挥作用的地方。
 
-### Example
+### 示例
 
-In our example, Santa’s delivery machine has a problem; the Christmas-time state is unreachable.
-So we do as any good Santa’s helper would; we create an event to get to Christmas.
-But alas, we’re offline, so our changes could get lost.
-Before this new feature, there was a chance you wouldn’t notice you’d gone offline or that the server returned an error.
-But as you can see in the GIF below, we’ve introduced new error banners to show you what’s happening.
+在我们的示例中，圣诞老人的送货机器出现了问题；圣诞节状态无法到达。
+所以我们像任何一个好的圣诞老人助手一样；我们创建一个事件来进入圣诞节。
+但遗憾的是，我们处于离线状态，因此我们的更改可能会丢失。
+在这个新功能之前，您可能不会注意到您已经离线或服务器返回了错误。
+但正如您在下面的 GIF 中所看到的，我们引入了新的错误横幅来显示发生了什么。
 
-If you lose connectivity, we’ll show the error banner saying, “You are offline, so we can’t save your machine; we will try our best to store a local copy you can restore later.”
-So feel free to keep editing; you can restore your work the next time you visit this machine on the same device.
+如果您失去连接，我们会显示错误横幅，提示“您处于离线状态，因此我们无法保存您的机器；我们将尽力存储一个本地副本，您可以稍后恢复。”
+所以请随意继续编辑；您可以在下次访问此机器时在同一设备上恢复您的工作。
 
-![Santa’s delivery state machine shows an error while trying to edit offline.](/recovery_offline_error.gif)
+![圣诞老人的送货状态机在尝试离线编辑时显示错误。](/recovery_offline_error.gif)
 
-### How to restore
+### 如何恢复
 
-We try our best to detect any failure or missing connectivity when you edit your machines.
-If you hit any error state, we will inform you and start saving your work locally on your device.
-So next time you visit the Studio from that same device, we will compare what we saved with the machine from the server.
-And if they are different, we will give you the option to restore the safe copy to a new machine.
+我们尽力在您编辑机器时检测任何故障或连接丢失。
+如果您遇到任何错误状态，我们会通知您并开始在您的设备上本地保存您的工作。
+因此，下次您从同一设备访问 Studio 时，我们将比较我们保存的内容与服务器上的机器。
+如果它们不同，我们将为您提供将安全副本恢复到新机器的选项。
 
-When we detect that you have local changes on your device, we’ll present a modal titled “Restore offline machine?”.
-Now you have two options:
+当我们检测到您的设备上有本地更改时，我们会显示一个标题为“恢复离线机器？”的模态窗口。
+现在您有两个选项：
 
-1. **“No, delete the offline copy”** - This option will ignore, and delete, the changes found on your device and not show the modal again.
-2. **“Yes, restore into a new machine”** - This option will create a new machine in your current project with the changes.
+1. **“不，删除离线副本”** - 此选项将忽略并删除在您的设备上找到的更改，并且不再显示模态窗口。
+2. **“是的，恢复到新机器”** - 此选项将在您当前的项目中创建一个包含更改的新机器。
 
-You can see this in action using our example from above.
-When I return to the Studio, I can restore the changes I did while offline. Christmas is saved.
+您可以使用上面的示例看到这一点。
+当我返回 Studio 时，我可以恢复我在离线时所做的更改。圣诞节得救了。
 
-![Stately Studio shows an option to restore changes made to a machine while the user was offline.](/recovery_restore_machine.gif)
+![Stately Studio 显示一个选项，用于恢复用户在离线时对机器所做的更改。](/recovery_restore_machine.gif)
 
 :::info
 
-Read more in [our blog post introducing machine restore](https://stately.ai/blog/2022-12-22-machine-recovery).
+阅读更多内容，请参阅[我们的博客文章，介绍机器恢复](https://stately.ai/blog/2022-12-22-machine-recovery)。
 
 :::

@@ -1,80 +1,80 @@
 ---
-title: Canvas controls
+title: 画布控件
 ---
 
-We’ve recently added a canvas tools panel to help you with common tasks while designing and simulating state machines.
+我们最近添加了一个画布工具面板，以帮助您在设计和模拟状态机时完成常见任务。
 
-- <Sparkles size={18} /> [Generate with AI](generate-flow.mdx).
-- <MousePointer2 size={18}/> Pointer mode, for dragging and selecting items on the canvas.
-- <Hand size={18}/> Hand mode, for panning around the canvas.
-- <PlusSquare size={18}/> Quick add menu, for adding a [state](editor-states-and-transitions.mdx) or a [note](annotations.mdx).
+- <Sparkles size={18} /> [使用 AI 生成](generate-flow.mdx)。
+- <MousePointer2 size={18}/> 指针模式，用于在画布上拖动和选择项目。
+- <Hand size={18}/> 手模式，用于在画布上平移。
+- <PlusSquare size={18}/> 快速添加菜单，用于添加[状态](editor-states-and-transitions.mdx)或[注释](annotations.mdx)。
 
 <p style={{ maxWidth: '300px' }}>
   <ThemedImage
-    alt="Canvas tools in Stately Studio, including a sparkles AI icon, pointer icon, hand icon, and plus icon which is focused and has an open menu for adding a state or a note."
+    alt="Stately Studio 中的画布工具，包括一个闪光 AI 图标、指针图标、手图标和一个聚焦的加号图标，打开了添加状态或注释的菜单。"
     sources={{
-      light: '/canvas-view-controls/canvas-tools.png',
-      dark: '/canvas-view-controls/canvas-tools-dm.png',
+      light: '/xstate-zh/canvas-view-controls/canvas-tools.png',
+      dark: '/xstate-zh/canvas-view-controls/canvas-tools-dm.png',
     }}
   />
 </p>
 
-## View controls
+## 视图控件
 
-You spend a lot of time on the canvas while designing and simulating state machines, so we’ve added view controls to help you navigate around your machines.
+在设计和模拟状态机时，您会在画布上花费大量时间，因此我们添加了视图控件来帮助您导航您的机器。
 
-## Show/hide UI (user interface)
+## 显示/隐藏 UI（用户界面）
 
-You can show and hide most of the editor’s user interface to help you focus on your machine.
+您可以显示和隐藏大多数编辑器的用户界面，以帮助您专注于您的机器。
 
-1. Open the editor menu from the Stately icon in the top left of Stately Studio.
-2. From the **View** submenu, toggle <Check size={18} /> **Show/hide UI** to show and hide the UI.
+1. 从 Stately Studio 左上角的 Stately 图标打开编辑器菜单。
+2. 从 **视图** 子菜单中，切换 <Check size={18} /> **显示/隐藏 UI** 以显示和隐藏 UI。
 
-You can also use the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>.</kbd> keyboard shortcut to show and hide the UI.
+您还可以使用 <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>.</kbd> 键盘快捷键来显示和隐藏 UI。
 
 :::tip
 
-We’ve got [keyboard shortcuts](keyboard-shortcuts.mdx) for many of the view controls.
+我们为许多视图控件提供了[键盘快捷键](keyboard-shortcuts.mdx)。
 
 :::
 
-Below is a preview of a machine _with_ the UI hidden.
+下面是隐藏 UI 的机器预览。
 
 <p>
   <ThemedImage
-    alt="Starter machine in Stately Studio. The only panel visible is the top left corner with the Stately logo and the machine name."
+    alt="Stately Studio 中的初始机器。唯一可见的面板是左上角的 Stately 标志和机器名称。"
     sources={{
-      light: '/canvas-view-controls/hide-ui.png',
-      dark: '/canvas-view-controls/hide-ui-dm.png',
+      light: '/xstate-zh/canvas-view-controls/hide-ui.png',
+      dark: '/xstate-zh/canvas-view-controls/hide-ui-dm.png',
     }}
   />
 </p>
 
-Below is a preview of a machine _without_ the UI hidden.
+下面是未隐藏 UI 的机器预览。
 
 <p>
   <ThemedImage
-    alt="Starter machine in Stately Studio. All the panels are visible, including the top bar, view options, left sidebar, and right tool menu."
+    alt="Stately Studio 中的初始机器。所有面板都可见，包括顶部栏、视图选项、左侧边栏和右侧工具菜单。"
     sources={{
-      light: '/canvas-view-controls/show-ui.png',
-      dark: '/canvas-view-controls/show-ui-dm.png',
+      light: '/xstate-zh/canvas-view-controls/show-ui.png',
+      dark: '/xstate-zh/canvas-view-controls/show-ui-dm.png',
     }}
   />
 </p>
 
-## View controls
+## 视图控件
 
-- <Undo size={18}/> Undo
-- <Redo size={18}/> Redo
-- <Scan size={18}/> Center in view: Center currently selected item or entire machine in view.
-- Zoom in %: Current zoom level. Press to open the zoom menu.
+- <Undo size={18}/> 撤销
+- <Redo size={18}/> 重做
+- <Scan size={18}/> 居中视图：将当前选定的项目或整个机器居中显示。
+- 缩放 %：当前缩放级别。按下以打开缩放菜单。
 
 :::studio
 
-[Find out more about light mode, dark mode, and translucency in user preferences](user-preferences.mdx).
+[了解更多关于用户偏好中的浅色模式、深色模式和透明度的信息](user-preferences.mdx)。
 
 :::
 
-## Zoom to selection
+## 缩放到选定内容
 
-You can use **Zoom to selection** from right-click on any transition or state on the canvas or in the <ListTree size={18} /> **Structure** panel.
+您可以在画布上或 <ListTree size={18} /> **结构** 面板中右键单击任何转换或状态，使用 **缩放到选定内容**。

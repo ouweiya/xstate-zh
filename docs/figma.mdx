@@ -1,53 +1,55 @@
 ---
-title: Embed Figma
+title: 嵌入 Figma
 ---
 
-You can embed Figma frames in your states to keep your design and code in sync. Embedded Figma frames will stay up to date with the latest changes in your Figma files. Figma frames are a special type of [asset](assets.mdx).
+您可以在状态中嵌入 Figma 框架，以保持设计和代码同步。嵌入的 Figma 框架将与 Figma 文件中的最新更改保持同步。Figma 框架是一种特殊类型的[资产](assets.mdx)。
 
-[In Nick’s blog post, read about how you can improve your team workflows with Stately and Figma](/blog/2024-01-24-embed-figma/).
+[在 Nick 的博客文章中，了解如何通过 Stately 和 Figma 改善团队工作流程](/blog/2024-01-24-embed-figma/)。
 
 :::studio
 
-Embedding Figma frames is a premium feature of Stately Studio. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+嵌入 Figma 框架是 Stately Studio 的高级功能。您可以通过免费试用来体验 Stately Studio 的高级计划。[查看我们的 Pro 计划](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx)或[升级您的现有计划](https://stately.ai/registry/billing)。
 
 :::
 
-<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=07a2b829-fc69-487c-af11-d6bb56c282a5" title="States with Figma assets"/>
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=07a2b829-fc69-487c-af11-d6bb56c282a5" title="带有 Figma 资产的状态"/>
 
-## How to embed Figma frames
+## 如何嵌入 Figma 框架
 
-1. [Generate a Figma personal access token and add it to your user Settings in Stately Studio](#figma-personal-access-token).
-2. In Figma, right-click the frame you want to embed and select **Copy/Paste as** > **Copy link**.
-3. Use the <Plus size={18} /> plus menu and <Paperclip size={18}/> **Embed Figma** on any selected state.
-4. Paste the Figma link into the **Figma URL** field and click **Add Figma Asset**.
+1. [生成 Figma 个人访问令牌并将其添加到 Stately Studio 的用户设置中](#figma-personal-access-token)。
+2. 在 Figma 中，右键单击要嵌入的框架，然后选择 **复制/粘贴为** > **复制链接**。
+3. 使用 <Plus size={18} /> 加号菜单和 <Paperclip size={18}/> **嵌入 Figma** 在任何选定的状态上。
+4. 将 Figma 链接粘贴到 **Figma URL** 字段中，然后单击 **添加 Figma 资产**。
 
-As Figma frames are a special type of [asset](assets.mdx), you can [change the display size of your Figma frame like any other asset](/docs/assets/#asset-sizes) and [change the order of your state’s assets](/docs/assets/#order-of-assets) to choose which asset is displayed on the state.
+由于 Figma 框架是一种特殊类型的[资产](assets.mdx)，您可以[像其他资产一样更改 Figma 框架的显示大小](/docs/assets/#asset-sizes)和[更改状态资产的顺序](/docs/assets/#order-of-assets)以选择在状态上显示的资产。
 
-### Syncing Figma frames
+### 同步 Figma 框架
 
-Your embedded Figma frame will stay up to date with the latest changes in your Figma file unless:
-- [you lock your machine](#locked-machines-with-figma-frames)
-- [you revoke your Figma personal access token](#revoking-your-figma-personal-access-token)
-- [your Figma personal access token expires](#revoking-your-figma-personal-access-token)
+除非：
+- [您锁定了您的机器](#locked-machines-with-figma-frames)
+- [您撤销了您的 Figma 个人访问令牌](#revoking-your-figma-personal-access-token)
+- [您的 Figma 个人访问令牌过期](#revoking-your-figma-personal-access-token)
 
-Refresh the page in the Stately Studio to see the latest changes from your embedded Figma frame.
+否则嵌入的 Figma 框架将与 Figma 文件中的最新更改保持同步。
 
-## Locked machines with Figma frames
+在 Stately Studio 中刷新页面以查看嵌入的 Figma 框架的最新更改。
 
-When your machine is [locked](lock-machines.mdx), updates to your Figma frames will not be synced to your machine. You can unlock your machine to sync your Figma frames again.
+## 带有 Figma 框架的锁定机器
 
-## Figma personal access token
+当您的机器[被锁定](lock-machines.mdx)时，Figma 框架的更新将不会同步到您的机器。您可以解锁机器以再次同步 Figma 框架。
 
-You need a Figma [personal access token](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens) to embed Figma frames. You can create a personal access token in [your Figma account settings](https://stately.ai/registry/user/my-settings?tab=Figma) under **Personal access tokens**.
+## Figma 个人访问令牌
 
-To ensure Embed Figma works correctly, you must grant the following permissions to your personal access token:
+您需要一个 Figma [个人访问令牌](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens)来嵌入 Figma 框架。您可以在[您的 Figma 账户设置](https://stately.ai/registry/user/my-settings?tab=Figma)中的**个人访问令牌**下创建个人访问令牌。
 
-- **File content**: Allow **Read-only** access so Stately Studio can sync your embedded Figma frames to your machines.
+为了确保嵌入 Figma 正常工作，您必须为个人访问令牌授予以下权限：
 
-You can update your Figma personal access token from your user <Settings size={18}/> **Settings** in Stately Studio anytime. 
+- **文件内容**：允许**只读**访问，以便 Stately Studio 可以将嵌入的 Figma 框架同步到您的机器。
 
-### Revoking your Figma personal access token
+您可以随时从 Stately Studio 的用户 <Settings size={18}/> **设置**中更新您的 Figma 个人访问令牌。
 
-If you need to revoke your Figma personal access token, you can do so from your Figma account settings. 
+### 撤销您的 Figma 个人访问令牌
 
-When you revoke your Figma personal access token or your token expires, Stately Studio will no longer be able to sync your embedded Figma frames to your machines. The last synced version of your embedded Figma frames will remain in your machines for 14 days. After 14 days, Figma will entirely revoke access to the frame.
+如果您需要撤销您的 Figma 个人访问令牌，可以在 Figma 账户设置中进行。
+
+当您撤销 Figma 个人访问令牌或令牌过期时，Stately Studio 将无法再将嵌入的 Figma 框架同步到您的机器。嵌入的 Figma 框架的最后同步版本将在您的机器中保留 14 天。14 天后，Figma 将完全撤销对框架的访问。

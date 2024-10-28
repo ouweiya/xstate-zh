@@ -4,25 +4,25 @@ title: '@xstate/test'
 
 :::warningxstate
 
-The latest version of the model-based testing utilities (prev. `@xstate/test`) are now part of the latest `@xstate/graph` package.
+最新版本的基于模型的测试工具（以前的 `@xstate/test`）现在是最新的 `@xstate/graph` 包的一部分。
 
-Documentation for `@xstate/graph` (including the testing utilities) is coming soon; the documentation below is for `@xstate/test@beta`.
+`@xstate/graph` 的文档（包括测试工具）即将发布；以下文档适用于 `@xstate/test@beta`。
 
 :::
 
-The [@xstate/test package](https://github.com/statelyai/xstate/tree/main/packages/xstate-test) contains utilities for facilitating [model-based testing](https://en.wikipedia.org/wiki/Model-based_testing) for any software.
+[@xstate/test 包](https://github.com/statelyai/xstate/tree/main/packages/xstate-test) 包含了用于促进任何软件的[基于模型的测试](https://en.wikipedia.org/wiki/Model-based_testing)的工具。
 
-**Watch the talk**: [Write Fewer Tests! From Automation to Autogeneration](https://slides.com/davidkhourshid/mbt) at React Rally 2019 ([🎥 Video](https://www.youtube.com/watch?v=tpNmPKjPSFQ))
+**观看演讲**：[写更少的测试！从自动化到自动生成](https://slides.com/davidkhourshid/mbt) 在 React Rally 2019 ([🎥 视频](https://www.youtube.com/watch?v=tpNmPKjPSFQ))
 
-## Quick start
+## 快速开始
 
-1. Install `xstate` and `@xstate/test`:
+1. 安装 `xstate` 和 `@xstate/test`：
 
 ```bash
 npm install xstate @xstate/test
 ```
 
-2. Create the machine that will be used to model the system under test (SUT):
+2. 创建将用于建模被测系统（SUT）的状态机：
 
 ```js
 import { createMachine } from 'xstate';
@@ -45,7 +45,7 @@ const toggleMachine = createMachine({
 });
 ```
 
-3. Add assertions for each state in the machine (in this example, using [Puppeteer](https://github.com/GoogleChrome/puppeteer)):
+3. 为状态机中的每个状态添加断言（在此示例中，使用 [Puppeteer](https://github.com/GoogleChrome/puppeteer)）：
 
 ```js
 // ...
@@ -78,7 +78,7 @@ const toggleMachine = createMachine({
 });
 ```
 
-4. Create the model:
+4. 创建模型：
 
 ```js
 import { createMachine } from 'xstate';
@@ -95,7 +95,7 @@ const toggleModel = createModel(toggleMachine).withEvents({
 });
 ```
 
-5. Create test plans and run the tests with coverage:
+5. 创建测试计划并运行覆盖率测试：
 
 ```js
 // ...
@@ -107,7 +107,7 @@ describe('toggle', () => {
     describe(plan.description, () => {
       plan.paths.forEach((path) => {
         it(path.description, async () => {
-          // do any setup, then...
+            // 进行任何设置，然后...
 
           await path.test(page);
         });
@@ -125,29 +125,29 @@ describe('toggle', () => {
 
 ### `createModel(machine, options?)`
 
-Creates an abstract testing model based on the `machine` passed in.
+基于传入的 `machine` 创建一个抽象的测试模型。
 
-| Argument   | Type             | Description                                    |
-| ---------- | ---------------- | ---------------------------------------------- |
-| `machine`  | StateMachine     | The machine used to create the abstract model. |
-| `options?` | TestModelOptions | Options to customize the abstract model        |
+| 参数       | 类型             | 描述                                    |
+| ---------- | ---------------- | --------------------------------------- |
+| `machine`  | StateMachine     | 用于创建抽象模型的状态机。              |
+| `options?` | TestModelOptions | 自定义抽象模型的选项                    |
 
-#### Returns
+#### 返回值
 
-A `TestModel` instance.
+一个 `TestModel` 实例。
 
-### Methods
+### 方法
 
 #### `model.withEvents(eventsMap)`
 
-Provides testing details for each event. Each key in `eventsMap` is an object whose keys are event types and properties describe the execution and test cases for each event:
+为每个事件提供测试细节。`eventsMap` 中的每个键都是一个对象，其键是事件类型，属性描述了每个事件的执行和测试用例：
 
-- `exec` (function): Function that executes the events. It is given two arguments:
-  - `testContext` (any): any contextual testing data
-  - `event` (EventObject): the event sent by the testing model
-- `cases?` (EventObject[]): the sample event objects for this event type that can be sent by the testing model.
+- `exec` (函数): 执行事件的函数。它有两个参数：
+  - `testContext` (任意类型): 任何上下文测试数据
+  - `event` (EventObject): 由测试模型发送的事件
+- `cases?` (EventObject[]): 该事件类型可以由测试模型发送的示例事件对象。
 
-Example:
+示例：
 
 ```js
 const toggleModel = createModel(toggleMachine).withEvents({
@@ -161,15 +161,15 @@ const toggleModel = createModel(toggleMachine).withEvents({
 
 ### `testModel.getShortestPathPlans(options?)`
 
-Returns an array of testing plans based on the shortest paths from the test model’s initial state to every other reachable state.
+返回基于从测试模型的初始状态到每个其他可达状态的最短路径的测试计划数组。
 
-#### Options
+#### 选项
 
-| Argument | Type     | Description                                                                                                    |
-| -------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `filter` | function | Takes in the `state` and returns `true` if the state should be traversed, or `false` if traversal should stop. |
+| 参数     | 类型     | 描述                                                                                                    |
+| -------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `filter` | function | 接受 `state` 并返回 `true` 如果状态应该被遍历，或者返回 `false` 如果遍历应该停止。|
 
-This is useful for preventing infinite traversals and stack overflow errors:
+这对于防止无限遍历和堆栈溢出错误非常有用：
 
 ```js
 const todosModel = createModel(todosMachine).withEvents({
@@ -177,45 +177,44 @@ const todosModel = createModel(todosMachine).withEvents({
 });
 
 const plans = todosModel.getShortestPathPlans({
-  // Tell the algorithm to limit state/event adjacency map to states
-  // that have less than 5 todos
+  // 告诉算法将状态/事件邻接图限制为拥有少于 5 个待办事项的状态
   filter: (state) => state.context.todos.length < 5,
 });
 ```
 
 ### `testModel.getSimplePathPlans(options?)`
 
-Returns an array of testing plans based on the simple paths from the test model’s initial state to every other reachable state.
+返回基于从测试模型的初始状态到每个其他可达状态的简单路径的测试计划数组。
 
-#### Options
+#### 选项
 
-| Argument | Type     | Description                                                                                                    |
-| -------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `filter` | function | Takes in the `state` and returns `true` if the state should be traversed, or `false` if traversal should stop. |
+| 参数     | 类型     | 描述                                                                                                    |
+| -------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `filter` | function | 接受 `state` 并返回 `true` 如果状态应该被遍历，或者返回 `false` 如果遍历应该停止。|
 
 ### `testModel.getPlanFromEvents(events, options)`
 
-| Argument  | Type                 | Description                                                                         |
-| --------- | -------------------- | ----------------------------------------------------------------------------------- |
-| `events`  | `EventObject[]`      | The sequence of events to create the plan                                           |
-| `options` | `{ target: string }` | An object with a `target` property that should match the target state of the events |
+| 参数     | 类型                 | 描述                                                                                                    |
+| -------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `events` | `EventObject[]`      | 用于创建计划的事件序列                                                                                  |
+| `options`| `{ target: string }` | 一个包含 `target` 属性的对象，该属性应匹配事件的目标状态                                                |
 
-Returns an array with a single testing plan with a single path generated from the `events`.
+返回一个包含单个路径的单个测试计划的数组，该路径由 `events` 生成。
 
-Throws an error if the last entered state does not match the `options.target`.
+如果最后进入的状态与 `options.target` 不匹配，则抛出错误。
 
 ### `testModel.testCoverage(options?)`
 
-Tests that all state nodes were covered (traversed) in the exected tests.
+测试在执行的测试中是否覆盖（遍历）了所有状态节点。
 
-#### Options
+#### 选项
 
-| Argument | Type     | Description                                                                               |
-| -------- | -------- | ----------------------------------------------------------------------------------------- |
-| `filter` | function | Takes in each `stateNode` and returns `true` if that state node should have been covered. |
+| 参数     | 类型     | 描述                                                                                                    |
+| -------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `filter` | function | 接受每个 `stateNode` 并返回 `true` 如果该状态节点应该被覆盖。                                           |
 
 ```js
-// Only test coverage for state nodes with a `.meta` property defined:
+// 仅测试定义了 `.meta` 属性的状态节点的覆盖率：
 
 testModel.testCoverage({
   filter: (stateNode) => !!stateNode.meta,
@@ -224,23 +223,23 @@ testModel.testCoverage({
 
 ### `testPlan.description`
 
-The string description of the testing plan, describing the goal of reaching the `testPlan.state`.
+测试计划的字符串描述，描述了达到 `testPlan.state` 的目标。
 
 ### `testPlan.paths`
 
-The testing paths to get from the test model’s initial state to every other reachable state.
+从测试模型的初始状态到每个其他可达状态的测试路径。
 
 ### `testPath.description`
 
-The string description of the testing path, describing a sequence of events that will reach the `testPath.state`.
+测试路径的字符串描述，描述了一系列将达到 `testPath.state` 的事件。
 
 ### `testPath.test(testContext)`
 
-Executes each step in `testPath.segments` by:
+通过以下步骤执行 `testPath.segments` 中的每一步：
 
-1. Verifying that the SUT is in `segment.state`
-2. Executing the event for `segment.event`
+1. 验证 SUT 处于 `segment.state`
+2. 执行 `segment.event` 的事件
 
-And finally, verifying that the SUT is in the target `testPath.state`.
+最后，验证 SUT 处于目标 `testPath.state`。
 
-NOTE: If your model has nested states, the `meta.test` method for each parent state of that nested state is also executed when verifying that the SUT is in that nested state.
+注意：如果您的模型有嵌套状态，在验证 SUT 处于该嵌套状态时，每个父状态的 `meta.test` 方法也会被执行。

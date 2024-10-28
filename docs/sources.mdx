@@ -1,27 +1,27 @@
 ---
 title: 'Sources'
-description: 'You can add source code for actors, actions, and guards from the Sources panel. Your source code will be included in your live actors, synced projects, and exported code.'
+description: '您可以从 Sources 面板添加演员、动作和守卫的源代码。您的源代码将包含在您的实时演员、同步项目和导出的代码中。'
 ---
 
-You can add source code for [actors](actors.mdx), [actions](actions.mdx), and [guards](guards.mdx) from the <Code size={18} /> **Sources** panel. Your source code will be included in your [live actors](stately-sky-getting-started.mdx), [synced projects](import-from-github.mdx), and [exported code](export-as-code.mdx) found in the <Code size={18} /> **Code** panel.
+您可以从 <Code size={18} /> **Sources** 面板添加[演员](actors.mdx)、[动作](actions.mdx)和[守卫](guards.mdx)的源代码。您的源代码将包含在您的[实时演员](stately-sky-getting-started.mdx)、[同步项目](import-from-github.mdx)和[导出的代码](export-as-code.mdx)中，这些代码可以在 <Code size={18} /> **Code** 面板中找到。
 
 :::info
 
-Sources for [delayed (after) transitions](delayed-transitions.mdx) are coming soon.
+[延迟（after）转换](delayed-transitions.mdx)的源代码即将推出。
 
 :::
 
-## Adding sources
+## 添加源代码
 
-You can add sources from the <Code size={18}/> **Sources** panel. Use the <PenSquare size={18} /> edit button alongside the action, actor, or guard on the canvas to open its source.
+您可以从 <Code size={18}/> **Sources** 面板添加源代码。使用画布上动作、演员或守卫旁边的 <PenSquare size={18} /> 编辑按钮打开其源代码。
 
-You can also open the **Sources** panel without selecting an action, actor, or guard. By default, the **Sources** panel shows all the sources in the machine, and you can also add new sources without referencing them with an action, actor, or guard. Sources currently referenced in the machine are highlighted in the **Sources** panel. Unused sources are dimmed.
+您也可以在不选择动作、演员或守卫的情况下打开 **Sources** 面板。默认情况下，**Sources** 面板显示机器中的所有源代码，您也可以添加新的源代码而无需引用动作、演员或守卫。机器中当前引用的源代码在 **Sources** 面板中会被高亮显示。未使用的源代码会被淡化显示。
 
-Each source requires a name (ID) and source code. The ID is used to reference the source code. The source code for the actor, action, or guard will be included in the generated code. Sources have distinct names, so multiple actors, actions, or guards can reference them.
+每个源代码都需要一个名称（ID）和源代码。ID 用于引用源代码。演员、动作或守卫的源代码将包含在生成的代码中。源代码具有独特的名称，因此多个演员、动作或守卫可以引用它们。
 
-### Unnamed actions, actors, and guards
+### 未命名的动作、演员和守卫
 
-When importing a machine from your codebase, unnamed actions, actors, and guards are assigned a default name based on its position in your machine config. For example, the following action:
+从代码库导入机器时，未命名的动作、演员和守卫会根据其在机器配置中的位置分配一个默认名称。例如，以下动作：
 
 ```js
 createMachine({
@@ -35,22 +35,22 @@ createMachine({
 })
 ```
 
-Would be given a default name of `inline:(machine).a.b#entry[0]`. These default names are not visible in the editor but will be used in the synced or exported code unless you give your action, actor, or guard a name. `inline:` is prepended to the name to make them more readable and easier to find in your code. After first importing your machine, we recommend you give all your actions, actors, and guards a name. Naming is a one-time step, and you can always rename them later.
+将被赋予默认名称 `inline:(machine).a.b#entry[0]`。这些默认名称在编辑器中不可见，但会在同步或导出的代码中使用，除非您为您的动作、演员或守卫命名。`inline:` 被添加到名称前，以使它们更易读和在代码中更容易找到。首次导入机器后，我们建议您为所有动作、演员和守卫命名。命名是一次性步骤，您可以随时重命名它们。
 
-## Deleting sources
+## 删除源代码
 
-You can only delete unused sources that any actors, actions, or guards do not reference. This prevents you from accidentally deleting a currently used source in your machine.
+您只能删除未被任何演员、动作或守卫引用的未使用源代码。这可以防止您意外删除机器中当前使用的源代码。
 
 :::tip
 
-You can **delete all unused sources** from the **...** menu in the top right corner of the **Sources** panel.
+您可以从 **Sources** 面板右上角的 **...** 菜单中**删除所有未使用的源代码**。
 
 :::
 
-## Source templates
+## 源代码模板
 
-Each source type has optional logic templates. You can use the template buttons to quickly add the implementation code for XState’s [logic creators](/docs/actors#actor-logic-creators), [higher-level guards](/docs/guards#higher-level-guards), and [built-in actions](/docs/actions), and the correct XState imports will be added to your code for sync or export.
+每种源代码类型都有可选的逻辑模板。您可以使用模板按钮快速添加 XState 的[逻辑创建器](/docs/actors#actor-logic-creators)、[高级守卫](/docs/guards#higher-level-guards)和[内置动作](/docs/actions)的实现代码，并且正确的 XState 导入将被添加到您的同步或导出代码中。
 
-## Formatting
+## 格式化
 
-You can format your source code with [Prettier](https://prettier.io/) by using the <TextQuote size={18} /> format button.
+您可以使用 <TextQuote size={18} /> 格式化按钮通过 [Prettier](https://prettier.io/) 格式化您的源代码。

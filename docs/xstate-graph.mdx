@@ -2,17 +2,17 @@
 title: '@xstate/graph'
 ---
 
-The [@xstate/graph package](https://github.com/statelyai/xstate/tree/main/packages/xstate-graph) contains graph algorithms and utilities for XState machines.
+[@xstate/graph 包](https://github.com/statelyai/xstate/tree/main/packages/xstate-graph) 包含用于 XState 状态机的图算法和工具。
 
-## Quick start
+## 快速开始
 
-1. Install `xstate` and `@xstate/graph`:
+1. 安装 `xstate` 和 `@xstate/graph`:
 
 ```bash
 npm install xstate @xstate/graph
 ```
 
-2. Import the graph utilities. Example:
+2. 导入图形工具。例如：
 
 ```js
 import { createMachine } from 'xstate';
@@ -26,28 +26,29 @@ const paths = getSimplePaths(machine);
 
 ### `getShortestPaths(machine, options?)`
 
-#### Arguments
+#### 参数
 
-- `machine` - the [`Machine`](https://xstate.js.org/docs/guides/machines.html) to traverse
-- `options` (optional) - [options](/#options) that customize how the algorithm will traverse the machine
+- `machine` - 要遍历的 [`Machine`](https://xstate.js.org/docs/guides/machines.html)
+- `options` (可选) - 自定义算法如何遍历状态机的 [选项](/#options)
 
-Returns the [shortest paths (Dijkstra's algorithm)](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) of a [machine](https://xstate.js.org/docs/guides/machines.html) from the initial state to every other state as a mapped object, where the:
+返回从初始状态到每个其他状态的 [最短路径 (Dijkstra 算法)](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) 的映射对象，其中：
 
-- **key** is the stringified state
-- **value** is an object with the properties:
-  - `state` - the target [`State`](https://xstate.js.org/docs/guides/states.html)
-  - `path` - the shortest path to get from the initial state to the target state
+- **键** 是字符串化的状态
+- **值** 是一个包含以下属性的对象：
+  - `state` - 目标 [`State`](https://xstate.js.org/docs/guides/states.html)
+  - `path` - 从初始状态到目标状态的最短路径
 
-The `path` is an array of segments, where each segment is an object with the properties:
+`path` 是一个段的数组，每个段是一个包含以下属性的对象：
 
-- `state` - the [`State`](https://xstate.js.org/docs/guides/states.html) of the segment
-- `weight` - the total [weight](<https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph>) of the path
-  - Currently, each transition from one state to another has a weight of 1. This will be customizable in the future.
-- `event` - the event object that transitions the `machine` from the state to the next state in the path
+- `state` - 段的 [`State`](https://xstate.js.org/docs/guides/states.html)
+- `weight` - 路径的总 [权重](<https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph>)
+  - 目前，从一个状态到另一个状态的每次转换的权重为 1。未来将可自定义。
+- `event` - 将 `machine` 从一个状态转换到路径中下一个状态的事件对象
 
-Every path starts with the initial state.
+每条路径都以初始状态开始。
 
-The overall object structure looks like this:
+整体对象结构如下：
+
 
 ```json5
 {
@@ -69,7 +70,7 @@ The overall object structure looks like this:
 }
 ```
 
-#### Example
+#### 示例
 
 ```js
 import { createMachine } from 'xstate';
@@ -150,26 +151,26 @@ console.log(shortestPaths);
 
 ### `getSimplePaths(machine, options?)`
 
-Arguments:
+#### 参数
 
-- `machine` - the [`Machine`](https://xstate.js.org/docs/guides/machines.html) to traverse
-- `options` (optional) - [options](/#options) that customize how the algorithm will traverse the machine
+- `machine` - 要遍历的 [`Machine`](https://xstate.js.org/docs/guides/machines.html)
+- `options` (可选) - 自定义算法如何遍历状态机的 [选项](/#options)
 
-Returns the [simple paths](<https://en.wikipedia.org/wiki/Path_(graph_theory)#Definitions>) of a [machine](https://xstate.js.org/docs/guides/machines.html) as a mapped object, where the:
+返回 [简单路径](<https://en.wikipedia.org/wiki/Path_(graph_theory)#Definitions>) 的映射对象，其中：
 
-- **key** is the stringified state
-- **value** is an object with the properties:
-  - `state` - the target [`State`](https://xstate.js.org/docs/guides/states.html)
-  - `paths` - the array of paths to get from the initial state to the target state
+- **键** 是字符串化的状态
+- **值** 是一个包含以下属性的对象：
+  - `state` - 目标 [`State`](https://xstate.js.org/docs/guides/states.html)
+  - `paths` - 从初始状态到目标状态的路径数组
 
-Each `path` in `paths` is an array of segments, where each segment of the path is an object with the properties:
+每个 `path` 是一个段的数组，每个段是一个包含以下属性的对象：
 
-- `state` - the [`State`](https://xstate.js.org/docs/guides/states.html) of the segment
-- `event` - the event object that transitions the `machine` from the state to the next state in the path
+- `state` - 段的 [`State`](https://xstate.js.org/docs/guides/states.html)
+- `event` - 将 `machine` 从一个状态转换到路径中下一个状态的事件对象
 
-Every path starts with the initial state.
+每条路径都以初始状态开始。
 
-The overall object structure looks like this:
+整体对象结构如下：
 
 ```json5
 {
@@ -194,7 +195,7 @@ The overall object structure looks like this:
 }
 ```
 
-#### Example
+#### 示例
 
 ```js
 import { createMachine } from 'xstate';
@@ -292,17 +293,17 @@ console.log(simplePaths);
 
 ### `getPathFromEvents(machine, events)`
 
-Arguments:
+参数：
 
-- `machine` - the [`Machine`](https://xstate.js.org/docs/guides/machines.html) to traverse
-- `events` - the sequence of events to generate a path from
+- `machine` - 要遍历的 [`Machine`](https://xstate.js.org/docs/guides/machines.html)
+- `events` - 生成路径的事件序列
 
-Returns a path object with the following keys:
+返回一个包含以下键的路径对象：
 
-- `state` - the target [`State`](https://xstate.js.org/docs/guides/states.html)
-- `segments` - an array of objects with the following shape:
-  - `state` - the [`State`](https://xstate.js.org/docs/guides/states.html) of the segment
-  - `event` - the event object that transitions the `machine` from the state to the next state in the path
+- `state` - 目标 [`State`](https://xstate.js.org/docs/guides/states.html)
+- `segments` - 一个对象数组，每个对象具有以下结构：
+  - `state` - 段的 [`State`](https://xstate.js.org/docs/guides/states.html)
+  - `event` - 将 `machine` 从该状态转换到路径中下一个状态的事件对象
 
 ```js
 import { createMachine } from 'xstate';
@@ -367,13 +368,13 @@ console.log(path);
 
 ### `toDirectedGraph(machine)`
 
-Converts a `machine` to a directed graph structure.
+将 `machine` 转换为有向图结构。
 
-| Argument  | Type                                           | Description                                          |
+| 参数      | 类型                                           | 描述                                                  |
 | --------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `machine` | XState Machine created by `createMachine(...)` | The machine to convert to a directed graph structure |
+| `machine` | 由 `createMachine(...)` 创建的 XState 机器     | 要转换为有向图结构的机器                              |
 
-#### Example
+#### 示例
 
 ```js
 import { toDirectedGraph } from '@xstate/graph';
@@ -382,7 +383,7 @@ const machine = createMachine({/* ... */});
 
 const digraph = toDirectedGraph(machine);
 
-// returns an object with this structure:
+// 返回一个具有以下结构的对象：
 {
   id: '...',
   stateNode: /* StateNode */,
@@ -398,16 +399,17 @@ const digraph = toDirectedGraph(machine);
 }
 ```
 
-## Options
+## 选项
 
-Options can be passed into `getShortestPaths` or `getSimplePaths` to customize how the graph represented by the machine should be traversed:
+可以将选项传递给 `getShortestPaths` 或 `getSimplePaths` 以自定义如何遍历由状态机表示的图：
 
-- `events` - a mapping of event types to an array of event objects to be used for those events
-- `filter` - a function that determines whether a `state` should be traversed. If `false`, the traversal algorithm(s) will assume the state was "seen" and ignore traversing it.
+- `events` - 事件类型到事件对象数组的映射，用于这些事件
+- `filter` - 一个函数，用于确定是否应遍历 `state`。如果返回 `false`，遍历算法将假定状态已被“看到”并忽略对其的遍历。
 
-#### Examples
+#### 示例
 
-In the below example, the `INC` event is expanded to include two possible events, with `value: 1` and `value: 2` as the payload. It also ensures that the `state.context.count <= 5`; otherwise, this machine would be traversed infinitely.
+在下面的示例中，`INC` 事件被扩展为包含两个可能的事件，分别为 `value: 1` 和 `value: 2` 作为负载。它还确保 `state.context.count <= 5`；否则，这个状态机将被无限遍历。
+
 
 ```js
 const counterMachine = createMachine({

@@ -1,174 +1,174 @@
 ---
-title: Teams
-description: 'You can create and join teams in Stately Studio to share and collaborate on team projects.'
+title: 团队
+description: '您可以在 Stately Studio 中创建和加入团队，以共享和协作团队项目。'
 ---
 
-You can create and join teams in Stately Studio to share and collaborate on team projects.
+您可以在 Stately Studio 中创建和加入团队，以共享和协作团队项目。
 
 <p>
   <ThemedImage
-    alt="Stately Studio Team page for the Intro to Stately Studio webinar team, showing Laura Kalbag with the owner and Admin role, Anders Bech Mellson and Kevin Maes with Admin roles, and Rejected Proud System and David Khourshid with Viewer roles."
+    alt="Stately Studio 团队页面，显示了 Intro to Stately Studio 网络研讨会团队，Laura Kalbag 拥有所有者和管理员角色，Anders Bech Mellson 和 Kevin Maes 拥有管理员角色，Rejected Proud System 和 David Khourshid 拥有查看者角色。"
     sources={{
-      light: '/teams.png',
-      dark: '/teams-dm.png',
+      light: '/xstate-zh/teams.png',
+      dark: '/xstate-zh/teams-dm.png',
     }}
   />
 </p>
 
 :::studio
 
-Teams and shared projects are [Team features](studio-team-plan.mdx) of Stately Studio. [Check out the features on our Team plan](https://stately.ai/pricing) or [upgrade to the Team plan](https://stately.ai/registry/billing).
+团队和共享项目是 Stately Studio 的[团队功能](studio-team-plan.mdx)。[查看我们的团队计划功能](https://stately.ai/pricing)或[升级到团队计划](https://stately.ai/registry/billing)。
 
 :::
 
-## Team roles
+## 团队角色
 
-Team members can have one of the following roles: [Owner](teams.mdx#owner-role), [Admin](teams.mdx#admin-role), [Editor](teams.mdx#editor-role), or [Viewer](teams.mdx#viewer-role). Team owners or admins assign the role to the new team member when inviting them to join the team.
+团队成员可以拥有以下角色之一：[所有者](teams.mdx#owner-role)、[管理员](teams.mdx#admin-role)、[编辑者](teams.mdx#editor-role)或[查看者](teams.mdx#viewer-role)。团队所有者或管理员在邀请新成员加入团队时分配角色。
 
-The following table is an overview of the capabilities of each team role:
+下表概述了每个团队角色的能力：
 
-| Capability                               | Owner  | Admin  | Editor | Viewer |
+| 能力                                     | 所有者 | 管理员 | 编辑者 | 查看者 |
 | ---------------------------------------- | ------ | ------ | ------ | ------ |
-| View team projects and machines          | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| View other team members                  | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Export team machines                     | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Fork team projects and machines          | ✅ Yes | ✅ Yes | ✅ Yes | 🚫 No  |
-| Edit existing team projects              | ✅ Yes | ✅ Yes | ✅ Yes | 🚫 No  |
-| Create team projects                     | ✅ Yes | ✅ Yes | ✅ Yes | 🚫 No  |
-| Lock team machines                       | ✅ Yes | ✅ Yes | ✅ Yes | 🚫 No  |
-| Reassign Admin, Editor, and Viewer roles | ✅ Yes | ✅ Yes | 🚫 No  | 🚫 No  |
-| Invite new team members                  | ✅ Yes | ✅ Yes | 🚫 No  | 🚫 No  |
-| Change project visibility                | ✅ Yes | ✅ Yes | 🚫 No  | 🚫 No  |
-| Edit the team name                       | ✅ Yes | ✅ Yes | 🚫 No  | 🚫 No  |
-| Delete the team                          | ✅ Yes | 🚫 No  | 🚫 No  | 🚫 No  |
+| 查看团队项目和机器                       | ✅ 是  | ✅ 是  | ✅ 是  | ✅ 是  |
+| 查看其他团队成员                         | ✅ 是  | ✅ 是  | ✅ 是  | ✅ 是  |
+| 导出团队机器                             | ✅ 是  | ✅ 是  | ✅ 是  | ✅ 是  |
+| 分叉团队项目和机器                       | ✅ 是  | ✅ 是  | ✅ 是  | 🚫 否  |
+| 编辑现有团队项目                         | ✅ 是  | ✅ 是  | ✅ 是  | 🚫 否  |
+| 创建团队项目                             | ✅ 是  | ✅ 是  | ✅ 是  | 🚫 否  |
+| 锁定团队机器                             | ✅ 是  | ✅ 是  | ✅ 是  | 🚫 否  |
+| 重新分配管理员、编辑者和查看者角色       | ✅ 是  | ✅ 是  | 🚫 否  | 🚫 否  |
+| 邀请新团队成员                           | ✅ 是  | ✅ 是  | 🚫 否  | 🚫 否  |
+| 更改项目可见性                           | ✅ 是  | ✅ 是  | 🚫 否  | 🚫 否  |
+| 编辑团队名称                             | ✅ 是  | ✅ 是  | 🚫 否  | 🚫 否  |
+| 删除团队                                 | ✅ 是  | 🚫 否  | 🚫 否  | 🚫 否  |
 
-### Owner role
+### 所有者角色
 
-Team subscribers can create teams and they become their teams’ owner by default. The team owner can:
+团队订阅者可以创建团队，并默认成为其团队的所有者。团队所有者可以：
 
-- Manage their account billing, including changes to the number of paid seats for their teams.
-- Create new teams and delete teams
-- Edit the team name
-- Change project visibility
-- Invite new team members
-- View team members
-- Give team members Admin, Editor, and Viewer roles
-- Create team projects
-- Lock team machines
-- Edit, fork, export, and view team projects and machines
+- 管理其帐户账单，包括更改其团队的付费席位数量。
+- 创建新团队和删除团队
+- 编辑团队名称
+- 更改项目可见性
+- 邀请新团队成员
+- 查看团队成员
+- 赋予团队成员管理员、编辑者和查看者角色
+- 创建团队项目
+- 锁定团队机器
+- 编辑、分叉、导出和查看团队项目和机器
 
-#### Teams members and the available plan seats
+#### 团队成员和可用计划席位
 
-Creating a team requires the Team plan of Stately Studio, with includes up to 10 seats. That means one seat for the Team subscription owner plus 9 additional seats (Viewers are free). These seats can be allocated to one or more teams, in any configuration desired.
+创建团队需要 Stately Studio 的团队计划，其中包括最多 10 个席位。这意味着一个席位用于团队订阅所有者，加上 9 个额外席位（查看者是免费的）。这些席位可以分配给一个或多个团队，按任何所需配置。
 
-### Admin role
+### 管理员角色
 
-Users with the Admin role can:
+拥有管理员角色的用户可以：
 
-- Edit the team name
-- Change project visibility
-- Invite new team members
-- View team members
-- Give team members Editor and Viewer roles
-- Create team projects
-- Lock team machines
-- Edit, fork, export, and view team projects and machines
+- 编辑团队名称
+- 更改项目可见性
+- 邀请新团队成员
+- 查看团队成员
+- 赋予团队成员编辑者和查看者角色
+- 创建团队项目
+- 锁定团队机器
+- 编辑、分叉、导出和查看团队项目和机器
 
-### Editor role
+### 编辑者角色
 
-Users with the Editor role can:
+拥有编辑者角色的用户可以：
 
-- View team members
-- Create team projects
-- Lock team machines
-- Edit, fork, export, and view team projects and machines
+- 查看团队成员
+- 创建团队项目
+- 锁定团队机器
+- 编辑、分叉、导出和查看团队项目和机器
 
-### Viewer role
-
-:::studio
-
-A Viewer is free of charge and does not count toward your number of seats.
-
-:::
-
-Users with the Viewer role can:
-
-- View team members
-- View team projects and machines
-- Export team machines
-
-## Create a team
-
-1. Use the **Create team** link in the left sidebar of Stately Studio’s workspace to open the Create team form.
-2. Name your team and use the **Create team** button to create your team.
-
-By default, teams have only one member, the creator and Owner. [Invite new members](teams.mdx#invite-new-members-to-a-team) to add more members to your team.
-
-## Edit the team name
-
-1. Select the team from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the Settings tab.
-3. Edit the team name and use the **Save changes** button to update your team name.
-
-## Invite new members to a team
-
-You need to have [enough seats on your Pro plan](#teams-members-and-the-available-plan-seats) to add more members to your team.
-
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. On your team page, use the **Members** tab to view existing members and their roles and invite new members.
-3. Enter the invitee’s email address and choose their role from the dropdown menu.
-4. Use the **Invite to team** button to send the invitation.
-
-The invitation will be sent to the invitee’s email address. The invitee will appear as a team member in the **Pending** section of the **Members** page until they accept the invitation. Once the invitation is accepted, the team member will be listed on the **Members** page, organized by role.
+### 查看者角色
 
 :::studio
 
-A subscription seat is only taken up at the time of accepting the invitation. Any particular team member is considered to occupy a single seat even if they are a member of more than one team.
+查看者是免费的，不计入您的席位数量。
 
 :::
 
-## Change a team member’s role
+拥有查看者角色的用户可以：
 
-To change a team member’s role, you must have the [Owner role](teams.mdx#owner-role) or [Admin role](teams.mdx#admin-role) for that team.
+- 查看团队成员
+- 查看团队项目和机器
+- 导出团队机器
 
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the **Members** tab on the team page.
-3. Use the <MoreHorizontal size={18} /> triple dot contextual menu alongside the team member’s name in the **Members** list to choose from the options **Make a Viewer**, **Make an Editor**, or **Make an Admin**.
+## 创建团队
 
-## Remove a member from a team
+1. 使用 Stately Studio 工作区左侧边栏中的 **创建团队** 链接打开创建团队表单。
+2. 命名您的团队并使用 **创建团队** 按钮创建您的团队。
 
-To remove a member from a team, you must have the [owner role](teams.mdx#owner-role) or [Admin role](teams.mdx#admin-role) for that team.
+默认情况下，团队只有一个成员，即创建者和所有者。[邀请新成员](teams.mdx#invite-new-members-to-a-team)以添加更多成员到您的团队。
 
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the **Members** tab on the team page.
-3. Use the <MoreHorizontal size={18} /> triple dot contextual menu alongside the team member’s name in the **Members** list to choose the **Remove from team** option.
+## 编辑团队名称
 
-## Leave a team
+1. 从 Stately Studio 工作区的左侧边栏中选择团队。
+2. 导航到设置选项卡。
+3. 编辑团队名称并使用 **保存更改** 按钮更新您的团队名称。
 
-Any team member with **Admin**, **Editor**, or **Viewer** roles can leave a team.
+## 邀请新成员加入团队
 
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the **Members** tab on the team page.
-3. Use the <MoreHorizontal size={18} /> triple dot contextual menu alongside the team member’s name in the **Members** list to choose the **Leave team** option.
+您需要在您的专业计划中有[足够的席位](#teams-members-and-the-available-plan-seats)才能向团队添加更多成员。
 
-Team owners cannot leave their own teams, but they can delete the team.
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 在您的团队页面上，使用 **成员** 选项卡查看现有成员及其角色并邀请新成员。
+3. 输入被邀请者的电子邮件地址，并从下拉菜单中选择他们的角色。
+4. 使用 **邀请加入团队** 按钮发送邀请。
 
-## Delete a team
+邀请将发送到被邀请者的电子邮件地址。在接受邀请之前，被邀请者将显示在 **成员** 页面上的 **待处理** 部分。一旦接受邀请，团队成员将按角色列在 **成员** 页面上。
 
-Only team owners can delete a team.
+:::studio
 
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the **Settings** tab on the team page.
-3. Use the **Delete team** button to delete your team.
-4. Confirm the team deletion using the **Delete** button in the Delete team dialog.
+订阅席位仅在接受邀请时占用。即使某个团队成员属于多个团队，他们也只占用一个席位。
 
-## Create shared team projects
+:::
 
-Shared projects can be created and worked on between team members of any given team. Team projects are listed inside their Team in the Stately Studio workspace. Projects are Private by default, but can be made Public or Unlisted.
+## 更改团队成员的角色
+
+要更改团队成员的角色，您必须拥有该团队的[所有者角色](teams.mdx#owner-role)或[管理员角色](teams.mdx#admin-role)。
+
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 导航到团队页面上的 **成员** 选项卡。
+3. 使用团队成员姓名旁边的 <MoreHorizontal size={18} /> 三点上下文菜单，从选项中选择 **设为查看者**、**设为编辑者** 或 **设为管理员**。
+
+## 从团队中移除成员
+
+要从团队中移除成员，您必须拥有该团队的[所有者角色](teams.mdx#owner-role)或[管理员角色](teams.mdx#admin-role)。
+
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 导航到团队页面上的 **成员** 选项卡。
+3. 使用团队成员姓名旁边的 <MoreHorizontal size={18} /> 三点上下文菜单，选择 **从团队中移除** 选项。
+
+## 离开团队
+
+任何拥有 **管理员**、**编辑者** 或 **查看者** 角色的团队成员都可以离开团队。
+
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 导航到团队页面上的 **成员** 选项卡。
+3. 使用团队成员姓名旁边的 <MoreHorizontal size={18} /> 三点上下文菜单，选择 **离开团队** 选项。
+
+团队所有者不能离开自己的团队，但他们可以删除团队。
+
+## 删除团队
+
+只有团队所有者可以删除团队。
+
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 导航到团队页面上的 **设置** 选项卡。
+3. 使用 **删除团队** 按钮删除您的团队。
+4. 在删除团队对话框中使用 **删除** 按钮确认团队删除。
+
+## 创建共享团队项目
+
+共享项目可以在任何给定团队的团队成员之间创建和协作。团队项目列在 Stately Studio 工作区的团队中。项目默认是私有的，但可以设为公开或未列出。
 
 <p>
   <ThemedImage
-    alt="Stately Studio Projects page for the Voyager team, showing a list of four projects, one with public machines, two with private machines, and one with unlisted machines."
+    alt="Stately Studio Voyager 团队的项目页面，显示了四个项目的列表，其中一个有公开的机器，两个有私有的机器，一个有未列出的机器。"
     sources={{
       light: '/projects.png',
       dark: '/projects-dm.png',
@@ -176,21 +176,21 @@ Shared projects can be created and worked on between team members of any given t
   />
 </p>
 
-#### Create a shared team project
+#### 创建共享团队项目
 
-Only team members with the **Owner**, **Admin**, or **Editor** roles can create team projects.
+只有拥有 **所有者**、**管理员** 或 **编辑者** 角色的团队成员可以创建团队项目。
 
-1. Navigate to the team page from the left sidebar of Stately Studio’s workspace.
-2. Navigate to the **Projects** tab on the team page.
-3. Use the **Create project** button.
-4. Name the project. The description and keyword fields are optional.
-5. Specify the Project Visibility as **Public**, **Private**, or **Unlisted** in the dropdown.
-6. Use the **Submit** button to create the new project.
+1. 从 Stately Studio 工作区的左侧边栏导航到团队页面。
+2. 导航到团队页面上的 **项目** 选项卡。
+3. 使用 **创建项目** 按钮。
+4. 命名项目。描述和关键词字段是可选的。
+5. 在下拉菜单中将项目可见性指定为 **公开**、**私有** 或 **未列出**。
+6. 使用 **提交** 按钮创建新项目。
 
-### Move a project between teams
+### 在团队之间移动项目
 
-You can move projects between your teams if you have an [**Owner**](teams.mdx#owner-role) role on both teams.
+如果您在两个团队中都拥有[**所有者**](teams.mdx#owner-role)角色，您可以在团队之间移动项目。
 
-1. Use the **Share** button in Stately Studio’s top bar to open the Share dialog.
-2. Choose the destination team from the dropdown menu in the Move project section.
-3. Confirm that you want to move the project from the project move warning dialog using the **Move to _project name_** button.
+1. 使用 Stately Studio 顶部栏中的 **共享** 按钮打开共享对话框。
+2. 在移动项目部分的下拉菜单中选择目标团队。
+3. 在项目移动警告对话框中使用 **移动到 _项目名称_** 按钮确认您要移动项目。

@@ -1,35 +1,35 @@
 ---
-title: 'AI Agents'
+title: 'AI 代理'
 ---
 
-An AI agent is an autonomous entity that observes an environment, decides what to do (based on its internal policy), and performs actions towards achieving its goals. In terms of the actor model, an agent can be considered an actor that can:
+AI 代理是一个自主实体，它观察环境，决定做什么（基于其内部策略），并执行行动以实现其目标。在演员模型中，代理可以被视为一个可以：
 
-- **Receive events**, such as an instruction on what to do next, which goal to accomplish, or an observation of the environment
-- **Send events**, which would cause actions to be performed on the environment
-- **Store state**, which can be used to remember contextual information about the environment
-- **Spawn other agents**, which can be used to create a hierarchy of agents that can work together and coordinate their actions to achieve a goal
+- **接收事件**，例如下一步该做什么的指令、要实现的目标或对环境的观察
+- **发送事件**，这将导致在环境中执行操作
+- **存储状态**，可以用来记住关于环境的上下文信息
+- **生成其他代理**，可以用来创建一个代理层次结构，这些代理可以协同工作并协调其行动以实现目标
 
-The [Stately Agent (`@statelyai/agent`)](https://github.com/statelyai/agent) package makes it simple to create agents and agent behavior based on the actor model and state machines. These agents can do much more than generate text and execute function calls; Stately Agent is a framework for:
+[Stately Agent (`@statelyai/agent`)](https://github.com/statelyai/agent) 包使基于演员模型和状态机创建代理和代理行为变得简单。这些代理不仅可以生成文本和执行函数调用；Stately Agent 是一个框架，用于：
 
-- **Storing message history** between the user and assistant when using the generative text features
-- **Making observations** of an environment, recording the transitions (previous state, event, next state) so it can understand the environment
-- **Receiving feedback** on decisions it makes, so it can retrieve and corrolate feedback so that it can make more informed decisions
-- **Making plans** in its decision-making progress, so that it not only predicts the very next decision to make, but a sequence of decisions that ideally reaches the goal
-- **Short-term and long-term memory** for remembering message history, observations, feedback, and plans that it makes.
+- **存储消息历史**，在使用生成文本功能时记录用户和助手之间的消息历史
+- **观察环境**，记录转换（前一个状态、事件、下一个状态），以便理解环境
+- **接收反馈**，关于其做出的决定，以便它可以检索和关联反馈，从而做出更明智的决定
+- **制定计划**，在其决策过程中，不仅预测下一步要做的决定，还预测一系列理想情况下实现目标的决定
+- **短期和长期记忆**，记住它所做的消息历史、观察、反馈和计划
 
-## Installation
+## 安装
 
-Install the following dependencies:
-- `@statelyai/agent@beta` – Stately.ai Agent, currently in beta
-- `@ai-sdk/openai` – The Vercel AI SDK for OpenAI, which provides access to the OpenAI API
-- `xstate` – Library for managing state machines and statecharts
-- `zod` – Library for type-safe schema validation
+安装以下依赖项：
+- `@statelyai/agent@beta` – Stately.ai 代理，目前处于测试阶段
+- `@ai-sdk/openai` – Vercel AI SDK for OpenAI，提供对 OpenAI API 的访问
+- `xstate` – 用于管理状态机和状态图的库
+- `zod` – 用于类型安全的模式验证库
 
 <Tabs>
 <TabItem value="npm" label="npm">
 
 ```bash
-npm install @statelyai/agent @ai-sdk/openai xstate zod 
+npm install @statelyai/agent @ai-sdk/openai xstate zod
 ```
 
 </TabItem>
@@ -37,7 +37,7 @@ npm install @statelyai/agent @ai-sdk/openai xstate zod
 <TabItem value="pnpm" label="pnpm">
 
 ```bash
-pnpm install @statelyai/agent @ai-sdk/openai xstate zod 
+pnpm install @statelyai/agent @ai-sdk/openai xstate zod
 ```
 
 </TabItem>
@@ -45,21 +45,22 @@ pnpm install @statelyai/agent @ai-sdk/openai xstate zod
 <TabItem value="yarn" label="yarn">
 
 ```bash
-yarn add @statelyai/agent @ai-sdk/openai xstate zod 
+yarn add @statelyai/agent @ai-sdk/openai xstate zod
 ```
 
 </TabItem>
 </Tabs>
 
-## Quick start
+## 快速开始
 
-1. Add your provider's API key to your `.env` file.
+1. 将您的提供商的 API 密钥添加到您的 `.env` 文件中。
+
 
 ```bash
 OPENAI_API_KEY="sk-abCDE..."
 ```
 
-2. Create an agent.
+2. 创建一个代理。
 
 ```ts
 import { openai } from '@ai-sdk/openai';
@@ -72,7 +73,7 @@ const agent = createAgent({
 });
 ```
 
-3. Add event schemas using Zod. These are the events that the agent is allowed to "cause" (i.e. send to the actor)
+3. 使用 Zod 添加事件模式。这些是代理允许“引起”的事件（即发送给演员的事件）
 
 ```ts
 import { openai } from '@ai-sdk/openai';
@@ -87,25 +88,25 @@ const agent = createAgent({
     'todo.add': z.object({
       todo: z
         .object({
-          title: z.string().describe('The title of the todo'),
-          content: z.string().describe('The content of the todo'),
+          title: z.string().describe('待办事项的标题'),
+          content: z.string().describe('待办事项的内容'),
           completed: z
             .boolean()
-            .describe('The completed value of the todo')
+            .describe('待办事项的完成状态')
             .optional(),
         })
-        .describe('Adds a new todo'),
+        .describe('添加一个新的待办事项'),
     }),
     'todo.toggle': z.object({
-      todoId: z.string().describe('The ID of the todo to toggle'),
-      completed: z.boolean().describe('The new completed value').optional(),
+      todoId: z.string().describe('要切换的待办事项的ID'),
+      completed: z.boolean().describe('新的完成状态').optional(),
     }),
   }
   // highlight-end
 });
 ```
 
-3. Interact with a [state machine actor](./state-machine-actors.mdx) that accepts those events.
+3. 与接受这些事件的[状态机演员](./state-machine-actors.mdx)进行交互。
 
 ```ts
 import { setup, createActor } from 'xstate';
@@ -115,7 +116,7 @@ import { agent } from './agent';
 const todoMachine = setup({
   types: {
     // highlight-start
-    // Add the event types that the agent understands
+    // 添加代理理解的事件类型
     events: agent.types.events
     // highlight-end
   },
@@ -132,13 +133,13 @@ agent.interact(todoMachine);
 todoActor.start();
 ```
 
-## Creating an agent
+## 创建代理
 
-You can create an agent using the `createAgent(settings)` function. There are required settings:
+您可以使用 `createAgent(settings)` 函数创建一个代理。以下是必需的设置：
 
-- `name` - The name of the agent, used for logging and agent learning purposes
-- `model` - The [AI SDK language model](https://sdk.vercel.ai/docs/foundations/providers-and-models) to use for generating text and making tool calls
-- `events` - A mapping of event types to [Zod](https://zod.dev/) event schemas that the agent can trigger (i.e. events it can send to some live environment that it is interacting with)
+- `name` - 代理的名称，用于日志记录和代理学习目的
+- `model` - 用于生成文本和进行工具调用的 [AI SDK 语言模型](https://sdk.vercel.ai/docs/foundations/providers-and-models)
+- `events` - 代理可以触发的事件类型到 [Zod](https://zod.dev/) 事件模式的映射（即它可以发送到某个实时环境的事件）
 
 ```ts
 import { createAgent } from '@statelyai/agent';
@@ -157,17 +158,17 @@ const agent = createAgent({
 });
 ```
 
-You can specify additional settings to customize the agent's behavior:
+您可以指定其他设置来自定义代理的行为：
 
-- `description` - A description of the agent, used for logging and agent learning purposes, as well as for agents that call other agents (multi-agent systems)
-- `planner` - An async function that takes the `agent` and planner `input` and resolves with an `AgentPlan` that potentially includes the `steps` and the `nextEvent` to execute to achieve the `input.goal`. This function is used to determine what the agent should do next when making a decision based on the current state (`input.state`) and goal (`input.goal`).
-- `logic` - The agent logic function that is used to determine what an agent does when it receives an agent event, such as `"agent.feedback"`, `"agent.observe"`, `"agent.message"`, or `"agent.plan"`.
+- `description` - 代理的描述，用于日志记录和代理学习目的，以及用于调用其他代理的代理（多代理系统）
+- `planner` - 一个异步函数，它接受 `agent` 和规划器 `input` 并解析为一个可能包含 `steps` 和 `nextEvent` 的 `AgentPlan`，以执行实现 `input.goal` 的步骤。此函数用于根据当前状态 (`input.state`) 和目标 (`input.goal`) 确定代理下一步应该做什么。
+- `logic` - 代理逻辑函数，用于确定代理在接收到代理事件（例如 `"agent.feedback"`、`"agent.observe"`、`"agent.message"` 或 `"agent.plan"`）时的行为。
 
-## Making decisions
+## 做出决策
 
-The most important feature of a Stately agent is the ability to make decisions based on the current state and goal. This is done using the `agent.decide(input)` async function, which takes an `input` object that contains the current state, state machine, and goal, and resolves with an `AgentPlan`.
+Stately 代理最重要的功能是能够根据当前状态和目标做出决策。这是通过 `agent.decide(input)` 异步函数完成的，该函数接受一个包含当前状态、状态机和目标的 `input` 对象，并解析为一个 `AgentPlan`。
 
-For example, suppose you have the following `baristaMachine` state machine:
+例如，假设您有以下 `baristaMachine` 状态机：
 
 ```ts
 import { createMachine } from 'xstate';
@@ -189,7 +190,7 @@ export const baristaMachine = createMachine({
 });
 ```
 
-You can then use the `agent.decide(input)` function to determine what the agent should do next:
+然后，您可以使用 `agent.decide(input)` 函数来确定代理接下来应该做什么：
 
 ```ts
 import { createAgent } from '@statelyai/agent';
@@ -219,46 +220,46 @@ async function handleOrder(order, state) {
 }
 
 handleOrder('I want a latte please', { value: 'idle' });
-// Resolves with an `AgentPlan` that includes:
+// 解析为包含以下内容的 `AgentPlan`：
 // {
 //   // ...
 //   nextEvent: { type: 'barista.makeDrink', drink: 'latte' },
 // }
 ```
 
-## Agent memory
+## 代理记忆
 
-Stately agents can have two types of memory: **short-term (local) memory** and **long-term memory**. 
+Stately 代理可以有两种类型的记忆：**短期（本地）记忆**和**长期记忆**。
 
-- **Short-term (local) memory** is memory that can be synchronously retrieved, but might not be persisted.
-- **Long-term memory** is memory that is asynchronously retrieved from persistent storage, such as a database.
+- **短期（本地）记忆**是可以同步检索的记忆，但可能不会被持久化。
+- **长期记忆**是从持久存储（如数据库）异步检索的记忆。
 
-Agents remember four kinds of things in their memory:
+代理在其记忆中记住四种事物：
 
-- **Messages** between the user and the assistant
-- **Observations** of state transitions (previous state, event, current state) that occur in the environment that the agent is observing
-- **Feedback** 
-- **Plans**
+- 用户和助手之间的**消息**
+- 代理观察到的环境中发生的状态转换（前一个状态、事件、当前状态）的**观察**
+- **反馈**
+- **计划**
 
-## Messages
+## 消息
 
 ### `agent.getMessages()`
 
-Returns chat messages that occur between the user and the assistant from short-term memory.
+返回用户和助手之间在短期记忆中发生的聊天消息。
 
 ### `agent.addMessage(message)`
 
-If you want to manually add a message between the assistant and user to agent memory, you can call `agent.addMessage(message)` to do so. This is automatically called when calling `agent.generateText(…)`, `agent.streamText(…)`, or the `fromText(…)` and `fromTextStream(…)` actor logic creators. You should avoid calling this manually.
+如果您想手动将助手和用户之间的消息添加到代理记忆中，可以调用 `agent.addMessage(message)` 来实现。这在调用 `agent.generateText(…)`、`agent.streamText(…)` 或 `fromText(…)` 和 `fromTextStream(…)` 演员逻辑创建器时会自动调用。您应该避免手动调用此方法。
 
-## Observations
+## 观察
 
 ### `agent.getObservations()`
 
-Returns observations that the agent observes from short-term memory.
+返回代理从短期记忆中观察到的观察结果。
 
 ### `agent.addObservation(observation)`
 
-You can add an observation (`{ prevState, event, state, … }`) to an agent's memory by calling `agent.addObservation(observation)`. This function returns an `AgentObservation` object that includes the provided observation details as well as an observation `id` so that the observation can be referenced in feedback, if applicable.
+您可以通过调用 `agent.addObservation(observation)` 将观察（`{ prevState, event, state, … }`）添加到代理的记忆中。此函数返回一个 `AgentObservation` 对象，其中包括提供的观察细节以及一个观察 `id`，以便在适用时可以在反馈中引用该观察。
 
 ```ts
 const observation = agent.addObservation({
@@ -268,11 +269,11 @@ const observation = agent.addObservation({
 });
 ```
 
-## Feedback
+## 反馈
 
 ### `agent.getFeedback()`
 
-Returns feedback that is given to the agent from short-term memory.
+返回从短期记忆中给代理的反馈。
 
 ### `agent.addFeedback(feedback)`
 
@@ -283,35 +284,35 @@ const observation = agent.addObservation({
 
 const feedback = agent.addFeedback({
   observationId: observation.id,
-  goal: 'Make an iced coffee',
+  goal: '制作冰咖啡',
   attributes: {
-    feedback: 'Water should not be boiled for an iced coffee',
+    feedback: '制作冰咖啡时不应煮沸水',
     score: -10
   }
 });
 ```
 
-## Plans
+## 计划
 
 ### `agent.getPlans()`
 
-Returns plans that the agent has made from short-term memory.
+返回代理从短期记忆中制定的计划。
 
 ### `agent.addPlan(plan)`
 
 TODO
 
-## Interacting with state machines
+## 与状态机交互
 
-An agent can interact with existing state machine actors to determine what to do next. While the state machine actor is running, the agent will do the following cycle:
+代理可以与现有的状态机演员进行交互，以确定下一步该做什么。当状态机演员运行时，代理将执行以下循环：
 
-1. The agent **observes state changes**
-  - The observation is remembered in the agent's state
-2. The agent **determines** if it needs to make a decision based on the current state
-3. If it does, the agent **makes a decision** in the form of an `AgentPlan`.
-4. If an `AgentPlan` is formed, the agent triggers the next event (`plan.nextEvent`) on the state machine actor.
-  - The plan is remembered in the agent's state.
-4. The agent goes back to step 1, and the cycle continues.
+1. 代理**观察状态变化**
+  - 观察结果会被记住在代理的状态中
+2. 代理**确定**是否需要根据当前状态做出决策
+3. 如果需要，代理会**做出决策**，形成一个 `AgentPlan`。
+4. 如果形成了 `AgentPlan`，代理会在状态机演员上触发下一个事件 (`plan.nextEvent`)。
+  - 计划会被记住在代理的状态中。
+5. 代理回到步骤1，循环继续。
 
 ```ts
 import { createAgent } from '@statelyai/agent';
@@ -345,21 +346,21 @@ agent.interact(jokeActor, (observed) => {
 });
 ```
 
-## State machine agents
+## 状态机代理
 
-You can invoke Stately agents as part of a state machine, ensuring that it will follow the state machine's transitions as specified and trigger the appropriate events. This is done by using any of the following [actor logic creators](./actors.mdx):
+您可以将 Stately 代理作为状态机的一部分调用，确保它将遵循状态机指定的转换并触发适当的事件。这可以通过使用以下任意一个[演员逻辑创建器](./actors.mdx)来完成：
 
 ### `fromDecision(agent)`
 
-Returns [promise actor logic](TODO) that resolves with the **agent plan** that should accomplish the goal (`input.goal`), if it is able to create one.
+返回[Promise 演员逻辑](TODO)，该逻辑解析为应完成目标 (`input.goal`) 的**代理计划**，如果它能够创建一个计划的话。
 
-When invoked/spawned, this actor will also add the user and assistant messages to agent memory, as well as the plan that it created.
+当调用/生成时，此演员还会将用户和助手消息添加到代理记忆中，以及它创建的计划。
 
 ### `fromText(agent)`
 
-Returns [promise actor logic](TODO) that resolves with the generated text result from the [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext).
+返回[Promise 演员逻辑](TODO)，该逻辑解析为来自 [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext) 的生成文本结果。
 
-When invoked/spawned, this actor will also add the user and assistant messages to agent memory.
+当调用/生成时，此演员还会将用户和助手消息添加到代理记忆中。
 
 ```ts
 import { createAgent, fromText } from '@statelyai/agent';
@@ -384,7 +385,7 @@ const machine = setup({
           context: {
             time: context.time
           },
-          goal: 'Produce a greeting depending on the time of day.'
+          goal: '根据一天中的时间生成问候语。'
         }),
         onDone: {
           target: 'greeted',
@@ -409,37 +410,37 @@ actor.start();
 
 ### `fromTextStream(agent)`
 
-Returns [observable actor logic](TODO) that streams the text from the [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/stream-text).
+返回[可观察的演员逻辑](TODO)，该逻辑从 [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/stream-text) 流式传输文本。
 
-When invoked/spawned, this actor will also add the user and assistant messages to agent memory.
+当调用/生成时，此演员还会将用户和助手消息添加到代理记忆中。
 
-TODO: example
+TODO: 示例
 
-## Observability
+## 可观察性
 
-- Can observe observations, plans, messages, and feedback via `agent.on('message', (message) => {})`
-- Can manually add feedback observations via `agent.addFeedback(…)`
+- 可以通过 `agent.on('message', (message) => {})` 观察观察结果、计划、消息和反馈
+- 可以通过 `agent.addFeedback(…)` 手动添加反馈观察结果
 
-## Generating text
+## 生成文本
 
-You can use the `agent.generateText(input)` method to generate text from an input. This extends the `generateText(…)` function from the [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext) by:
+您可以使用 `agent.generateText(input)` 方法从输入生成文本。这扩展了 [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext) 的 `generateText(…)` 函数，通过：
 
-- Adding the user and assistant messages to agent memory
-- Providing the ability to retrieve previous observations, feedback, plans and messages from agent memory
+- 将用户和助手消息添加到代理记忆中
+- 提供从代理记忆中检索先前的观察结果、反馈、计划和消息的能力
 
-## Streaming text
+## 流式传输文本
 
-You can use the `agent.streamText(input)` method to stream text from an input. This extends the `streamText(…)` function from the [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext) by:
+您可以使用 `agent.streamText(input)` 方法从输入流式传输文本。这扩展了 [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text#generatetext) 的 `streamText(…)` 函数，通过：
 
-- Adding the user and assistant messages to agent memory
-- Providing the ability to retrieve previous observations, feedback, plans and messages from agent memory
+- 将用户和助手消息添加到代理记忆中
+- 提供从代理记忆中检索先前的观察结果、反馈、计划和消息的能力
 
-## Agent logic
+## 代理逻辑
 
-Agent logic is [actor logic](TODO) that has the specific purpose of performing LLM tasks for the agent. Agent logic goes beyond just being a wrapper and provides the ability to use the agent's state machine to intelligently determine which action to take next.
+代理逻辑是[演员逻辑](TODO)，其特定目的是为代理执行 LLM 任务。代理逻辑不仅仅是一个包装器，还提供了使用代理的状态机智能确定下一步操作的能力。
 
-Agent logic is most powerful when used with a state-machine-powered agent, but you can also create standalone actors from agent logic, which is useful for testing and simple tasks.
+代理逻辑在与状态机驱动的代理一起使用时最为强大，但您也可以从代理逻辑创建独立的演员，这对于测试和简单任务非常有用。
 
-## Examples
+## 示例
 
-See the current examples in the [examples directory](https://github.com/statelyai/agent/tree/main/examples).
+请参阅 [examples 目录](https://github.com/statelyai/agent/tree/main/examples) 中的当前示例。

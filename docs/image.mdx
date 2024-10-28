@@ -1,14 +1,14 @@
 ---
-title: Share machine images using their image URL
+title: 使用图像 URL 共享机器图像
 ---
 
-You can share an image of your machine anywhere that supports images. You can use the image URL for live-updating images where the machine is always updated with your latest changes. Machine images can be helpful in documentation, including GitHub pull requests.
+您可以在任何支持图像的地方共享您的机器图像。您可以使用图像 URL 来实现实时更新的图像，其中机器始终更新为您的最新更改。机器图像在文档中非常有用，包括 GitHub 拉取请求。
 
-The image below is embedded using the copy image URL. Try switching between light and dark mode in the docs top bar; the image will change color mode too.
+下面的图像是使用复制图像 URL 嵌入的。尝试在文档顶部栏中切换光明和黑暗模式；图像也会随之更改颜色模式。
 
 <p>
   <ThemedImage
-    alt="State machine for the Copy image URL flow. An initial state of Viewing machine which transitions to Left drawer open via an event of Open left drawer. The use … icon event transitions from left drawer open to Machine options menu open."
+    alt="复制图像 URL 流程的状态机。初始状态为查看机器，通过打开左侧抽屉事件转换为左侧抽屉打开。使用 … 图标事件从左侧抽屉打开转换为机器选项菜单打开。"
     sources={{
       light:
         'https://stately.ai/registry/machines/1b050e43-c8a5-4e28-b881-71eadcc5b8a1.light.png',
@@ -17,36 +17,36 @@ The image below is embedded using the copy image URL. Try switching between ligh
   />
 </p>
 
-Your machine image will only be available if:
+您的机器图像仅在以下情况下可用：
 
-- the project visibility is **public** or **unlisted**
+- 项目可见性为 **公开** 或 **未列出**
 
-Machine images are not available for private machines.
+机器图像不适用于私有机器。
 
-Read [how to change a project’s visibility settings](projects.mdx#change-a-projects-visibility).
+阅读[如何更改项目的可见性设置](projects.mdx#change-a-projects-visibility)。
 
 :::tip
 
-You can also [embed your machine](embed.mdx) for a focused non-editable view of your machine in Stately Studio’s editor.
+您还可以[嵌入您的机器](embed.mdx)，以在 Stately Studio 的编辑器中获得专注的不可编辑视图。
 
 :::
 
-## Copy the image URL
+## 复制图像 URL
 
-Use the <LinkIcon size={16} /> **Copy image URL** option from the <MoreHorizontal size={18} /> triple dot icon alongside your machine name.
+使用 <LinkIcon size={16} /> **复制图像 URL** 选项，从 <MoreHorizontal size={18} /> 三点图标旁边的机器名称中选择。
 
-## Color mode
+## 颜色模式
 
-By default, the image’s color mode will be the same as your chosen Stately Studio color mode. Add `.light.png` or `.dark.png` to the URL to force that color mode.
+默认情况下，图像的颜色模式将与您选择的 Stately Studio 颜色模式相同。将 `.light.png` 或 `.dark.png` 添加到 URL 以强制使用该颜色模式。
 
-## Examples
+## 示例
 
-The examples below show how you can use the image URL.
+以下示例显示了如何使用图像 URL。
 
 ### Markdown
 
 ```md
-![State machine for the copy image URL flow in light mode.](https://stately.ai/registry/machines/1b050e43-c8a5-4e28-b881-71eadcc5b8a1.light.png)
+![复制图像 URL 流程的状态机（光明模式）。](https://stately.ai/registry/machines/1b050e43-c8a5-4e28-b881-71eadcc5b8a1.light.png)
 ```
 
 ### HTML
@@ -54,6 +54,6 @@ The examples below show how you can use the image URL.
 ```html
 <img
   src="https://stately.ai/registry/machines/1b050e43-c8a5-4e28-b881-71eadcc5b8a1.dark.png"
-  alt="State machine for the copy image URL flow in dark mode."
+  alt="复制图像 URL 流程的状态机（黑暗模式）。"
 />
 ```

@@ -1,23 +1,24 @@
 ---
-title: 'Persistence'
+title: '持久化'
 ---
 
-[Actors](actors.mdx) can persist their internal state and restore it later. **Persistence** refers to storing the state of an actor in persistent storage, such as localStorage or a database. **Restoration** refers to restoring the state of an actor from persistent storage.
+[Actors](actors.mdx) 可以持久化其内部状态并在以后恢复。**持久化**是指将 actor 的状态存储在持久存储中，例如 localStorage 或数据库。**恢复**是指从持久存储中恢复 actor 的状态。
 
-In frontend applications, persistence is useful for maintaining state across browser reloads. In backend applications, persistence allows workflows to span multiple requests, survive service restarts, be fault-tolerant, represent long-running processes, and be auditable and traceable.
+在前端应用程序中，持久化对于在浏览器重新加载时保持状态非常有用。在后端应用程序中，持久化允许工作流跨多个请求，能够在服务重启时存活，具有容错能力，能够表示长时间运行的进程，并且可以进行审计和追踪。
 
-In XState, you can obtain the snapshot (state) to be persisted via `actor.getPersistedSnapshot()` and restore it via `createActor(behavior, { snapshot: restoredState }).start()`:
+在 XState 中，你可以通过 `actor.getPersistedSnapshot()` 获取要持久化的快照（状态），并通过 `createActor(behavior, { snapshot: restoredState }).start()` 恢复它：
+
 
 ```ts
 const feedbackActor = createActor(feedbackMachine).start();
 
-// Get state to be persisted
+// 获取要持久化的状态
 const persistedState = feedbackActor.getPersistedSnapshot();
 
-// Persist state
+// 持久化状态
 localStorage.setItem('feedback', JSON.stringify(persistedState));
 
-// Restore state
+// 恢复状态
 const restoredState = JSON.parse(localStorage.getItem('feedback'));
 
 const restoredFeedbackActor = createActor(feedbackMachine, {
@@ -25,42 +26,42 @@ const restoredFeedbackActor = createActor(feedbackMachine, {
 }).start();
 ```
 
-## Persisting state
+## 持久化状态
 
-You can obtain the state to be persisted via `actor.getPersistedSnapshot()`:
+你可以通过 `actor.getPersistedSnapshot()` 获取要持久化的状态：
 
 ```ts
 const feedbackActor = createActor(feedbackMachine).start();
 
-// Get state to be persisted
+// 获取要持久化的状态
 const persistedState = feedbackActor.getPersistedSnapshot();
 ```
 
-The internal state can be persisted from any actor, not only machines. Note that the persisted state is _not_ the same as the snapshot from `actor.getSnapshot()`; persisted state represents the internal state of the actor, while snapshots represent the actor's last emitted value:
+内部状态可以从任何 actor 持久化，而不仅仅是状态机。请注意，持久化状态与 `actor.getSnapshot()` 的快照不同；持久化状态表示 actor 的内部状态，而快照表示 actor 最后发出的值：
 
 ```ts
 const promiseActor = fromPromise(() => Promise.resolve(42));
 
-// Get the last emitted value
+// 获取最后发出的值
 const snapshot = promiseActor.getSnapshot();
 console.log(snapshot);
-// logs 42
+// 输出 42
 
-// Get the persisted state
+// 获取持久化状态
 const persistedState = promiseActor.getPersistedSnapshot();
 console.log(persistedState);
-// logs { status: 'done', data: 42 }
+// 输出 { status: 'done', data: 42 }
 ```
 
-## Restoring state
+## 恢复状态
 
-You can restore an actor to a persisted state by passing the persisted state into the `state` option of the second argument of `createActor(logic, { snapshot: restoredState })`:
+你可以通过将持久化状态传递给 `createActor(logic, { snapshot: restoredState })` 的第二个参数中的 `state` 选项来恢复 actor 到持久化状态：
 
 ```ts
-// Get persisted state
+// 获取持久化状态
 const restoredState = JSON.parse(localStorage.getItem('feedback'));
 
-// Restore state
+// 恢复状态
 const feedbackActor = createActor(feedbackMachine, {
   snapshot: restoredState,
 });
@@ -68,11 +69,11 @@ const feedbackActor = createActor(feedbackMachine, {
 feedbackActor.start();
 ```
 
-Actions from machine actors will _not_ be re-executed, because they are assumed to have been already executed. However, invocations will be restarted, and spawned actors will be restored recursively.
+来自机器 actor 的动作将 _不会_ 被重新执行，因为它们被假定已经执行过。然而，调用将被重新启动，并且生成的 actor 将被递归恢复。
 
-## Deep persistence
+## 深度持久化
 
-Persisting & restoring state from machine actors is deep; all [invoked](invoke.mdx) & [spawned actors](spawn.mdx) will be persisted and restored recursively.
+从机器 actor 持久化和恢复状态是深度的；所有 [调用的](invoke.mdx) 和 [生成的 actor](spawn.mdx) 将被递归持久化和恢复。
 
 ```ts
 const feedbackMachine = createMachine({
@@ -89,31 +90,30 @@ const feedbackMachine = createMachine({
 
 const feedbackActor = createActor(feedbackMachine).start();
 
-// Persist state
+// 持久化状态
 const persistedState = feedbackActor.getPersistedSnapshot();
 localStorage.setItem('feedback', JSON.stringify(persistedState));
 
 //  ...
 
-// Restore state
+// 恢复状态
 const restoredState = JSON.parse(localStorage.getItem('feedback'));
 
 const restoredFeedbackActor = createActor(feedbackMachine, {
   snapshot: restoredState,
 }).start();
-// Will restore both the feedbackActor and the invoked form actor at
-// their persisted states
+// 将会在持久化状态下恢复 feedbackActor 和调用的 form actor
 ```
 
-## Persisting state machine values
+## 持久化状态机值
 
-If you want to persist only the finite state `value` (and optionally the `context`) of a state machine actor, you can use the `machine.resolveState(...)` method:
+如果你只想持久化状态机 actor 的有限状态 `value`（以及可选的 `context`），你可以使用 `machine.resolveState(...)` 方法：
 
 ```ts
 import { someMachine } from './someMachine';
 
 const restoredStateValue = localStorage.getItem('someState');
-// Assume that this is "pending"
+// 假设这是 "pending"
 
 // highlight-start
 const resolvedState = someMachine.resolveState({
@@ -122,7 +122,7 @@ const resolvedState = someMachine.resolveState({
 });
 // highlight-end
 
-// Restore the actor
+// 恢复 actor
 const restoredActor = createActor(someMachine, {
   // highlight-next-line
   snapshot: resolvedState
@@ -131,22 +131,22 @@ const restoredActor = createActor(someMachine, {
 restoredActor.start();
 ```
 
-## Event sourcing
+## 事件溯源
 
-An alternative to persisting state is **event sourcing**, which is a way of restoring the state of an actor by replaying the [events](transitions.mdx) that led to that state. Event sourcing can be more reliable than persisting state, because it is less prone to [incompatible state](#caveats) and it also allows you to replay actions.
+持久化状态的另一种方法是**事件溯源**，这是一种通过重放导致该状态的[事件](transitions.mdx)来恢复 actor 状态的方法。事件溯源比持久化状态更可靠，因为它不太容易出现[不兼容状态](#caveats)，并且还允许你重放动作。
 
-One way to implement event sourcing is to persist the events as they happen using the [inspection API](/docs/inspection), and then replay them to restore the state of the actor:
+实现事件溯源的一种方法是使用[检查 API](/docs/inspection)在事件发生时持久化事件，然后重放它们以恢复 actor 的状态：
 
 ```ts
 const events = [];
 
 const someActor = createActor(someMachine, {
-  // Inspect and persist events
+  // 检查并持久化事件
   inspect: (inspectionEvent) => {
     if (inspectionEvent.type === '@xstate.event') {
       const event = inspectionEvent.event;
 
-      // Only listen for events sent to the root actor
+      // 仅监听发送到根 actor 的事件
       if (inspectionEvent.actorRef !== someActor) { return; }
 
       // highlight-next-line
@@ -159,31 +159,31 @@ someActor.start();
 
 // ...
 
-// Assuming the events are stored somewhere, e.g. in localStorage,
-// you can replay them to restore the state of the actor
+// 假设事件存储在某个地方，例如 localStorage，
+// 你可以重放它们来恢复 actor 的状态
 
 const restoredActor = createActor(someMachine);
 restoredActor.start();
 
 // highlight-start
 for (const event of events) {
-  // Replay events
+  // 重放事件
   restoredActor.send(event);
 }
 // highlight-end
 ```
 
-## Caveats
+## 注意事项
 
-There are some caveats to persisting and restoring state that you should be aware of:
+在持久化和恢复状态时，你应该注意以下几点：
 
-- Incompatible state: if the machine or actor logic changes, the restored state may be incompatible with the new logic.
-- Replaying actions: actions that have already been executed will not be re-executed. [Event sourcing](#event-sourcing) is preferred for this use-case.
-- Serialization: the state must be serializable, which means that it must be JSON-serializable. This means that you cannot persist functions, classes, or other non-serializable values.
+- 不兼容状态：如果机器或 actor 逻辑发生变化，恢复的状态可能与新逻辑不兼容。
+- 重放动作：已经执行过的动作将不会被重新执行。对于这种情况，推荐使用[事件溯源](#事件溯源)。
+- 序列化：状态必须是可序列化的，这意味着它必须是 JSON 可序列化的。这意味着你不能持久化函数、类或其他不可序列化的值。
 
-## Persistence cheatsheet
+## 持久化速查表
 
-### Cheatsheet: persisting state
+### 速查表：持久化状态
 
 ```ts
 const persistedState = actor.getPersistedSnapshot();
@@ -199,6 +199,6 @@ const restoredActor = createActor(actorMachine, {
 }).start();
 ```
 
-## Resources
+## 资源
 
-- [Blog: Persisting state in XState](/blog/2023-10-02-persisting-state)
+- [博客: 在 XState 中持久化状态](/blog/2023-10-02-persisting-state)

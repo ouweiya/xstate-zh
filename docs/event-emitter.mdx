@@ -1,12 +1,12 @@
 ---
-title: Event emitter
+title: 事件发射器
 ---
 
-_Since XState version 5.9.0_
+_自 XState 版本 5.9.0 起_
 
-State machines and other types of actor logic in XState have the ability to emit events. This allows external event handlers to be notified of specific events.
+XState 中的状态机和其他类型的 actor 逻辑具有发射事件的能力。这允许外部事件处理程序接收特定事件的通知。
 
-With state machines, you can emit events using the `emit(event)` action creator.
+对于状态机，可以使用 `emit(event)` 动作创建器发射事件。
 
 ```ts
 import { setup, emit } from 'xstate';
@@ -37,15 +37,14 @@ actor.on('notification', (event) => {
 actor.start();
 
 actor.send({ type: 'someEvent' });
-// Logs:
+// 日志:
 // "Notification received!"
 // { type: "notification" }
 ```
 
-## Emitting events from actor logic
+## 从 actor 逻辑中发射事件
 
-For promise actors, transition actors, observable actors, and callback actors, you can use the `emit` method from the arguments to emit events.
-
+对于 promise actors、transition actors、observable actors 和 callback actors，你可以使用参数中的 `emit` 方法来发射事件。
 
 **Promise actors**
 
@@ -65,7 +64,7 @@ const logic = fromPromise(async ({ emit }) => {
 });
 ```
 
-**Transition actors**
+**转换 actors**
 
 ```ts
 import { fromTransition } from 'xstate';
@@ -102,7 +101,7 @@ const logic = fromObservable(({ emit }) => {
 });
 ```
 
-**Callback actors**
+**回调 actors**
 
 ```ts
 import { fromCallback } from 'xstate';
@@ -120,9 +119,9 @@ const logic = fromCallback(({ emit }) => {
 });
 ```
 
-## Emit action creator
+## 发射动作创建器
 
-The emit action is a special action that _emits_ an event to any external event handlers from state machine logic. The emitted event can be statically or dynamically defined:
+发射动作是一种特殊的动作，它从状态机逻辑中向任何外部事件处理程序“发射”一个事件。发射的事件可以是静态定义的，也可以是动态定义的：
 
 ```ts
 import { setup, emit } from 'xstate';
@@ -130,7 +129,7 @@ import { setup, emit } from 'xstate';
 const machine = setup({
   actions: {
     // highlight-start
-    // Emitting a statically-defined event
+    // 发射一个静态定义的事件
     emitStaticEvent: emit({
       type: 'someStaticEvent',
       data: 42
@@ -138,7 +137,7 @@ const machine = setup({
     // highlight-end
 
     // highlight-start
-    // Emitting a dynamically-defined event based on context
+    // 基于上下文发射一个动态定义的事件
     emitDynamicEvent: emit(({ context }) => ({
       type: 'someDynamicEvent',
       data: context.someData
@@ -158,16 +157,16 @@ const machine = setup({
 });
 ```
 
-## Event handlers
+## 事件处理程序
 
-You can attach event handlers to the actor to listen for emitted events by using `actor.on(event, handler)`:
+你可以使用 `actor.on(event, handler)` 将事件处理程序附加到 actor 以监听发射的事件：
 
 ```ts
 const someActor = createActor(someMachine);
 
 // highlight-start
 someActor.on('someEvent', (emittedEvent) => {
-  // Handle the emitted event
+  // 处理发射的事件
   console.log(emittedEvent);
 });
 // highlight-end
@@ -175,14 +174,14 @@ someActor.on('someEvent', (emittedEvent) => {
 someActor.start();
 ```
 
-The `actor.on(…)` method returns a subscription object. You can call `.unsubscribe()` on it to remove the handler:
+`actor.on(…)` 方法返回一个订阅对象。你可以调用 `.unsubscribe()` 来移除处理程序：
 
 ```ts
 const someActor = createActor(someMachine);
 
 // highlight-start
 const subscription = someActor.on('someEvent', (emittedEvent) => {
-  // Handle the emitted event
+  // 处理发射的事件
   console.log(emittedEvent);
 });
 // highlight-end
@@ -192,28 +191,28 @@ someActor.start();
 // ...
 
 // highlight-start
-// Stop listening for events
+// 停止监听事件
 subscription.unsubscribe();
 // highlight-end
 ```
 
-## Wildcard event handlers
+## 通配符事件处理程序
 
-You can listen for _any_ emitted event by listening for the wildcard `'*'`:
+你可以通过监听通配符 `'*'` 来监听任何发射的事件：
 
 ```ts
 const someActor = createActor(someMachine);
 
 actor.on('*', (emitted) => {
-  console.log(emitted); // Any emitted event
+  console.log(emitted); // 任何发射的事件
 });
 ```
 
-The `emitted` event will be typed as the union of all possible events that can be emitted from the machine.
+发射的 `emitted` 事件将被类型化为可以从状态机发射的所有可能事件的联合类型。
 
 ## TypeScript
 
-You can strongly type emitted events by defining the emitted event types in the `types.emitted` property of the `setup(…)` function:
+你可以通过在 `setup(…)` 函数的 `types.emitted` 属性中定义发射事件的类型来强类型化发射的事件：
 
 ```ts
 import { setup, emit, createActor } from 'xstate';
@@ -221,7 +220,7 @@ import { setup, emit, createActor } from 'xstate';
 const machine = setup({
   types: {
     // highlight-start
-    emitted: {} as 
+    emitted: {} as
       | { type: 'notification'; message: string; }
       | { type: 'error'; error: Error; },
     // highlight-end
@@ -233,7 +232,7 @@ const machine = setup({
     someEvent: {
       actions: [
         // highlight-start
-        // Strongly typed emitted event
+        // 强类型化的发射事件
         emit({ type: 'notification', message: 'Hello' })
         // highlight-end
       ]
@@ -244,7 +243,7 @@ const machine = setup({
 const actor = createActor(machine);
 
 // highlight-start
-// Strongly typed event handler
+// 强类型化的事件处理程序
 actor.on('notification', (event) => {
   console.log(event.message); // string
 });

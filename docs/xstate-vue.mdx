@@ -2,20 +2,20 @@
 title: '@xstate/vue'
 ---
 
-The [@xstate/vue package](https://github.com/statelyai/xstate/tree/main/packages/xstate-vue) contains utilities for using [XState](https://github.com/statelyai/xstate) with [Vue](https://github.com/vuejs/vue).
+[@xstate/vue 包](https://github.com/statelyai/xstate/tree/main/packages/xstate-vue) 包含了用于在 [Vue](https://github.com/vuejs/vue) 中使用 [XState](https://github.com/statelyai/xstate) 的工具。
 
 {/* TODO: Vue 2? */}
 
-## Templates
+## 模板
 
-Use the following templates to get started quickly with XState and Vue:
+使用以下模板可以快速开始使用 XState 和 Vue：
 
-- [XState Vue template (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/vue-ts)
-- [XState Vue template (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/vue-ts?file=%2Fsrc%2FfeedbackMachine.ts)
+- [XState Vue 模板 (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/vue-ts)
+- [XState Vue 模板 (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/vue-ts?file=%2Fsrc%2FfeedbackMachine.ts)
 
-## Installation
+## 安装
 
-Install the latest versions of both `xstate` and `@xstate/vue`. `xstate` is a peer dependency of `@xstate/vue`.
+安装最新版本的 `xstate` 和 `@xstate/vue`。`xstate` 是 `@xstate/vue` 的一个 peer 依赖。
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -49,47 +49,47 @@ yarn add xstate @xstate/vue
 
 ### `useActor(actorLogic, options?)`
 
-A [Vue composition function](https://v3.vuejs.org/guide/composition-api-introduction.html) that creates an actor from the given `actorLogic` and starts an actor ref that runs for the lifetime of the component.
+一个 [Vue 组合函数](https://v3.vuejs.org/guide/composition-api-introduction.html)，它从给定的 `actorLogic` 创建一个 actor，并启动一个在组件生命周期内运行的 actor 引用。
 
-#### Arguments
+#### 参数
 
-- `actorLogic` - An [XState machine](machines.mdx)
-- `options` (optional) - Actor options
+- `actorLogic` - 一个 [XState 状态机](machines.mdx)
+- `options` (可选) - Actor 选项
 
-**Returns** `{ snapshot, send, actorRef }`:
+**返回** `{ snapshot, send, actorRef }`:
 
-- `snapshot` - Represents the current snapshot (state) of the machine as an XState `State` object.
-- `send` - A function that sends events to the running actor.
-- `actorRef` - The created actor ref.
+- `snapshot` - 表示状态机的当前快照（状态），作为 XState `State` 对象。
+- `send` - 一个向运行中的 actor 发送事件的函数。
+- `actorRef` - 创建的 actor 引用。
 
 ### `useMachine(machine, options?)`
 
-A [Vue composition function](https://v3.vuejs.org/guide/composition-api-introduction.html) that creates an actor from the given `machine` and starts an actor that runs for the lifetime of the component.
+一个 [Vue 组合函数](https://v3.vuejs.org/guide/composition-api-introduction.html)，它从给定的 `machine` 创建一个 actor，并启动一个在组件生命周期内运行的 actor。
 
-#### Arguments
+#### 参数
 
-- `machine` - An [XState machine](machines.mdx)
-- `options` (optional) - Actor options
+- `machine` - 一个 [XState 状态机](machines.mdx)
+- `options` (可选) - Actor 选项
 
-**Returns** `{ snapshot, send, actorRef }`:
+**返回** `{ snapshot, send, actorRef }`:
 
-- `snapshot` - Represents the current snapshot (state) of the machine as an XState `State` object.
-- `send` - A function that sends events to the running actor.
-- `actorRef` - The created actor ref.
+- `snapshot` - 表示状态机的当前快照（状态），作为 XState `State` 对象。
+- `send` - 一个向运行中的 actor 发送事件的函数。
+- `actorRef` - 创建的 actor 引用。
 
 ### `useActorRef(actorLogic, options?, observer?)`
 
-A [Vue composition function](https://v3.vuejs.org/guide/composition-api-introduction.html) that returns the `actorRef` created from the `actorLogic` with the actor `options`, if specified. It also sets up a subscription to the `actorRef` with the `observer`, if provided.
+一个 [Vue 组合函数](https://v3.vuejs.org/guide/composition-api-introduction.html)，它返回从 `actorLogic` 创建的 `actorRef`，并带有指定的 actor `options`（如果有）。如果提供了 `observer`，它还会设置对 `actorRef` 的订阅。
 
-#### Arguments 
+#### 参数
 
-- `actorLogic` - Actor logic
-- `options` (optional) - Actor options
-- `observer` (optional) - an observer or listener that listens to snapshot updates:
-  - an observer (e.g., `{ next: (snapshot) => {/* ... */} }`)
-  - or a listener (e.g., `(snapshot) => {/* ... */}`)
+- `actorLogic` - Actor 逻辑
+- `options` (可选) - Actor 选项
+- `observer` (可选) - 一个监听快照更新的观察者或监听器：
+  - 一个观察者（例如，`{ next: (snapshot) => {/* ... */} }`）
+  - 或一个监听器（例如，`(snapshot) => {/* ... */}`）
 
-#### Examples
+#### 示例
 
 ```js
 import { useActorRef } from '@xstate/vue';
@@ -103,7 +103,8 @@ export default {
 };
 ```
 
-With options + listener:
+带选项和监听器：
+
 
 ```js
 import { useInterpret } from '@xstate/vue';
@@ -118,7 +119,7 @@ export default {
         },
       },
       (state) => {
-        // subscribes to state changes
+        // 订阅状态变化
         console.log(state.value);
       },
     );
@@ -129,15 +130,15 @@ export default {
 
 ### `useSelector(actor, selector, compare?, getSnapshot?)`
 
-A [Vue composition function](https://v3.vuejs.org/guide/composition-api-introduction.html) that returns the selected value from the snapshot of an `actorRef`, such as an actor. This hook will only cause a rerender if the selected value changes, as determined by the optional `compare` function.
+一个 [Vue 组合函数](https://v3.vuejs.org/guide/composition-api-introduction.html)，它从 `actorRef` 的快照中返回选定的值，例如一个 actor。只有在选定的值发生变化时，此钩子才会导致重新渲染，这由可选的 `compare` 函数确定。
 
-#### Arguments
+#### 参数
 
-- `actorRef` - an actor or an actor-like object that contains `.send(...)` and `.subscribe(...)` methods.
-- `selector` - a function that takes in an actor’s "current state" (snapshot) as an argument and returns the desired selected value.
-- `compare` (optional) - a function that determines if the current selected value is the same as the previous selected value.
-- `getSnapshot` (optional) - a function that should return the latest emitted value from the `actorRef`.
-  - Defaults to attempting to get the `actor.state`, or returning `undefined` if that does not exist. Will automatically pull the state from actors.
+- `actorRef` - 一个 actor 或类似 actor 的对象，包含 `.send(...)` 和 `.subscribe(...)` 方法。
+- `selector` - 一个函数，它将 actor 的“当前状态”（快照）作为参数，并返回所需的选定值。
+- `compare` (可选) - 一个函数，用于确定当前选定的值是否与之前的选定值相同。
+- `getSnapshot` (可选) - 一个函数，应返回 `actorRef` 的最新发出值。
+  - 默认情况下尝试获取 `actor.state`，如果不存在则返回 `undefined`。将自动从 actor 中提取状态。
 
 ```js
 import { useSelector } from '@xstate/vue';
@@ -154,7 +155,7 @@ export default {
 };
 ```
 
-With `compare` function:
+使用 `compare` 函数：
 
 ```js
 import { useSelector } from '@xstate/vue';
@@ -172,7 +173,7 @@ export default {
 };
 ```
 
-With `useActorRef(...)`:
+使用 `useActorRef(...)`：
 
 ```js
 import { useActorRef, useSelector } from '@xstate/vue';

@@ -2,42 +2,42 @@
 title: Stately Studio API
 ---
 
-You can use the Studio's REST API to access your projects and machines in any of your external projects. This allows you to automate your workflow, integrate your machines with other projects, and more.
+您可以使用 Studio 的 REST API 来访问您在任何外部项目中的项目和机器。这使您能够自动化工作流程，将您的机器与其他项目集成等。
 
-Some things you can do with the API include:
+使用 API 可以执行以下操作：
 
-- Exporting machines to your desired language/format (e.g: TypeScript, JavaScript, JSON, etc.)
-- Fetching information about your desired machines
-- Fetching information about your projects
-- Fetching a specific version of a machine
-
-:::studio
-
-API access is a premium feature of Stately Studio. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
-
-:::
-
-## Authentication: Generating an API key
-
-All requests to the Studio must be authenticated with an API key.
-You can generate an API key for one of two scopes:
-
-- **Project**: This key will have access to all the machines in a specific project.
-- **Account**: This key will have access to all the projects and machines in your account.
+- 将机器导出为您所需的语言/格式（例如：TypeScript、JavaScript、JSON 等）
+- 获取有关您所需机器的信息
+- 获取有关您项目的信息
+- 获取机器的特定版本
 
 :::studio
 
-It's important to keep your API key secret. If you believe your API key has been compromised, you can regenerate it at any time.
+API 访问是 Stately Studio 的高级功能。[查看我们专业计划的功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx)或[升级您的现有计划](https://stately.ai/registry/billing)。
 
 :::
 
-### Generating a project-wide API key
+## 认证：生成 API 密钥
 
-To generate an API key for a **project**, open any machine in the project you're interested in. Then, click on the "Deploy" button in the top right corner of the editor page. In the modal that appears, click "Create API Key", and make sure to copy it and store it in a safe place.
+所有对 Studio 的请求都必须使用 API 密钥进行认证。
+您可以为以下两种范围生成 API 密钥：
+
+- **项目**：此密钥将可以访问特定项目中的所有机器。
+- **账户**：此密钥将可以访问您账户中的所有项目和机器。
+
+:::studio
+
+保持您的 API 密钥的秘密非常重要。如果您认为您的 API 密钥已被泄露，您可以随时重新生成它。
+
+:::
+
+### 生成项目范围的 API 密钥
+
+要为**项目**生成 API 密钥，请打开您感兴趣的项目中的任何机器。然后，点击编辑器页面右上角的“部署”按钮。在出现的模态框中，点击“创建 API 密钥”，并确保将其复制并存储在安全的地方。
 
 <p>
   <ThemedImage
-    alt="A GIF of the Studio's deploy modal, with the 'Create API Key' button highlighted."
+    alt="Studio 部署模态框的 GIF，突出显示了“创建 API 密钥”按钮。"
     sources={{
       light: '/generate-project-token-light.gif',
       dark: '/generate-project-token-dark.gif',
@@ -46,13 +46,13 @@ To generate an API key for a **project**, open any machine in the project you're
 
 </p>
 
-### Generating an account-wide API key
+### 生成账户范围的 API 密钥
 
-Generating an API key for an **account** can be done from the user's settings. In Settings, select the API Key tab, and click "Create API Key". Make sure to copy it and store it in a safe place.
+要为**账户**生成 API 密钥，可以在用户设置中进行。在设置中，选择 API 密钥选项卡，然后点击“创建 API 密钥”。确保将其复制并存储在安全的地方。
 
 <p>
   <ThemedImage
-    alt=" A GIF of the Studio's settings page, with the 'Create API Key' button highlighted."
+    alt="Studio 设置页面的 GIF，突出显示了“创建 API 密钥”按钮。"
     sources={{
       light: '/generate-account-token-light.gif',
       dark: '/generate-account-token-dark.gif',
@@ -61,17 +61,17 @@ Generating an API key for an **account** can be done from the user's settings. I
 
 </p>
 
-## Making requests: Accessing the OpenAPI(Swagger) documentation
+## 发出请求：访问 OpenAPI(Swagger) 文档
 
-The easiest way to get started with the Studio API is to use the [OpenAPI(Swagger) documentation](https://stately.ai/registry/openapi). This documentation provides a list of all the available endpoints, their parameters, and the expected responses.
+开始使用 Studio API 的最简单方法是使用 [OpenAPI(Swagger) 文档](https://stately.ai/registry/openapi)。此文档提供了所有可用端点、其参数和预期响应的列表。
 
-### Authorizing requests
+### 授权请求
 
-To test the API, you can must first authenticate with your API key, using the "Authorize" button in the top right corner of the page.
+要测试 API，您必须首先使用页面右上角的“授权”按钮使用您的 API 密钥进行认证。
 
 <p>
   <ThemedImage
-    alt="A GIF of the Studio's OpenAPI documentation, with the 'Authorize' button highlighted."
+    alt="Studio OpenAPI 文档的 GIF，突出显示了“授权”按钮。"
     sources={{
       light: '/swagger-auth.gif',
       dark: '/swagger-auth.gif',
@@ -80,7 +80,7 @@ To test the API, you can must first authenticate with your API key, using the "A
 
 </p>
 
-### Testing endpoints
+### 测试端点
 
-Once authenticated, you can test any of the endpoints by clicking on them and filling in the required parameters. The parameters can all be easily accessed from the url of the machine, machineVersion, or project in question. Simply open a machine or project in the Studio, and copy the id's from the url in your browser's address bar.
-Then, use the "Try it out" button to make a request to the endpoint. The response will be displayed below the request parameters.
+认证后，您可以通过点击端点并填写所需参数来测试任何端点。所有参数都可以从机器、机器版本或项目的 URL 中轻松获取。只需在 Studio 中打开机器或项目，并从浏览器地址栏中复制 ID。
+然后，使用“试用”按钮向端点发出请求。响应将显示在请求参数下方。

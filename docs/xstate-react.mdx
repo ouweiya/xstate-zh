@@ -2,18 +2,18 @@
 title: '@xstate/react'
 ---
 
-The [@xstate/react package](https://github.com/statelyai/xstate/tree/main/packages/xstate-react) contains hooks and helper functions for using [XState](https://github.com/statelyai/xstate) with [React](https://github.com/facebook/react/).
+[@xstate/react 包](https://github.com/statelyai/xstate/tree/main/packages/xstate-react) 包含用于在 [React](https://github.com/facebook/react/) 中使用 [XState](https://github.com/statelyai/xstate) 的钩子和辅助函数。
 
-## Templates
+## 模板
 
-Use the following templates to get started quickly with XState and React:
+使用以下模板可以快速开始使用 XState 和 React：
 
-- [XState React template (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/react-ts)
-- [XState React template (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/react-ts?file=%2Fsrc%2FfeedbackMachine.ts)
+- [XState React 模板 (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/react-ts)
+- [XState React 模板 (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/react-ts?file=%2Fsrc%2FfeedbackMachine.ts)
 
-## Installation
+## 安装
 
-Install the latest versions of both `xstate` and `@xstate/react`. `xstate` is a peer dependency of `@xstate/react`.
+安装最新版本的 `xstate` 和 `@xstate/react`。`xstate` 是 `@xstate/react` 的一个对等依赖。
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -43,32 +43,32 @@ yarn add xstate @xstate/react
 
 :::studio
 
-Want to get started with React extra fast? Try the [generate React app feature in Stately Studio](generate-react.mdx).
+想要快速开始使用 React 吗？试试 [Stately Studio 中的生成 React 应用功能](generate-react.mdx)。
 
 :::
 
-## Examples
+## 示例
 
-_Coming soon_
+_即将推出_
 
 ## API
 
 ### `useActor(actorLogic, options?)`
 
-A [React hook](https://reactjs.org/hooks) that creates an actor from the the given `actorLogic` and starts an actor that runs for the lifetime of the component.
+一个 [React hook](https://reactjs.org/hooks)，它从给定的 `actorLogic` 创建一个 actor，并启动一个在组件生命周期内运行的 actor。
 
-#### Arguments
+#### 参数
 
-- `actorLogic` - The actor logic to create an actor from; e.g. `createMachine(...)`, `fromPromise(...)`, etc.
-- `options?` (optional) - Actor options.
+- `actorLogic` - 用于创建 actor 的逻辑；例如 `createMachine(...)`，`fromPromise(...)` 等。
+- `options?` (可选) - Actor 选项。
 
-**Returns** a tuple of `[snapshot, send, actorRef]`:
+**返回** 一个 `[snapshot, send, actorRef]` 元组：
 
-- `snapshot` - Represents the current state of the actor.
-- `send` - A function that sends events to the running actor.
-- `actorRef` - The started actor.
+- `snapshot` - 表示 actor 的当前状态。
+- `send` - 一个向运行中的 actor 发送事件的函数。
+- `actorRef` - 启动的 actor。
 
-#### Examples
+#### 示例
 
 ```tsx
 import { fromPromise } from 'xstate';
@@ -81,7 +81,7 @@ const promiseLogic = fromPromise(async () => {
 });
 
 function Component() {
-  // highlight-next-line  
+  // highlight-next-line
   const [state, send] = useActor(promiseLogic);
 
   if (state.status === 'done') {
@@ -98,29 +98,29 @@ function Component() {
 
 ### `useMachine(machine, options?)`
 
-A [React hook](https://reactjs.org/hooks) that creates an actor from the given `machine` and starts an actor that runs for the lifetime of the component.
+一个 [React hook](https://reactjs.org/hooks)，它从给定的 `machine` 创建一个 actor，并启动一个在组件生命周期内运行的 actor。
 
-#### Arguments
+#### 参数
 
-- `machine` - An [XState machine](machines.mdx)
-- `options?` (optional) - Actor options.
+- `machine` - 一个 [XState machine](machines.mdx)
+- `options?` (可选) - Actor 选项。
 
-**Returns** a tuple of `[snapshot, send, actorRef]`:
+**返回** 一个 `[snapshot, send, actorRef]` 元组：
 
-- `snapshot` - Represents the current state of the machine.
-- `send` - A function that sends events to the running actor.
-- `actorRef` - The started actor.
+- `snapshot` - 表示机器的当前状态。
+- `send` - 一个向运行中的 actor 发送事件的函数。
+- `actorRef` - 启动的 actor。
 
-#### Examples
+#### 示例
 
 ```tsx
 import { useMachine } from '@xstate/react';
 
 function Component() {
   const [snapshot, send] = useMachine(machine);
-  
-  // Machine with provided implementations
-  // Will keep provided implementations up-to-date
+
+  // 提供了实现的机器
+  // 将保持提供的实现是最新的
   const [snapshot, send] = useMachine(
     machine.provide({
       actions: {
@@ -135,16 +135,16 @@ function Component() {
 
 ### `useActorRef(machine, options?)`
 
-A React hook that returns the `actorRef` created from the `machine` with actor `options` that are passed to `createActor(logic, options)`, if specified. It starts the actor ref and runs it for the lifetime of the component. 
+一个 React hook，它返回从 `machine` 创建的 `actorRef`，并带有传递给 `createActor(logic, options)` 的 actor `options`（如果指定）。它启动 actor ref 并在组件的生命周期内运行它。
 
-The `useActorRef(...)` hook is useful when you want fine-grained control, e.g. to add logging, or minimize re-renders. In contrast to `useActor(...)` that would flush each update from the machine to the React component, `useActorRef(...)` instead returns a static reference (to just the machine actor) which will not rerender when its state changes.
+`useActorRef(...)` hook 在你需要细粒度控制时非常有用，例如添加日志记录或最小化重新渲染。与 `useActor(...)` 不同，后者会将机器的每次更新刷新到 React 组件，`useActorRef(...)` 则返回一个静态引用（仅指向机器 actor），其状态变化时不会重新渲染。
 
-You can use the `useSelector(...)` hook to select part of the snapshot from the `actorRef` whenever it updates.
+你可以使用 `useSelector(...)` hook 从 `actorRef` 的快照中选择部分数据，每当它更新时。
 
-#### Arguments
+#### 参数
 
-- `actorLogic`- The actor logic to create an actor from; e.g. `createMachine(...)`, `fromPromise(...)`, etc.
-- `options?` (optional) - Actor options.
+- `actorLogic` - 用于创建 actor 的逻辑；例如 `createMachine(...)`，`fromPromise(...)` 等。
+- `options?` (可选) - Actor 选项。
 
 ```js
 import { useActorRef } from '@xstate/react';
@@ -157,7 +157,7 @@ const App = () => {
 };
 ```
 
-Providing machine implementations:
+提供机器实现：
 
 ```js
 // ...
@@ -177,22 +177,22 @@ const App = () => {
 
 ### `useSelector(actorRef, selector, compare?, getSnapshot?)`
 
-A React hook that returns the selected value from the snapshot of an `actorRef`, such as a actor ref. This hook will only cause a rerender if the selected value changes, as determined by the optional `compare` function.
+一个 React hook，它从 `actorRef` 的快照中返回选定的值，例如 actor ref。只有当选定的值改变时，此 hook 才会导致重新渲染，这由可选的 `compare` 函数决定。
 
-#### Arguments
+#### 参数
 
-- `actorRef` - an actor ref
-- `selector` - a function that takes in an actor’s snapshot as an argument and returns the desired selected value.
-- `compare` (optional) - a function that determines if the current selected value is the same as the previous selected value.
-- `getSnapshot` (optional) - a function that should return the latest emitted value from the `actor`.
-  - Defaults to attempting to get the `actor.state`, or returning `undefined` if that does not exist. Will automatically pull the state from actor refs.
+- `actorRef` - 一个 actor ref
+- `selector` - 一个函数，它将 actor 的快照作为参数并返回所需的选定值。
+- `compare` (可选) - 一个函数，用于确定当前选定的值是否与之前的选定值相同。
+- `getSnapshot` (可选) - 一个函数，应该返回 `actor` 最新发出的值。
+  - 默认情况下尝试获取 `actor.state`，如果不存在则返回 `undefined`。将自动从 actor refs 中提取状态。
 
-#### Examples
+#### 示例
 
 ```js
 import { useSelector } from '@xstate/react';
 
-// tip: optimize selectors by defining them externally when possible
+// 提示：尽可能在外部定义选择器以优化选择器
 const selectCount = (snapshot) => snapshot.context.count;
 
 const App = ({ actorRef }) => {
@@ -202,7 +202,7 @@ const App = ({ actorRef }) => {
 };
 ```
 
-With `compare` function:
+使用 `compare` 函数：
 
 ```js
 // ...
@@ -219,20 +219,21 @@ const App = ({ actorRef }) => {
 
 ### `createActorContext(logic)`
 
-Returns a [React Context object](https://beta.reactjs.org/learn/passing-data-deeply-with-context) that creates an actor from the provided actor `logic` and makes the actor available through React Context. There are helper methods for accessing state and the actor ref.
+返回一个 [React Context 对象](https://beta.reactjs.org/learn/passing-data-deeply-with-context)，它从提供的 actor `logic` 创建一个 actor，并通过 React Context 使该 actor 可用。它包含用于访问状态和 actor 引用的辅助方法。
 
-#### Arguments
+#### 参数
 
-- `logic` - Actor logic, like an [XState machine](machines.mdx)
+- `logic` - Actor 逻辑，例如 [XState machine](machines.mdx)
 
-Returns a React Context object that contains the following properties:
+返回一个包含以下属性的 React Context 对象：
 
-- `Provider` - a React Context Provider component with the following props:
-  - `logic` - Actor logic, such as an [XState machine](machines.mdx) ,that must be of the same type as the actor logic passed to `createActorContext(...)`
-- `useSelector(selector, compare?)` - a React hook that takes in a `selector` function and optional `compare` function and returns the selected value from the actor snapshot
-- `useActorRef()` - a React hook that returns the actor ref of the actor created from the actor `logic`
+- `Provider` - 一个 React Context Provider 组件，具有以下属性：
+  - `logic` - Actor 逻辑，例如 [XState machine](machines.mdx)，必须与传递给 `createActorContext(...)` 的 actor 逻辑类型相同
+- `useSelector(selector, compare?)` - 一个 React hook，接受一个 `selector` 函数和可选的 `compare` 函数，并返回从 actor 快照中选定的值
+- `useActorRef()` - 一个 React hook，返回从 actor `logic` 创建的 actor 引用
 
-Creating a React Context for the actor and providing it in app scope:
+为 actor 创建一个 React Context 并在应用范围内提供它：
+
 
 ```js
 import { createActorContext } from '@xstate/react';
@@ -249,7 +250,7 @@ function App() {
 }
 ```
 
-Consuming the actor in a component:
+在组件中使用 actor：
 
 ```js
 import { SomeMachineContext } from '../path/to/SomeMachineContext';
@@ -269,7 +270,7 @@ function SomeComponent() {
 }
 ```
 
-Providing a similar machine:
+提供类似的机器：
 
 ```js
 import { SomeMachineContext } from '../path/to/SomeMachineContext';
@@ -282,7 +283,7 @@ function SomeComponent() {
         actions: {
           someAction: differentImplementation,
         },
-        // ... More implementations
+        // ... 更多实现
       })}
     >
       <SomeOtherComponent />
@@ -291,11 +292,11 @@ function SomeComponent() {
 }
 ```
 
-### Shallow comparison
+### 浅比较
 
-The default comparison is a strict reference comparison (`===`). If your selector returns non-primitive values, such as objects or arrays, you should keep this in mind and either return the same reference, or provide a shallow or deep comparator.
+默认的比较是严格引用比较 (`===`)。如果你的选择器返回非原始值，例如对象或数组，你应该记住这一点，并返回相同的引用，或者提供浅比较或深比较器。
 
-The `shallowEqual(...)` comparator function is available for shallow comparison:
+`shallowEqual(...)` 比较器函数可用于浅比较：
 
 ```js
 import { useSelector, shallowEqual } from '@xstate/react';
@@ -305,15 +306,14 @@ import { useSelector, shallowEqual } from '@xstate/react';
 const selectUser = (state) => state.context.user;
 
 const App = ({ actorRef }) => {
-  // shallowEqual comparator is needed to compare the object, whose
-  // reference might change despite the shallow object values being equal
+  // shallowEqual 比较器用于比较对象，即使对象的引用可能会改变，但浅层对象值是相等的
   const user = useSelector(actorRef, selectUser, shallowEqual);
 
   // ...
 };
 ```
 
-With `useActorRef(...)`:
+使用 `useActorRef(...)`：
 
 ```js
 import { useActorRef, useSelector } from '@xstate/react';
@@ -329,11 +329,12 @@ const App = () => {
 };
 ```
 
-## Configuring machines
+## 配置状态机
 
-Existing machines can be customized by providing different implementations in `machine.provide(implementations)`.
+可以通过在 `machine.provide(implementations)` 中提供不同的实现来定制现有的状态机。
 
-Example: the `'fetchData'` actor ref and `'notifySuccess'` action are both configurable:
+示例：`'fetchData'` actor 引用和 `'notifySuccess'` 动作都是可配置的：
+
 
 ```js
 const fetchMachine = createMachine({
@@ -394,18 +395,18 @@ const Fetcher = ({ onResolve }) => {
     case 'idle':
       return (
         <button onClick={() => send({ type: 'FETCH', query: 'something' })}>
-          Search for something
+          搜索某物
         </button>
       );
-    case 'loading':
-      return <div>Searching...</div>;
-    case 'success':
-      return <div>Success! Data: {state.context.data}</div>;
+        case 'loading':
+      return <div>搜索中...</div>;
+        case 'success':
+      return <div>成功！数据：{state.context.data}</div>;
     case 'failure':
       return (
         <>
           <p>{state.context.error.message}</p>
-          <button onClick={() => send({ type: 'RETRY' })}>Retry</button>
+          <button onClick={() => send({ type: 'RETRY' })}>重试</button>
         </>
       );
     default:
@@ -414,15 +415,15 @@ const Fetcher = ({ onResolve }) => {
 };
 ```
 
-## Input
+## 输入
 
-You can provide input to actors
+你可以向 actors 提供输入
 
-## Matching states
+## 匹配状态
 
-When using [hierarchical](parent-states.mdx) and [parallel](parallel-states.mdx) machines, the state values will be objects, not strings. In this case, it is best to use [`state.matches(...)`](states.mdx#statematchesstatevalue).
+当使用[分层](parent-states.mdx)和[并行](parallel-states.mdx)状态机时，状态值将是对象而不是字符串。在这种情况下，最好使用[`state.matches(...)`](states.mdx#statematchesstatevalue)。
 
-We can do this with `if/else if/else` blocks:
+我们可以使用 `if/else if/else` 语句来实现这一点：
 
 ```js
 // ...
@@ -437,7 +438,7 @@ if (state.matches('idle')) {
 }
 ```
 
-We can also continue to use `switch`, but we must make an adjustment to our approach. By setting the expression of the `switch` to `true`, we can use [`state.matches(...)`](states.mdx#statematchesstatevalue) as a predicate in each `case`:
+我们也可以继续使用 `switch`，但我们必须调整我们的方法。通过将 `switch` 的表达式设置为 `true`，我们可以在每个 `case` 中使用 [`state.matches(...)`](states.mdx#statematchesstatevalue) 作为谓词：
 
 ```js
 switch (true) {
@@ -452,7 +453,7 @@ switch (true) {
 }
 ```
 
-A ternary statement can also be considered, especially within rendered JSX:
+也可以考虑在渲染的 JSX 中使用三元表达式：
 
 ```jsx
 const Loader = () => {
@@ -472,51 +473,52 @@ const Loader = () => {
 };
 ```
 
-## Persisted and rehydrated State
+## 持久化和恢复状态
 
-You can persist and rehydrate state with `useMachine(...)` via `options.snapshot` in the 2nd argument:
+你可以通过在 `useMachine(...)` 的第二个参数中使用 `options.snapshot` 来持久化和恢复状态：
 
 ```js
 // ...
 
-// Get the persisted state config object from somewhere, e.g. localStorage
+// 从某处获取持久化的状态配置对象，例如 localStorage
 const persistedState = JSON.parse(localStorage.getItem('some-persisted-state-key'));
 
 const App = () => {
   const [state, send] = useMachine(someMachine, {
-    snapshot: persistedState // provide persisted state config object here
+    snapshot: persistedState // 在此处提供持久化的状态配置对象
   });
 
-  // state will initially be that persisted state, not the machine’s initialState
+  // state 将最初是持久化的状态，而不是机器的 initialState
 
   return (/* ... */)
 }
 ```
 
-## Actor refs
+## Actor 引用
 
-The `actorRef` created in `useMachine(machine)` can be referenced as the third returned value:
+在 `useMachine(machine)` 中创建的 `actorRef` 可以作为第三个返回值引用：
 
 ```js
 //                  vvvvvvvv
 const [state, send, actorRef] = useMachine(someMachine);
 ```
 
-You can subscribe to that actor ref's state changes with the [`useEffect` hook](https://reactjs.org/docs/hooks-effect.html):
+你可以使用 [`useEffect` hook](https://reactjs.org/docs/hooks-effect.html) 订阅该 actor ref 的状态变化：
 
 ```js
 // ...
 
 useEffect(() => {
   const subscription = actorRef.subscribe((snapshot) => {
-    // simple logging
+    // 简单日志记录
     console.log(snapshot);
   });
 
   return subscription.unsubscribe;
-}, [actorRef]); // note: actor ref should never change
+}, [actorRef]); // 注意：actor ref 不应更改
 ```
 
-## Resources
+## 资源
 
-_Coming soon_
+_即将推出_
+

@@ -1,37 +1,37 @@
 ---
-title: 'Stately Sky getting started'
+title: 'Stately Sky 入门指南'
 ---
 
-# Getting started with Stately Sky 🌤️
+# Stately Sky 入门指南 🌤️
 
-This guide will walk you through deploying a simple traffic light state machine workflow with Stately Sky using [XState](/docs/xstate.mdx), [Vite](https://vitejs.dev/) and [React](https://reactjs.org/).
+本指南将引导您使用 [XState](/docs/xstate.mdx)、[Vite](https://vitejs.dev/) 和 [React](https://reactjs.org/) 部署一个简单的交通灯状态机工作流。
 
 :::warning
 
-Please note that Sky is currently in beta and will be changing rapidly.
+请注意，Sky 目前处于测试阶段，变化较快。
 
 :::
 
-## What you’ll need
+## 您需要准备的
 
-- A [Stately](https://stately.ai) account with a [Pro, Team, or Enterprise subscription](https://stately.ai/pricing).
-- Our [Stately Sky starter project](https://github.com/statelyai/sky-starter-app). Clone the repo to your local machine.
+- 一个 [Stately](https://stately.ai) 账户，并拥有 [Pro、团队或企业订阅](https://stately.ai/pricing)。
+- 我们的 [Stately Sky 入门项目](https://github.com/statelyai/sky-starter-app)。将仓库克隆到您的本地机器。
 
 :::studio
 
-Our premium users get unlimited use of Stately Sky while it’s in beta. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+我们的高级用户在测试阶段可以无限制使用 Stately Sky。您可以通过免费试用体验 Stately Studio 的高级计划。[查看我们的 Pro 计划功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx) 或 [升级您的现有计划](https://stately.ai/registry/billing)。
 
 :::
 
-## Getting started video
+## 入门视频
 
 <YouTube id="JJHC0UyGsrQ" />
 
-## Step 1: Create a machine with Stately
+## 第一步：使用 Stately 创建一个状态机
 
-Create a project and compose your machine in the [Stately editor](https://stately.ai/editor) with the transitions and states you want.
+在 [Stately 编辑器](https://stately.ai/editor) 中创建一个项目并编写您想要的状态和转换。
 
-For this example, we’ll create a simple traffic light machine with three states: `green`, `yellow`, and `red`. Feel free to fork [our traffic light example](https://stately.ai/registry/editor/eb3e89f5-5936-439f-8254-2f6ea4303659?machineId=15fd8071-b80c-4a6f-b9f5-60b6cf578ee5) to test. Check out a [deployed version of this traffic light machine](https://sky-starter.stately.ai/?page=trafficlight).
+在这个示例中，我们将创建一个简单的交通灯状态机，包含三个状态：`green`、`yellow` 和 `red`。您可以分叉 [我们的交通灯示例](https://stately.ai/registry/editor/eb3e89f5-5936-439f-8254-2f6ea4303659?machineId=15fd8071-b80c-4a6f-b9f5-60b6cf578ee5) 进行测试。查看 [这个交通灯状态机的部署版本](https://sky-starter.stately.ai/?page=trafficlight)。
 
 <EmbedMachine
   embedURL="https://stately.ai/registry/editor/embed/eb3e89f5-5936-439f-8254-2f6ea4303659?machineId=15fd8071-b80c-4a6f-b9f5-60b6cf578ee5"
@@ -39,102 +39,102 @@ For this example, we’ll create a simple traffic light machine with three state
 />
 
 :::xstate
-Sky only supports [XState](https://github.com/statelyai/xstate) V5 machines. The [changes in XState V5](/docs/migration.mdx) provide both a better developer experience and adhere to the [Actor Model](/docs/actor-model.mdx) more closely, allowing Sky to capably deploy machines that reliably communicate their state.
+Sky 仅支持 [XState](https://github.com/statelyai/xstate) V5 状态机。[XState V5 的变化](/docs/migration.mdx) 提供了更好的开发者体验，并更贴近 [Actor 模型](/docs/actor-model.mdx)，使 Sky 能够可靠地部署能够有效通信其状态的状态机。
 :::
 
 :::typescript
 
-**XState v5 requires TypeScript version 5.0 or greater.**
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
 
-For best results, use the latest TypeScript version. [Read more about XState and TypeScript](typescript.mdx)
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
 
 :::
 
-## Step 2: Create an API key
+## 第二步：创建 API 密钥
 
-After creating your machine, you’ll need to create an API key to deploy it to Sky.
+创建状态机后，您需要创建一个 API 密钥以将其部署到 Sky。
 
-1. Use the **Deploy** button in the top right corner of the editor to open the Stately Sky options.
-2. Use the **Create API Key** button to generate an API key.
+1. 使用编辑器右上角的 **Deploy** 按钮打开 Stately Sky 选项。
+2. 使用 **Create API Key** 按钮生成一个 API 密钥。
 
-![Stately Sky modal showing no API key created yet. There is a button to Create API Key.](..//static/assets/sky-getting-started/editor-no-api-key.png)
+![Stately Sky 模态框显示尚未创建 API 密钥。有一个按钮可以创建 API 密钥。](..//static/assets/sky-getting-started/editor-no-api-key.png)
 
-3. Be sure to copy that API key and save it somewhere safe. You’ll need it later.
+3. 确保复制该 API 密钥并将其安全保存。您稍后会需要它。
 
-The page should look like this:
+页面应如下所示：
 
-![Stately Sky modal shows the API key in an input hidden behind password dots. There are options to Regenerate, Delete, Reveal, or copy the API key to the clipboard.](..//static/assets/sky-getting-started/editor-api-key.png)
+![Stately Sky 模态框显示 API 密钥在一个输入框中，隐藏在密码点后面。有选项可以重新生成、删除、显示或复制 API 密钥到剪贴板。](..//static/assets/sky-getting-started/editor-api-key.png)
 
-## Step 3: Deploy your machine to Sky
+## 第三步：将状态机部署到 Sky
 
-Once you have generated the API key, you can deploy your machine to Sky as a workflow.
+生成 API 密钥后，您可以将状态机作为工作流部署到 Sky。
 
-1. Use the **Deploy to Sky 🌤️** button to start the deployment process.
-2. When the workflow is deployed, it will be listed under **Existing deploys**.
-3. Use **Copy URL** to copy to the URL to your clipboard.
+1. 使用 **Deploy to Sky 🌤️** 按钮开始部署过程。
+2. 当工作流部署完成后，它将列在 **Existing deploys** 下。
+3. 使用 **Copy URL** 将 URL 复制到剪贴板。
 
-You’ll need the workflow’s URL to reference it from the starter project.
+您需要引用启动项目中的工作流 URL。
 
-![Stately Sky modal shows the Traffic light workflow listed under Existing deploys. The workflow has its own URL with the options to Copy URL or delete alongside.](../static/assets/sky-getting-started/editor-deployed-workflow.png)
+![Stately Sky 模态框显示交通灯工作流列在现有部署下。工作流有自己的 URL，并有选项可以复制 URL 或删除。](../static/assets/sky-getting-started/editor-deployed-workflow.png)
 
-## Step 4: Add the actor in the starter project
+## 第四步：在启动项目中添加 actor
 
-After adding the API key, you’ll need to create an actor.
+添加 API 密钥后，您需要创建一个 actor。
 
-1. Create a new file in the `src` directory of the starter project. We named ours `trafficLightActor.ts`.
-2. In your new file, import the `actorFromStately` function and initialize the actor with the provided URL and your own session ID:
+1. 在启动项目的 `src` 目录中创建一个新文件。我们将其命名为 `trafficLightActor.ts`。
+2. 在新文件中，导入 `actorFromStately` 函数，并使用提供的 URL 和您自己的会话 ID 初始化 actor：
 
 ```typescript
 import { actorFromStately } from '@statelyai/sky';
 
 const actor = actorFromStately({
-  apiKey: 'paste your API key here',
-  url: 'paste your Sky url here',
-  sessionId: 'your session id here',
+  apiKey: '在此粘贴您的 API 密钥',
+  url: '在此粘贴您的 Sky URL',
+  sessionId: '您的会话 ID',
 });
 ```
 
 :::tip
-By default, Sky is multiplayer.
-The session ID is used to shard the multiplayer session. Each actor has a unique session ID.
+默认情况下，Sky 是多人模式。
+会话 ID 用于分片多人会话。每个 actor 都有一个唯一的会话 ID。
 
-- Use a shared session ID to allow multiple users to reference the same actor.
-- If you want users isolated, use a unique session ID for each user.
+- 使用共享的会话 ID 允许多个用户引用同一个 actor。
+- 如果您希望用户隔离，请为每个用户使用唯一的会话 ID。
 
 :::
 
-## Step 5: Fetching the config from Sky
+## 第五步：从 Sky 获取配置
 
-Now that we’ve created the actor, we need to fetch the config from Sky. Doing so will download and generate the machine configuration file in our repo, giving us type safety when interacting with the running actor!
+现在我们已经创建了 actor，我们需要从 Sky 获取配置。这样做将下载并生成我们的仓库中的状态机配置文件，使我们在与运行的 actor 交互时具有类型安全性！
 
-To fetch the config, we’ll use the [XState CLI tool](/docs/developer-tools.mdx#xstate-cli-command-line-interface) and the `sky` script already in our `package.json`. This script runs the command over all the files in the `src` repo to find configs associated with any initialized actors.
+要获取配置，我们将使用 [XState CLI 工具](/docs/developer-tools.mdx#xstate-cli-command-line-interface) 和 `package.json` 中已有的 `sky` 脚本。此脚本在 `src` 目录中的所有文件上运行命令，以查找与任何已初始化的 actor 关联的配置。
 
 ![package.json](../static/assets/sky-getting-started/code-sky-cmd.png)
 
-1. Using your package manager of choice, run the `sky` command:
+1. 使用您选择的包管理器运行 `sky` 命令：
 
 ```bash npm2yarn
 npm run sky
 ```
 
-2. Once the `sky` command has completed, you should see:
+2. 一旦 `sky` 命令完成，您应该会看到：
 
-- a second `skyConfig` argument with updated imports passed to the `actorFromStately` function.
-- a new TypeScript file in your `src` directory, named after the actor in the Studio. In our case, it’s `trafficLightActor.sky.ts`.
+- 一个带有更新导入的第二个 `skyConfig` 参数传递给 `actorFromStately` 函数。
+- 在您的 `src` 目录中，一个新的 TypeScript 文件，以 Studio 中的 actor 命名。在我们的例子中，它是 `trafficLightActor.sky.ts`。
 
-You’ll notice a warning in the `sky.ts` file that the file is generated. You should not manually edit these files as any local changes will not reflect what’s running in Sky.
+您会在 `sky.ts` 文件中看到一个警告，提示该文件是生成的。您不应手动编辑这些文件，因为任何本地更改都不会反映在 Sky 中运行的内容。
 
-Running `xstate sky` will only affect a file if it hasn’t already been fetched. If you make changes to the machine in the Studio, you’ll need to delete the generated file `yourFile.sky.ts` and run the command again. Alternatively, you can force the refetch by running `xstate sky --refetch`.
+运行 `xstate sky` 只会影响尚未获取的文件。如果您在 Studio 中对状态机进行了更改，您需要删除生成的文件 `yourFile.sky.ts` 并再次运行命令。或者，您可以通过运行 `xstate sky --refetch` 强制重新获取。
 
 :::tip
 
-Add your generated `sky.ts` files to source control.
+将生成的 `sky.ts` 文件添加到源代码管理中。
 
 :::
 
-## Finishing up
+## 完成
 
-And that’s it! You can now interact with your running actor in much the same way you would with local actors, like sending events with the `send()` function. Sky is still in its early days, so there are some limitations and things to remember. Specifically:
+就是这样！您现在可以像与本地 actor 一样与运行的 actor 交互，例如使用 `send()` 函数发送事件。Sky 仍处于早期阶段，因此有一些限制和需要记住的事项。具体来说：
 
-- Only XState V5 machines are supported.
-- If you're using React Native, see [this comment](https://github.com/statelyai/sky/issues/6#issuecomment-1766967479) if you're having issues.
+- 仅支持 XState V5 状态机。
+- 如果您使用的是 React Native，请参阅 [此评论](https://github.com/statelyai/sky/issues/6#issuecomment-1766967479) 以解决问题。

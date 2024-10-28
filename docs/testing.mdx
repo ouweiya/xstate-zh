@@ -1,15 +1,15 @@
 ---
-title: 'Testing'
-description: 'How to test state machine and actor logic in XState'
+title: '测试'
+description: '如何测试 XState 中的状态机和 actor 逻辑'
 ---
 
-## Testing logic
+## 测试逻辑
 
-Testing actor logic is important for ensuring that the logic is correct and that it behaves as expected. You can test your state machines and actors using various testing libraries and tools. You should follow the **Arrange, Act, Assert** pattern when writing tests for your state machines and actors:
+测试 actor 逻辑对于确保逻辑正确性和预期行为非常重要。您可以使用各种测试库和工具来测试您的状态机和 actor。在为状态机和 actor 编写测试时，您应该遵循 **安排、执行、断言** 模式：
 
-- **Arrange** - set up the test by creating the actor logics (such as a state machine) and the actors from the actor logics.
-- **Act** - send event(s) to the actor(s).
-- **Assert** - assert that the actor(s) reached their expected state(s) and/or executed the expected side effects.
+- **安排** - 通过创建 actor 逻辑（例如状态机）和从 actor 逻辑创建 actor 来设置测试。
+- **执行** - 向 actor 发送事件。
+- **断言** - 断言 actor 达到预期状态和/或执行预期的副作用。
 
 ```ts
 import { setup, createActor } from 'xstate';
@@ -18,7 +18,7 @@ import { test, expect } from 'vitest';
 test('some actor', async () => {
   const notifiedMessages: string[] = [];
 
-  // 1. Arrange
+    // 1. 安排
   const machine = setup({
     actions: {
       notify: (_, params) => {
@@ -40,32 +40,32 @@ test('some actor', async () => {
 
   const actor = createActor(machine);
 
-  // 2. Act
+  // 2. 执行
   actor.start();
-  actor.send({ type: 'toggle' }); // => should be in 'active' state
-  actor.send({ type: 'toggle' }); // => should be in 'inactive' state
-  actor.send({ type: 'toggle' }); // => should be in 'active' state
+  actor.send({ type: 'toggle' }); // => 应该处于 'active' 状态
+  actor.send({ type: 'toggle' }); // => 应该处于 'inactive' 状态
+  actor.send({ type: 'toggle' }); // => 应该处于 'active' 状态
 
-  // 3. Assert
+  // 3. 断言
   expect(actor.getSnapshot().value).toBe('active');
-  expect(notifiedMessages).toEqual(['Active!', 'Active!']);;
+  expect(notifiedMessages).toEqual(['Active!', 'Active!']);
 });
 ```
 
 :::studio
 
-You can now [generate test paths from your state machines in Stately Studio](generate-test-paths.mdx). You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+您现在可以在 Stately Studio 中[从状态机生成测试路径](generate-test-paths.mdx)。您可以通过免费试用来体验 Stately Studio 的高级计划。[查看我们专业计划的功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx)或[升级您现有的计划](https://stately.ai/registry/billing)。
 
 :::
 
-## Testing actors
+## 测试 actor
 
-_Coming soon_
+_即将推出_
 
-## Mocking effects
+## 模拟效果
 
-_Coming soon_
+_即将推出_
 
-## Using `@xstate/test`
+## 使用 `@xstate/test`
 
-_Coming soon_
+_即将推出_

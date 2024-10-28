@@ -2,19 +2,19 @@
 title: '@xstate/svelte'
 ---
 
-The [@xstate/svelte package](https://github.com/statelyai/xstate/tree/main/packages/xstate-svelte) contains utilities for using [XState](https://github.com/statelyai/xstate) with [Svelte](https://github.com/sveltejs/svelte).
+[@xstate/svelte 包](https://github.com/statelyai/xstate/tree/main/packages/xstate-svelte) 包含了在 [Svelte](https://github.com/sveltejs/svelte) 中使用 [XState](https://github.com/statelyai/xstate) 的工具。
 
-## Templates
+## 模板
 
-Use the following templates to get started quickly with XState and Svelte:
+使用以下模板可以快速开始使用 XState 和 Svelte：
 
-- [XState Svelte template (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/svelte-ts)
-- [XState Svelte template (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/svelte-ts?file=%2Fsrc%2FfeedbackMachine.ts)
+- [XState Svelte 模板 (CodeSandbox)](https://codesandbox.io/p/devbox/github/statelyai/xstate/tree/main/templates/svelte-ts)
+- [XState Svelte 模板 (StackBlitz)](https://stackblitz.com/github/statelyai/xstate/tree/main/templates/svelte-ts?file=%2Fsrc%2FfeedbackMachine.ts)
 
 
-## Installation
+## 安装
 
-Install the latest versions of both `xstate` and `@xstate/svelte`. `xstate` is a peer dependency of `@xstate/svelte`.
+安装最新版本的 `xstate` 和 `@xstate/svelte`。`xstate` 是 `@xstate/svelte` 的一个 peer 依赖。
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -46,36 +46,36 @@ yarn add xstate @xstate/svelte
 
 ### `useMachine(machine, options?)`
 
-A function that creates an actor from the given `machine` and starts an actor that runs for the lifetime of the component.
+一个函数，用于从给定的 `machine` 创建一个 actor，并启动一个在组件生命周期内运行的 actor。
 
-**Arguments**
+**参数**
 
-- `machine` - An [XState machine](machines.mdx).
-- `options` (optional) - Actor options
+- `machine` - 一个 [XState 机器](machines.mdx)。
+- `options` (可选) - Actor 选项
 
-**Returns** `{ snapshot, send, actorRef}`:
+**返回** `{ snapshot, send, actorRef}`:
 
-- `snapshot` - A [Svelte store](https://svelte.dev/docs#svelte_store) representing the current state of the machine
-- `send` - A function that sends events to the running actor ref.
-- `actorRef` - The created actor ref.
+- `snapshot` - 一个表示机器当前状态的 [Svelte store](https://svelte.dev/docs#svelte_store)
+- `send` - 一个向运行中的 actor ref 发送事件的函数。
+- `actorRef` - 创建的 actor ref。
 
 ### `useSelector(actorRef, selector, compare?, getSnapshot?)`
 
-A function that returns [Svelte store](https://svelte.dev/docs#svelte_store) representing the selected value from the snapshot of an `actorRef`, such as an actor. The store will only be updated when the selected value changes, as determined by the optional `compare` function.
+一个函数，返回一个表示从 `actorRef` 的快照中选择的值的 [Svelte store](https://svelte.dev/docs#svelte_store)。只有当所选值发生变化时，store 才会更新，这由可选的 `compare` 函数确定。
 
-**Arguments**
+**参数**
 
-- `actorRef` - An actor ref
-- `selector` - a function that takes in an actor’s current state (`snapshot`) as an argument and returns the desired selected value.
-- `compare` (optional) - a function that determines if the current selected value is the same as the previous selected value.
+- `actorRef` - 一个 actor ref
+- `selector` - 一个函数，接受 actor 的当前状态 (`snapshot`) 作为参数，并返回所需的选定值。
+- `compare` (可选) - 一个函数，用于确定当前选定值是否与之前的选定值相同。
 
-#### Examples
+#### 示例
 
-_Coming soon_
+_即将推出_
 
-## Matching States
+## 匹配状态
 
-When using [hierarchical](https://xstate.js.org/docs/guides/hierarchical.html) and [parallel](https://xstate.js.org/docs/guides/parallel.html) machines, the state values will be objects, not strings. In this case, it is best to use [`state.matches(...)`](https://xstate.js.org/docs/guides/states.html#state-methods-and-properties).
+当使用 [分层](https://xstate.js.org/docs/guides/hierarchical.html) 和 [并行](https://xstate.js.org/docs/guides/parallel.html) 机器时，状态值将是对象，而不是字符串。在这种情况下，最好使用 [`state.matches(...)`](https://xstate.js.org/docs/guides/states.html#state-methods-and-properties)。
 
 ```svelte
 {#if $state.matches('idle')}
@@ -87,12 +87,12 @@ When using [hierarchical](https://xstate.js.org/docs/guides/hierarchical.html) a
 {/if}
 ```
 
-## Persisted and Rehydrated State
+## 持久化和恢复状态
 
-You can persist and rehydrate state with `useMachine(...)` via `options.snapshot`:
+您可以通过 `options.snapshot` 使用 `useMachine(...)` 持久化和恢复状态：
 
 ```js
-// Get the persisted state config object from somewhere, e.g. localStorage
+// 从某处获取持久化的状态配置对象，例如 localStorage
 // highlight-start
 const persistedState = JSON.parse(
   localStorage.getItem('some-persisted-state-key'),
@@ -104,6 +104,6 @@ const { snapshot, send } = useMachine(someMachine, {
   snapshot: persistedState,
 });
 
-// state will initially be that persisted state, not the machine’s initialState
+// 状态将最初是持久化的状态，而不是机器的 initialState
 ```
 

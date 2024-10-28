@@ -1,45 +1,45 @@
 ---
-title: Import from code
+title: 从代码导入
 ---
 
-Importing from code is helpful if you’ve already built machines while working with [XState](xstate.mdx), or have created a machine using our older [Stately Viz](https://stately.ai/viz) but haven’t yet tried Stately Studio’s editor.
+如果您已经在使用 [XState](xstate.mdx) 构建了状态机，或者使用我们较早的 [Stately Viz](https://stately.ai/viz) 创建了状态机，但还没有尝试过 Stately Studio 的编辑器，那么从代码导入是很有帮助的。
 
 :::tip
 
-Watch our [“Import from code” video on YouTube](https://www.youtube.com/watch?v=DAoIFaugDLo) (2m24s).
+观看我们的 [“从代码导入” 视频在 YouTube 上](https://www.youtube.com/watch?v=DAoIFaugDLo) (2分24秒)。
 
 :::
 
-## Import state machines
+## 导入状态机
 
-Your state machine code should be formatted as a [`createMachine()` factory function](/docs/actors#createmachine) before import. The importer has basic validation in case your machine has basic errors, including reminding you if the `createMachine` definition is missing.
+在导入之前，您的状态机代码应格式化为 [`createMachine()` 工厂函数](/docs/actors#createmachine)。导入器具有基本的验证功能，以防您的状态机有基本错误，包括提醒您是否缺少 `createMachine` 定义。
 
-[Check out an importable machine code example at the end of this page](/#machine-code-example).
+[在页面末尾查看一个可导入的机器代码示例](/#machine-code-example)。
 
 :::warning
 
-**Caution**: importing code will overwrite your current or selected machine unless you create a new machine from the machines list inside a project.
+**警告**：导入代码将覆盖您当前或选定的状态机，除非您从项目中的机器列表中创建一个新机器。
 
 :::
 
 
 :::new
 
-The Stately editor now supports importing multiple machines from code.
+Stately 编辑器现在支持从代码导入多个状态机。
 
 :::
 
-### Create a new machine inside a project using imported code
+### 使用导入的代码在项目中创建新机器
 
-Create a <FilePlus2 size={18} /> **New machine** from the machines list inside a project, then use the <Code size={18}/> **Import** button to import code into the new machine.
+从项目中的机器列表中创建一个 <FilePlus2 size={18} /> **新机器**，然后使用 <Code size={18}/> **导入** 按钮将代码导入新机器。
 
-### Import code to overwrite your machine
+### 导入代码以覆盖您的机器
 
-Use **Import** button in the <Code size={18}/> **Code** panel, or **Machine** > <Import size={18}/> **Import** from the editor menu to overwrite your current machine.
+使用 <Code size={18}/> **代码** 面板中的 **导入** 按钮，或从编辑器菜单中选择 **机器** > <Import size={18}/> **导入** 以覆盖您当前的机器。
 
-## Machine code example
+## 机器代码示例
 
-Below is an example of a `createMachine()` factory function which you can import as a machine without any errors:
+以下是一个 `createMachine()` 工厂函数的示例，您可以将其导入为机器而不会出现任何错误：
 
 ```js
 createMachine({
