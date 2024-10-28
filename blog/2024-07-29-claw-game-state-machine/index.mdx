@@ -1,39 +1,39 @@
 ---
-title: Viam x Stately - Smart Machines Meet State Machines
-description: Controlling hardware in the real world requires confidence and safety, even when it's part of a game!
-tags: [case study, study, viam, xstate, state machines]
+title: Viam x Stately - 智能机器与状态机的结合
+description: 控制现实世界中的硬件需要信心和安全性，即使它是游戏的一部分！
+tags: [案例研究, 研究, viam, xstate, 状态机]
 authors: [hipsterbrown]
 date: 2024-07-29
 slug: 2024-07-29-claw-game-state-machine
 ---
 
-The term "robots" invokes a fascinating range of ideas, from manually controlled machines to automated software that crawls the web. One of the prime examples in this area is robotic arms, traditionally used to aid and extend the reach of humans in manufacturing, surgery, and space exploration. Each of these use cases require some way of programming and controlling the arm to perform their dedicated task, usually with proprietary software developed by the manufacturer. The UI is tightly coupled to the hardware through a touchscreen device or desktop application physically connected to the arm, which makes it tough to put online securely and using modern technology.
+“机器人”一词引发了各种各样的想法，从手动控制的机器到自动化的软件爬虫。在这个领域的一个主要例子是机器人手臂，传统上用于帮助和扩展人类在制造、手术和太空探索中的能力。这些用例中的每一个都需要某种方式来编程和控制手臂以执行其专用任务，通常使用由制造商开发的专有软件。用户界面通过触摸屏设备或物理连接到手臂的桌面应用程序与硬件紧密耦合，这使得它难以安全地在线使用现代技术。
 
-[Viam](https://www.viam.com/) provides an open source software stack and set of cloud services that makes managing all types of robots (and other smart machines) accessible to developers without any prior hardware experience. To help demonstrate the types of experience that can be built with Viam, the developer advocacy team [built an arcade claw game](https://docs.viam.com/tutorials/projects/claw-game/) that used an industrial robot arm and arcade claw that could be operated using a single-page web application powered by [TypeScript SDK](https://ts.viam.dev/).
+[Viam](https://www.viam.com/) 提供了一个开源软件栈和一套云服务，使得没有任何硬件经验的开发人员也能管理各种类型的机器人（和其他智能机器）。为了帮助展示可以使用 Viam 构建的体验类型，开发者宣传团队[构建了一个街机抓娃娃游戏](https://docs.viam.com/tutorials/projects/claw-game/)，该游戏使用了一个工业机器人手臂和一个街机抓手，可以通过[TypeScript SDK](https://ts.viam.dev/)驱动的单页 Web 应用程序进行操作。
 
 {/* truncate */}
 
-![a large arcade cabinet full of black, red, and green balls surrounding a robotic arm with an arcade claw attached at tehe top end](./viam-claw-game.jpg)
+![一个大型街机柜，里面装满了黑色、红色和绿色的球，周围是一个带有街机抓手的机器人手臂](./viam-claw-game.jpg)
 
-Even for a relatively-constrained experience, managing the various possible actions and states to operate the arm made maintaining the code for the web application quite tough for anyone who wanted to update some feature. It was important to handle any errors related to potential collisions of the arm against any obstacles as it moved, as well as prevent commands from being sent to the arms while it was actively moving or grabbing. Also, as an open source example, we wanted the code to be understood by developers who were learning about Viam without getting lost in the UI-specific logic.
+即使是一个相对受限的体验，管理操作手臂的各种可能动作和状态也使得维护 Web 应用程序的代码变得相当困难，尤其是对于那些想要更新某些功能的人来说。处理与手臂移动时可能碰撞的障碍物相关的任何错误，以及防止在手臂正在移动或抓取时发送命令，这一点非常重要。此外，作为一个开源示例，我们希望代码能够被学习 Viam 的开发人员理解，而不会迷失在特定于用户界面的逻辑中。
 
-Given this mandate and my past experience using XState, I reached for Stately Studio and XState to make the claw game web app into a more production-ready system!
+鉴于这一任务和我过去使用 XState 的经验，我选择了 Stately Studio 和 XState 将抓娃娃游戏 Web 应用程序变成一个更接近生产环境的系统！
 
-## Understanding the problem
+## 理解问题
 
-![a web page with a 3x3 grid of squares filled with directional arrows around an arcade claw, below the grid is a smiling robot with a speech bubble say "Good luck, and have fun!"](./web-app-ui.png)
+![一个网页，带有一个 3x3 的方格网格，里面填充了指向街机抓手的方向箭头，网格下方是一个带有“祝你好运，玩得开心！”的笑脸机器人](./web-app-ui.png)
 
-As stated previously, the web application is quite literally a single page experience. It is a set of static assets (`index.html`, `styles.css`, `main.ts`) that are compiled and served by a static file server running on an embedded Linux device (the [NVIDIA Jetson Orin Nano](https://docs.viam.com/get-started/prepare/jetson-nano-setup/) in this case) where the [viam-server Robot Development Kit](https://docs.viam.com/get-started/installation/) is also running. This is purely for convenience rather than necessity since the Viam TypeScript SDK connects to `viam-server` using WebRTC, so the app could run on any device in the world with an Internet connection.
+如前所述，Web 应用程序实际上是一个单页体验。它是一组静态资产（`index.html`、`styles.css`、`main.ts`），由运行在嵌入式 Linux 设备（在本例中为 [NVIDIA Jetson Orin Nano](https://docs.viam.com/get-started/prepare/jetson-nano-setup/)）上的静态文件服务器编译和提供，其中也运行着 [viam-server 机器人开发工具包](https://docs.viam.com/get-started/installation/)。这纯粹是为了方便而不是必要，因为 Viam TypeScript SDK 使用 WebRTC 连接到 `viam-server`，因此该应用程序可以在世界上任何有互联网连接的设备上运行。
 
-Because the UI itself is fairly simple, there's no client-side framework being used; just DOM APIs and the Viam SDK. Let's take a look at the `main` function in the `main.ts` file for the project, which pulls together most of the logic for interacting with the UI and robot; we can start to identify opportunities for finite states and actions:
+由于用户界面本身相当简单，没有使用客户端框架；只有 DOM API 和 Viam SDK。让我们看看项目中 `main.ts` 文件中的 `main` 函数，它汇集了大部分与用户界面和机器人交互的逻辑；我们可以开始识别有限状态和动作的机会：
 
 ```typescript
 async function main() {
-  // Connect to client
+  // 连接到客户端
   let client: Client;
   try {
     client = await connect();
-    console.log('connected!');
+    console.log('已连接!');
   } catch (error) {
     console.log(error);
     return;
@@ -42,10 +42,10 @@ async function main() {
   const boardClient = new BoardClient(client, boardClientName);
   const armClient = new ArmClient(client, armClientName);
   const gripperClient = new GripperClient(client, gripperClientName);
-  /// more below
+  // 更多代码如下
 ```
 
-Right off the bat, there's some setup logic to connect to the robot that could potentially fail if the machine is offline but not much in the way of error handling. I can identify at least four states from this snippet alone: `initializing`, `connectingToMachine`, `clientErrored`, and `connected`. Once the main client has connected to the robot, we create an instance of each component client that we want to control.
+一开始，有一些设置逻辑用于连接到机器人，如果机器离线，这些逻辑可能会失败，但没有太多的错误处理。从这个片段中，我至少可以识别出四种状态：`initializing`、`connectingToMachine`、`clientErrored` 和 `connected`。一旦主客户端连接到机器人，我们就会创建我们想要控制的每个组件客户端的实例。
 
 ```typescript
 let isMoving = false;
@@ -65,10 +65,10 @@ function styleMove(state) {
 }
 ```
 
-Now we can see an interesting mix of boolean variables (`isMoving`) and explicit states being passed to a function to style the grid of quadrants to which the robot arm can move. This helps inform some additional states to model: `ready` (this could be separate from the `connected` state) and `moving`. Updating the styles based on the current state of the machine could happen as a side-effect within the machine config or by subscribing to the machine state; we can explore that when modeling in Stately Studio.
+现在我们可以看到一个有趣的布尔变量（`isMoving`）和显式状态的混合，它们被传递给一个函数，以样式化机器人手臂可以移动到的象限网格。这有助于提供一些额外的状态来建模：`ready`（这可以与`connected`状态分开）和`moving`。根据机器的当前状态更新样式可以作为机器配置中的副作用发生，也可以通过订阅机器状态来实现；我们可以在 Stately Studio 中建模时探索这一点。
 
 ```typescript
-// Helper functions to define button behavior
+// 定义按钮行为的辅助函数
 async function mouseDown(func: () => Promise<boolean>) {
   if (isMoving) return;
   styleMove('move');
@@ -122,7 +122,7 @@ setButtonBehavior(leftbutton, () =>
 );
 ```
 
-Now we're getting into the real action. The `mouseDown` helper function is doing a few things to orchestrate the UI while sending commands to the arm: guarding when the arm is moving, updating the styles and global variable before calling the wrapped async command, checking the result of the command before updating the styles and global variable again if it was successful. There's no error handling within the `mouseDown` handler, instead it has been included in the `planarMoveHandler` which also calls the `styleMove` helper along with a timer to reset the UI to the `ready` state again (the `inPlaneMove` function being called moves the arm a short distance in its existing position, rather than to a new quadrant as we'll see later). Keeping the general error handling in the `mouseDown` would help organize that logic together, but that doesn't necessarily mean it would be easy to follow the individual states that become active during this interaction.
+现在我们进入了真正的操作。`mouseDown`辅助函数在发送命令给机械臂时，做了几件事来协调用户界面：在机械臂移动时进行保护，在调用包装的异步命令之前更新样式和全局变量，检查命令的结果，如果成功则再次更新样式和全局变量。在`mouseDown`处理程序中没有错误处理，
 
 ```typescript
 // Define buttons for movement between quadrants
@@ -165,10 +165,10 @@ setButtonBehavior(gridFrontRight, () =>
 );
 ```
 
-This is familiar to the `inPlanarMove` set up we just explored, so there's already some potential for combining those efforts into a single `moveHandler` with the same caveats of mixing side-effects with state changes. This current `moveHandler` most likely doesn't include the `moving` style updates and global variable change because the `moveToQuadrant` includes a guard using the [`armClient.isMoving()`](https://docs.viam.com/components/arm/#ismoving) method instead, but that's tough to know without exploring the implementation of that function.
+这与我们刚刚探索的 `inPlanarMove` 设置类似，因此已经有一些将这些工作结合到一个 `moveHandler` 中的潜力，但要注意混合副作用和状态变化的警告。当前的 `moveHandler` 很可能不包括 `moving` 样式更新和全局变量更改，因为 `moveToQuadrant` 使用了 [`armClient.isMoving()`](https://docs.viam.com/components/arm/#ismoving) 方法进行保护，但在不探索该函数的实现情况下，很难知道这一点。
 
 ```typescript
-// Define button to grab and return object
+// 定义按钮以抓取和返回对象
 async function dropHandler() {
   try {
     await zMove(motionClient, armClient, 240);
@@ -193,44 +193,44 @@ async function dropHandler() {
 setButtonBehavior(dropbutton, () => dropHandler());
 ```
 
-In the final snippet we can see the third iteration of the common move handler orchestration with even more commands and asynchronous behavior. The `dropHandler` takes care of grabbing a ball from the bottom of the game and moving it over to the drop chute to release it (if it was able to grab one). This is a pretty distinct action from the other move handlers, even with the overlap in error handling logic.
+在最后的代码片段中，我们可以看到第三次迭代的通用移动处理程序编排，包含了更多的命令和异步行为。`dropHandler` 负责从游戏底部抓取一个球并将其移动到投放槽释放（如果它能够抓到一个球的话）。这与其他移动处理程序有着明显的不同，即使在错误处理逻辑上有重叠。
 
-With our initial analysis of the game code done, let's try modeling it all in Stately Studio!
+在完成对游戏代码的初步分析后，让我们尝试在 Stately Studio 中对其进行建模！
 
-## Modeling in Stately Studio
+## 在 Stately Studio 中建模
 
-The completed state machine:
+完成的状态机：
 
 <EmbedMachine
   name="A state machine demonstrating the logic for a robotic claw game that can move around and pick up balls."
   embedURL="https://stately.ai/registry/editor/embed/40eef216-51c5-4c58-aa9a-22b5ed25ee68?mode=design&machineId=72280163-4dde-4e85-a2a1-b30f49c7f27f"
 />
 
-While we dig into the Stately model, I'll include "enhanced" views using MermaidJS diagrams to focus on certain parts.
+在我们深入研究 Stately 模型时，我将使用 MermaidJS 图表来聚焦某些部分并提供“增强”视图。
 
-![state diagram visualizing the starting states for the claw game state machine](./mermaid-diagram-starting-states.svg)
+![状态图，展示了抓娃娃游戏状态机的起始状态](./mermaid-diagram-starting-states.svg)
 
-As mentioned when first exploring the main TypeScript logic, we have a fairly classic `initializing` starting state that transitions into the `connectingToMachine` state upon the `connect` action. This allows us to control when we want to start connecting or attempt to reconnect if something happens; we could also call this `disconnected` for clarity in the future. In the `connectingToMachine` state, we invoke a `createRobotClient` actor that replicates the `connect` helper function and assigns the client to the machine context upon success. As the first improvement from original logic, we've added an explicit error handler for this actor to transition into the `clientErrored` state and allow a retry action to transition back to `initializing`. The `connected` state will immediately transition to the `ready` state after assigning the necessary component clients to the machine context upon entry.
+正如我们在首次探索主要 TypeScript 逻辑时提到的，我们有一个相当经典的 `initializing` 起始状态，在 `connect` 动作后转换到 `connectingToMachine` 状态。这使我们能够控制何时开始连接或在发生某些情况时尝试重新连接；我们也可以在未来将其称为 `disconnected` 以便更清晰。在 `connectingToMachine` 状态中，我们调用一个 `createRobotClient` actor，它复制 `connect` 辅助函数并在成功时将客户端分配给机器上下文。作为对原始逻辑的第一个改进，我们为该 actor 添加了一个显式错误处理程序，以转换到 `clientErrored` 状态，并允许重试操作转换回 `initializing`。`connected` 状态将在进入时将必要的组件客户端分配给机器上下文后立即转换到 `ready` 状态。
 
-![state diagram visualizing the moving states for the claw game state machine](./mermaid-diagram-moving-states.svg)
+![状态图，展示了抓娃娃游戏状态机的移动状态](./mermaid-diagram-moving-states.svg)
 
-From the `ready` state, the first action to look at is `move`. This will transition into the `moving` state (no more separate boolean variable to update 🎉) and invoke the `armMover` actor with a set of inputs to specify the `x` and `y` arguments along with the movement type: `planar` or `quadrant`; this allows for a consolidated workflow to handle those two similar interactions. Upon success, the machine transitions immediately back to `ready`. The error case is one of my favorite parts about this modeling; besides the explicit `displayingMoveError` state, we can see the automatic transition after the set period of time in one place.
+从 `ready` 状态开始，第一个要查看的动作是 `move`。这将转换到 `moving` 状态（不再需要更新单独的布尔变量 🎉），并调用带有一组输入参数的 `armMover` actor，以指定 `x` 和 `y` 参数以及移动类型：`planar` 或 `quadrant`；这允许合并工作流来处理这两种类似的交互。成功后，机器将立即转换回 `ready`。错误情况是我最喜欢的部分之一；除了显式的 `displayingMoveError` 状态外，我们还可以在一个地方看到设定时间后的自动转换。
 
-![state diagram visualizing the picking states for the claw game state machine](./mermaid-diagram-picking-states.svg)
+![状态图，展示了抓娃娃游戏状态机的抓取状态](./mermaid-diagram-picking-states.svg)
 
-The final action will look nearly identical to the previous one: we execute the `dropAndHome` action to transition into the `picking` state to invoke the `dropHandler` actor. Rather than include `picking` as an option in the `armMover` inputs, we keep this more complex workflow separate to leave opportunity to optimize later.
+最后一个动作看起来几乎与前一个动作相同：我们执行 `dropAndHome` 动作以转换到 `picking` 状态，并调用 `dropHandler` actor。我们没有将 `picking` 作为 `armMover` 输入中的一个选项，而是将这个更复杂的工作流分开，以便以后有机会进行优化。
 
-Even before including the generated state machine configuration in the codebase, this high level view of the robot's control logic is a fantastic tool for including in the documentation and teaching other members of the team how it should work.
+即使在将生成的状态机配置包含到代码库之前，这种对机器控制逻辑的高级视图也是一个很棒的工具，可以包含在文档中，并教导团队的其他成员如何工作。
 
-## Refactoring the code
+## 重构代码
 
-To kick off the implementation of this state machine, I took the generated TypeScript code for XState v5 from Stately Studio and added it to the `main.ts` for the claw game app to start filling in the actions and actors.
+为了启动这个状态机的实现，我从 Stately Studio 获取了 XState v5 生成的 TypeScript 代码，并将其添加到抓娃娃游戏应用的 `main.ts` 中，以开始填充动作和 actor。
 
 ```typescript
 const clawMachine = setup({
   types: {
-    context: {} as ClawMachineContext, // abstracted to explict types for readability
-    events: {} as ClawMachineEvent, // abstracted to explict types for readability
+    context: {} as ClawMachineContext, // 抽象为显式类型以提高可读性
+    events: {} as ClawMachineEvent, // 抽象为显式类型以提高可读性
   },
   actions: {
     assignClients: assign({
@@ -270,7 +270,7 @@ const clawMachine = setup({
         payload: input.apiKey,
       };
 
-      //This is the host address of the main part of your robot.
+           // 这是你的机器人主要部分的主机地址。
       const host = input.locationAddress;
 
       return createRobotClient({
@@ -470,11 +470,11 @@ const clawMachine = setup({
 });
 ```
 
-If we compare the `moveHandler` and `dropHandler` actors to the original code, they are essentially the same as before but with the success and error handling lifted up to the state machine level.
+如果我们将 `moveHandler` 和 `dropHandler` actor 与原始代码进行比较，它们本质上与之前相同，但成功和错误处理被提升到了状态机级别。
 
-You might also notice the `styleMove` helper being used as an explicit entry action for the necessary states and making it more consistent than before.
+你可能还会注意到 `styleMove` 辅助函数被用作必要状态的显式进入动作，使其比以前更一致。
 
-With this `clawMachine` configured, the body of the `main` function has been dramatically reduced:
+配置好这个 `clawMachine` 后，`main` 函数的主体部分被大大简化了：
 
 ```typescript
 function main() {
@@ -516,8 +516,7 @@ function main() {
 }
 ```
 
-The `styleMove` action is configured here rather than including it by default in the `clawMachine` configuration as a personal preference to keep DOM logic separate. While I was working on this, I decided to simplify `styleMove` as well since it just needed the current state reflected in the HTML to conditionally style the grid (it could be a one-liner without the safety check):
-
+`styleMove` 动作在这里配置，而不是默认包含在 `clawMachine` 配置中，这是个人偏好，以保持 DOM 逻辑的独立性。在我处理这个问题时，我决定简化 `styleMove`，因为它只需要在 HTML 中反映当前状态以有条件地设置网格样式（它可以是一个不带安全检查的单行代码）：
 ```typescript
 function styleMove(_, params: { state: 'moving' | 'ready' | 'error' }) {
   const container = document.getElementById('grid-container');
@@ -543,7 +542,7 @@ The updated CSS:
 }
 ```
 
-The event handler for the claw game buttons was also refactored a bit to reduce the amount of redundant TypeScript code by specifying the action inputs as data attributes on the static HTML:
+抓娃娃游戏按钮的事件处理程序也进行了重构，通过在静态 HTML 上将动作输入指定为数据属性，减少了冗余的 TypeScript 代码量：
 
 ```html
 <button
@@ -558,15 +557,15 @@ The event handler for the claw game buttons was also refactored a bit to reduce 
 </button>
 ```
 
-Now it is just a single, delegated event handler to send events to the `clawMachine` with all the guards and error handling guaranteed!
+现在它只是一个单一的委托事件处理程序，用于向 `clawMachine` 发送事件，并保证所有的保护和错误处理！
 
-Once the modeling was complete, the process of refactoring the code to use `xstate` took less than an hour thanks to my familiarity with the library and the clearer understanding of how Viam API interactions would slot into the state machine configuration.
+一旦建模完成，由于我对该库的熟悉以及对 Viam API 交互如何插入状态机配置的更清晰理解，重构代码以使用 `xstate` 的过程不到一个小时。
 
-You can view the full refactor PR here: https://github.com/viam-labs/claw-game/pull/17
+你可以在这里查看完整的重构 PR：https://github.com/viam-labs/claw-game/pull/17
 
-## Reflecting
+## 反思
 
-View it in action:
+观看实际效果：
 
 <iframe
   width="300"
@@ -579,6 +578,6 @@ View it in action:
   allowfullscreen
 ></iframe>
 
-Overall, I found the whole process from visualizing the logic to plugging the generated code into my web app incredibly fruitful. I've already identified ways to extend and improve the machine as needed, like adding error capturing in place of the default `logError` action and breaking out the `dropHandler` Promise actor into an explicit state machine actor. I hope folks on my team and in the [Viam community](https://discord.gg/viam) will understand this application better with this refactor in place.
+总体而言，我发现从可视化逻辑到将生成的代码插入我的 Web 应用程序的整个过程非常有成效。我已经确定了扩展和改进机器的方法，例如在默认的 `logError` 动作中添加错误捕获，并将 `dropHandler` Promise actor 分解为显式的状态机 actor。我希望我的团队和 [Viam 社区](https://discord.gg/viam) 的人们能够通过这个重构更好地理解这个应用程序。
 
-Happy Building!
+祝你构建愉快！

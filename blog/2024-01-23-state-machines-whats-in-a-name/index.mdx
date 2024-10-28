@@ -1,16 +1,16 @@
 ---
-title: State Machines - What’s in a name?
-description: An overview of naming conventions for state machines, including tips and guidlines for naming
+title: 状态机 - 名字里有什么？
+description: 状态机命名约定概述，包括命名的提示和指南
 tags:
   [
     stately,
     studio,
-    coding conventions,
-    naming,
-    semantics,
-    style,
-    statecharts,
-    state machines,
+    编码约定,
+    命名,
+    语义,
+    风格,
+    状态图,
+    状态机,
     xstate,
   ]
 authors: [kevin]
@@ -19,75 +19,75 @@ slug: 2024-01-23-state-machines-whats-in-a-name
 image: /blog/2024-01-23-state-machines-whats-in-a-name.png
 ---
 
-State machines and visual diagrams are such a powerful way to organize, and convey information. All of those lovely “boxes and arrows” convey meaningful relationships, indicate sequential order, and direct flows in a way that’s easier to understand since it's visual. Add to that the ability to [attach assets to your diagrams](https://stately.ai/docs/assets) and you’re well on your way towards creating truly expressive, executable software diagrams. But there’s still one thing that state machines have that should make them easy to understand. Text.
+状态机和可视化图表是组织和传达信息的强大方式。所有那些可爱的“框和箭头”传达了有意义的关系，指示了顺序，并以更容易理解的方式引导流程，因为它是可视化的。再加上能够[将资产附加到你的图表](https://stately.ai/docs/assets)，你就可以创建真正富有表现力的、可执行的软件图表了。但状态机还有一个使其易于理解的特点。文本。
 
 {/* truncate */}
 
-When I say text, I’m largely referring to **names**. States, events, actors, actions, and guards all have names. These are important since they’re included in the executable code or other [formats that are exported from Studio](https://stately.ai/docs/export-as-code), so they can't be arbitrary or merely decorative. Users often ask us for guidance on naming conventions in [XState](https://stately.ai/docs/xstate) and how to name the parts of their state machines.
+当我说文本时，我主要指的是**名称**。状态、事件、参与者、动作和守卫都有名称。这些名称很重要，因为它们包含在可执行代码或其他[从 Studio 导出的格式](https://stately.ai/docs/export-as-code)中，所以它们不能是任意的或仅仅是装饰性的。用户经常向我们询问 [XState](https://stately.ai/docs/xstate) 中的命名约定以及如何命名他们状态机的各个部分。
 
-We can break down some of these questions into two categories:
+我们可以将这些问题分为两类：
 
-1. [What or how should I name this thing](#what-or-how-should-i-name-this-thing)?
-2. [What style should that name be in](#what-style-should-that-name-be-in)?
+1. [我应该如何命名这个东西](#what-or-how-should-i-name-this-thing)？
+2. [这个名字应该是什么风格](#what-style-should-that-name-be-in)？
 
 <EmbedMachine
-  name="A state machine demonstrating a particular naming convention with states using Title Case, events using dot.case, actions and actors using camelCase and guards using lower case."
+  name="一个状态机，展示了使用标题大小写命名状态、使用点大小写命名事件、使用驼峰命名法命名动作和参与者以及使用小写命名守卫的命名约定。"
   embedURL="https://stately.ai/registry/editor/embed/9fa24cc0-3026-41be-bb22-9afc3980fefc?machineId=db0e655e-f16f-4a30-97a7-a0081b73d532"
 />
 
-## What or how should I name this thing?
+## 我应该如何命名这个东西？
 
-This question is largely about semantics and in this case that means how do the names used in a state machine convey the purpose and meaning of the elements and their role in a state machine? Should a state be named **`Load`**, **`Loader`**, **`Loading`**, or **`Loaded`**? Should an event be named **`Submit`**, **`Submit form`**, **`Form submitted`**, **`On submit`**, or **`Form submission`**? There are indeed many options to choose from and there's no one right answer. But there are some guidelines that can help you make the best choice.
+这个问题主要涉及语义，在这种情况下，这意味着状态机中使用的名称如何传达元素的目的和意义以及它们在状态机中的角色？状态应该命名为 **`Load`**、**`Loader`**、**`Loading`** 还是 **`Loaded`**？事件应该命名为 **`Submit`**、**`Submit form`**、**`Form submitted`**、**`On submit`** 还是 **`Form submission`**？确实有很多选择，没有一个绝对正确的答案。但有一些指南可以帮助你做出最佳选择。
 
-**Mapping parts of speech to state machines**
+**将词性映射到状态机**
 
-One useful way to think about naming in state machines is to roughly map its elements to various parts of speech. This is what that might look like:
+一种思考状态机命名的有用方法是将其元素大致映射到各种词性。这可能是这样的：
 
-1. **States**: typically nouns or adjectives
-   - States represent different conditions or modes of being. Therefore, they are often named with nouns or adjectives that describe the status or quality of the system. For example, **`idle`**, **`loading`**, **`authenticated`**, or **`error`**.
-2. **Events/transitions**: Usually verbs
-   - Events are triggers that cause state transitions. They are actions or occurrences, so they are best named with verbs. Examples include **`submit`**, **`cancel`**, **`fail`**, **`load`**, **`sign in`**, or **`clear form data`**.
-3. **Actions**: verbs or verb phrases
-   - Actions are operations executed in response to events or state transitions. They should be verbs or verb phrases that describe what action is being taken. For instance, **`sendRequest`**, **`displayError`**, **`updateData`**.
-4. **Guards**: Often adjectives or past participles
-   - Guards are conditional checks that determine if a transition should occur. They can be named with adjectives or past participles that describe the condition being met. Examples include **`isLoggedIn`**, **`hasValidData`**, **`isExpired`**. You’ll notice these are similar to how you might name boolean variables in code.
-5. **Parent states**: Compound Nouns
-   - For nested states, these can also be nouns like regular states or they could be adjectives indicating a subordinate level of the parent state which is a noun. An example might be a state called **`Viewing Shopping Cart`** with child states **`Empty`** and **`Populated`**.
-6. **Invoked Actors**: nouns or gerunds
-   - When a state machine invokes a service (like an API call), these are often named with nouns or gerunds (nouns derived from verbs and ending in -ing) that describe the service's function. Examples are **`fetchingData`**, **`userAuthentication`**.
+1. **状态**：通常是名词或形容词
+   - 状态表示不同的条件或模式。因此，它们通常用描述系统状态或质量的名词或形容词来命名。例如，**`idle`**、**`loading`**、**`authenticated`** 或 **`error`**。
+2. **事件/转换**：通常是动词
+   - 事件是触发状态转换的触发器。它们是动作或事件，因此最好用动词来命名。例如，**`submit`**、**`cancel`**、**`fail`**、**`load`**、**`sign in`** 或 **`clear form data`**。
+3. **动作**：动词或动词短语
+   - 动作是在响应事件或状态转换时执行的操作。它们应该是描述所采取动作的动词或动词短语。例如，**`sendRequest`**、**`displayError`**、**`updateData`**。
+4. **守卫**：通常是形容词或过去分词
+   - 守卫是决定是否应进行转换的条件检查。它们可以用描述满足条件的形容词或过去分词来命名。例如，**`isLoggedIn`**、**`hasValidData`**、**`isExpired`**。你会注意到这些与命名代码中的布尔变量的方式类似。
+5. **父状态**：复合名词
+   - 对于嵌套状态，这些也可以像常规状态一样是名词，或者它们可以是表示父状态的下级状态的形容词。例如，一个名为 **`Viewing Shopping Cart`** 的状态，其子状态为 **`Empty`** 和 **`Populated`**。
+6. **调用的参与者**：名词或动名词
+   - 当状态机调用服务（如 API 调用）时，这些通常用描述服务功能的名词或动名词（由动词派生并以 -ing 结尾的名词）来命名。例如 **`fetchingData`**、**`userAuthentication`**。
 
-By aligning the names in state machines with these parts of speech, the structure and functionality of the state machine becomes more intuitive and easier to understand, facilitating better communication and documentation.
+通过将状态机中的名称与这些词性对齐，状态机的结构和功能变得更加直观和易于理解，从而促进更好的沟通和文档编制。
 
-### Be brief yet specific
+### 简洁但具体
 
-Just like with naming anything in code, it’s helpful to pick names that are brief, not generic, yet contain just enough information to be unambiguous. Make names “minimally meaningful”.
+就像命名代码中的任何东西一样，选择简洁、不通用但包含足够信息以不含糊的名称是有帮助的。使名称“最小化地有意义”。
 
-State name examples:
+状态名称示例：
 
-- **`Idle`** instead of **`State1`**
-- **`Door Closed`** instead of **`Closed`**
-- **`Payment Processing`** instead of **`State_Awaiting_Payment`**
+- **`Idle`** 而不是 **`State1`**
+- **`Door Closed`** 而不是 **`Closed`**
+- **`Payment Processing`** 而不是 **`State_Awaiting_Payment`**
 
-Event name examples:
+事件名称示例：
 
-- **`Submit`** or **`submit`** instead of **`Event1`**
-- **`Receive payment`** instead of **`Event_Payment_Received`**
+- **`Submit`** 或 **`submit`** 而不是 **`Event1`**
+- **`Receive payment`** 而不是 **`Event_Payment_Received`**
 
-## What style should that name be in?
+## 这个名字应该是什么风格？
 
-When statecharts were first introduced in [“Statecharts: A visual formalism for complex systems” (Harel, 1987)](https://www.inf.ed.ac.uk/teaching/courses/seoc/2005_2006/resources/statecharts.pdf), there was relatively little discussion of naming conventions and many of the diagrams used letters and numbers to represent states and events. The innovations that statecharts introduced were focused on visually representing relationships needed to support real world software use cases such as hierarchy, parallelism, history states, etc.
+当状态图首次在 [“Statecharts: A visual formalism for complex systems” (Harel, 1987)](https://www.inf.ed.ac.uk/teaching/courses/seoc/2005_2006/resources/statecharts.pdf) 中引入时，关于命名约定的讨论相对较少，许多图表使用字母和数字来表示状态和事件。状态图引入的创新集中在视觉上表示关系，以支持现实世界的软件用例，如层次结构、并行性、历史状态等。
 
-![An example of parallel states taken from Statecharts: A visual formalism for complex systems by David Harel.](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/orthogonality.png)
+![从 David Harel 的《Statecharts: A visual formalism for complex systems》中截取的并行状态示例。](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/orthogonality.png)
 
-Some of the examples later in the paper did demonstrate the use of state and event labels but these were usually single words or short phrases without attention paid to style. Interestingly enough, this example makes use of a **`dot.case`** style for event names which you can [jump ahead and read about here](#xstate-v5-and-dotcase).
+该论文后面的某些示例确实展示了状态和事件标签的使用，但这些通常是单词或短语，没有注意风格。有趣的是，这个示例使用了 **`dot.case`** 风格的事件名称，你可以[跳到这里阅读](#xstate-v5-and-dotcase)。
 
-![An example of states and events from a statechart depicting the alarm on a Citizen Quartz watch.](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/watch-batteries.png)
+![从状态图中截取的状态和事件示例，描述了 Citizen Quartz 手表的警报。](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/watch-batteries.png)
 
-By the time the book, "Constructing the User Interface with Statecharts" (Horrocks, 1999) was published, more descriptive state and event labels were present in elaborate examples of statecharts used to model hardware and software systems. This example of a CD player (remember those?) is rather detailed and also quite clear in its use of names and text annotations on the statechart. You can [view this state machine inspired by this example](https://stately.ai/registry/editor/9fa24cc0-3026-41be-bb22-9afc3980fefc?machineId=5b186011-088e-4c1c-be95-9a489a126b13) or [see the full example](https://stately.ai/registry/editor/9fa24cc0-3026-41be-bb22-9afc3980fefc?machineId=24adba0d-a6ac-4e79-836c-e0d91bb7ab85) borrowed from the book.
+到 1999 年出版的《Constructing the User Interface with Statecharts》一书时，更具描述性的状态和事件标签出现在用于建模硬件和软件系统的详细状态图示例中。这个 CD 播放器的示例（还记得那些吗？）相当详细，并且在使用名称和文本注释方面也非常清晰。你可以[查看受此示例启发的状态机](https://stately.ai/registry/editor/9fa24cc0-3026-41be-bb22-9afc3980fefc?machineId=5b186011-088e-4c1c-be95-9a489a126b13)或[查看完整示例](https://stately.ai/registry/editor/9fa24cc0-3026-41be-bb22-9afc3980fefc?machineId=24adba0d-a6ac-4e79-836c-e0d91bb7ab85)，借鉴自该书。
 
-![Part of a statechart for a physical CD player including states for when the CD is playing, stopped, paused, and events transitioning the machine from state to state.](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/horrocks-cd.png)
+![部分 CD 播放器的状态图，包括 CD 播放、停止、暂停的状态以及从一个状态转换到另一个状态的事件。](./../../static/blog/2024-01-23-state-machines-whats-in-a-name/horrocks-cd.png)
 
-Over the decades since those early writings on statecharts, the emergence of nearly all of the major programming languages in use today have popularized a number of naming conventions for code. Here are some of the most common styles you can choose from when naming states, events, actions, and guards in XState:
+自从那些关于状态图的早期著作以来，几乎所有主要编程语言的出现都普及了许多代码命名约定。以下是一些你可以在 XState 中为状态、事件、动作和守卫命名时选择的最常见风格：
 
 - **`Title Case`**
 - **`Sentence case`**
@@ -98,11 +98,11 @@ Over the decades since those early writings on statecharts, the emergence of nea
 - **`snake_case`**
 - **`kebab-case`**
 
-When XState was released in 2016, many of the early examples demonstrated use of **`UPPER_CASE`** for event names (also in fashion for Redux action types) and **`camelCase`** for nearly everything else like states, actions, guards, etc. But [XState](https://stately.ai/docs/xstate) doesn't enforce any particular convention and it's up to you to decide what works best for you and your team. Space-separated styles like **`Title Case`**, **`Sentence case`**, and **`lower case`** are valid options you can wrap them in quotes to use as JavaScript or TypeScript XState object keys. [Stately Studio will export code](https://stately.ai/docs/export-as-code) with your names in quotes as well.
+当 XState 于 2016 年发布时，许多早期示例展示了使用 **`UPPER_CASE`** 命名事件名称（这在 Redux 动作类型中也很流行）和 **`camelCase`** 命名几乎所有其他内容，如状态、动作、守卫等。但 [XState](https://stately.ai/docs/xstate) 不强制执行任何特定约定，取决于你和你的团队决定什么最适合你们。像 **`Title Case`**、**`Sentence case`** 和 **`lower case`** 这样的空格分隔风格是有效的选项，你可以将它们用引号括起来作为 JavaScript 或 TypeScript XState 对象键使用。[Stately Studio 将导出代码](https://stately.ai/docs/export-as-code)时也会用引号括起你的名称。
 
-### XState v5 and `dot.case`
+### XState v5 和 `dot.case`
 
-Fast forward to 2024, with the [recent release of XState v5](https://stately.ai/blog/2023-12-01-xstate-v5), one particular style convention for event names is strongly encouraged and that's **`dot.case`**. If you recall in the image of the Quartz watch, above, there were events similar to **`battery.inserted`**, **`battery.removed`**, and **`weak battery.dies`**. This style allows for a [new feature in XState v5 called wildcard transitions](https://stately.ai/docs/transitions#wildcard-transitions). For example, if you had an action called `logBatteryStatus` you could register that action with any number of events matching **`battery.*`**, a wildcard transition:
+快进到 2024 年，随着 [XState v5 的最新发布](https://stately.ai/blog/2023-12-01-xstate-v5)，强烈推荐一种特定的事件名称风格，那就是 **`dot.case`**。如果你还记得上面 Quartz 手表的图片，有类似 **`battery.inserted`**、**`battery.removed`** 和 **`weak battery.dies`** 的事件名称。这种风格允许在 XState v5 中使用一种新功能，称为通配符转换。例如，如果你有一个名为 `logBatteryStatus` 的动作，你可以用任何匹配 **`battery.*`** 的事件注册该动作，一个通配符转换：
 
 ```typescript
 states: {
@@ -116,41 +116,41 @@ states: {
 }
 ```
 
-I personally like this convention for events because it visually distinguishes them from other name in the state machine and its lack of heavy capitalization make it look more **`streamlined.for.action`**, like events should be!
+我个人喜欢这种事件命名约定，因为它在视觉上将事件与状态机中的其他名称区分开来，并且其缺乏大量大写使其看起来更 **`streamlined.for.action`**，就像事件应该的那样！
 
 :::warning
 
-Unlike for event names, it is currently not possible to include a `.` when naming states or machines. Please do not do this.
+与事件名称不同，目前无法在命名状态或机器时包含 `.`。请不要这样做。
 
 :::
 
-## Other tips
+## 其他提示
 
-Here are some additional considerations to think about when choosing a naming style for use with XState to make your state machines more readable and easier to understand.
+以下是一些额外的考虑因素，可以在选择 XState 的命名风格时考虑，以使你的状态机更具可读性和易于理解。
 
-### Improved readability
+### 提高可读性
 
-One of my favorite tips for state machine naming is to use contrasting styles. Contrast is a key ingredient for many things we love from food to color, art, and music. The readability of state machines can also benefit from contrast. If you use **`SHOUTY_UPPERCASE`** event names then please don’t also use that case for state names or… anything else in the same machine really. At the same time, don’t just name every state, event, and action in **`plain old lower case`** unless you want your state machine to be read like the equivalent of a bored teen with “vocal fry”. Differentiation can help readers distinguish certain elements of the state machine from others and this applies to readability on the editor canvas as well as in code.
+我最喜欢的状态机命名提示之一是使用对比风格。对比是我们喜欢的许多事物的关键成分，从食物到颜色、艺术和音乐。状态机的可读性也可以从对比中受益。如果你使用 **`SHOUTY_UPPERCASE`** 事件名称，请不要在同一机器中也使用这种大小写来命名状态或其他任何东西。同时，不要只是用 **`plain old lower case`** 命名每个状态、事件和动作，除非你希望你的状态机读起来像一个无聊的青少年带着“声带疲劳”。区分可以帮助读者区分状态机的某些元素，这适用于编辑器画布上的可读性以及代码中的可读性。
 
-### Know your audience
+### 了解你的受众
 
-The fact that Statey Studio can turn these executable diagrams into code is certainly powerful but what if much of your intended audience is less technical and will be viewing your state machines in the Studio? Some viewers may be more accustomed to reading some of the naming styles more than others, for example, **`Sentence case`** as opposed to **`snake_case`**. Users on the [Studio Pro Plan](https://stately.ai/docs/studio-pro-plan) can make use of [Version History](https://stately.ai/docs/versions) to create differently styled version of the same state machines and share them with different audiences either by [sharing the URL to a specific machine version](https://stately.ai/docs/url#copy-the-url-from-the-browser-address-bar) or by [exporting to markdown, Stories, tests, etc](https://stately.ai/docs/export-as-code).
+Stately Studio 能够将这些可执行图表转换为代码确实很强大，但如果你的大部分目标受众技术水平较低，并且将在 Studio 中查看你的状态机呢？某些观众可能更习惯于阅读某些命名风格，例如 **`Sentence case`** 而不是 **`snake_case`**。使用 [Studio Pro Plan](https://stately.ai/docs/studio-pro-plan) 的用户可以利用 [版本历史](https://stately.ai/docs/versions) 创建不同风格的相同状态机版本，并通过[共享特定机器版本的 URL](https://stately.ai/docs/url#copy-the-url-from-the-browser-address-bar)或[导出为 markdown、故事、测试等](https://stately.ai/docs/export-as-code)与不同的受众共享。
 
-### Consistency is Key
+### 一致性是关键
 
-Choose whatever you want but try to be consistent. Readers will hopefully understand your chosen naming convention and will come to rely on it. If you name states **`Waiting`**, **`Downloading`**, **`Synchronizing`** then when they see another word ending in **`ing`** they’ll probably assume it’s also a state as opposed to an event. Similarly, if you name actions using **`camelCase`**, you might consider naming all actions in that way, whether they’re entry/exit actions on states or actions on transitions. So remember, consistency is key here.
+选择你想要的任何东西，但尽量保持一致。读者希望理解你选择的命名约定，并依赖它。如果你将状态命名为 **`Waiting`**、**`Downloading`**、**`Synchronizing`**，那么当他们看到另一个以 **`ing`** 结尾的单词时，他们可能会认为它也是一个状态，而不是一个事件。同样，如果你使用 **`camelCase`** 命名动作，你可能会考虑以这种方式命名所有动作，无论它们是状态上的进入/退出动作还是转换上的动作。所以请记住，一致性在这里是关键。
 
-### Conventions and maintenance
+### 约定和维护
 
-From consistency, conventions often emerge. These could be conventions adhered to across a state machine, an entire project or across all of the projects of a particular user or team. This makes the work easier to understand and easier to maintain, thereby facilitating collaboration.
+从一致性中，通常会出现约定。这些约定可以在整个状态机、整个项目或特定用户或团队的所有项目中遵循。这使得工作更容易理解和维护，从而促进协作。
 
-### Summary
+### 总结
 
-Naming conventions and namings styles are a matter of taste but also an opportunity for customization and personalization at the individual or team level. The most important thing is readability, consistency and using naming to convey meaning.
+命名约定和命名风格是品味问题，但也是个性化和定制的机会，无论是个人还是团队层面。最重要的是可读性、一致性和使用命名来传达意义。
 
 <EmbedMachine
-  name="A state machine for part of the CD player example showing states for when the CD is loaded and the CD is stopped, playing, and paused."
+  name="一个 CD 播放器示例的一部分状态机，显示 CD 加载、停止、播放和暂停的状态。"
   embedURL="https://stately.ai/studio/editor/embed/9fa24cc0-3026-41be-bb22-9afc3980fefc?mode=design&machineId=5b186011-088e-4c1c-be95-9a489a126b13"
 />
 
-Sometimes putting attention into the little details goes a long way towards ensuring that machines not only look good but are as understandable as possible. And remember, when your state machines look good, you look good too!
+有时关注细节可以大大确保机器不仅看起来不错，而且尽可能易于理解。记住，当你的状态机看起来不错时，你也看起来不错！

@@ -1,6 +1,6 @@
 ---
-title: Introducing Stately Inspector
-description: Stately Inspector is a universal tool that enables you to visually inspect the state of any application, frontend or backend, with the visualization of Stately’s editor.
+title: 介绍 Stately Inspector
+description: Stately Inspector 是一个通用工具，使您能够通过 Stately 编辑器的可视化功能，直观地检查任何应用程序（前端或后端）的状态。
 authors: [david]
 tags: [inspector, stately, xstate, actors, devtools]
 date: 2024-01-15
@@ -8,25 +8,25 @@ slug: 2024-01-15-stately-inspector
 image: /blog/2024-01-15-introducing-stately-inspector.png
 ---
 
-One of the most popular features of our legacy Stately Viz was its ability to inspect your app in real-time using the previous `@xstate/inspect` and Stately Viz tools. We wanted to bring this functionality into a universal tool that enables you to visually inspect the state of any application, frontend or backend, with the visualization of [Stately’s editor](https://state.new). So we built Stately Inspector.{/* truncate */}
+我们旧版 Stately Viz 最受欢迎的功能之一是能够使用以前的 `@xstate/inspect` 和 Stately Viz 工具实时检查您的应用程序。我们希望将此功能引入一个通用工具，使您能够通过 [Stately 的编辑器](https://state.new) 的可视化功能，直观地检查任何应用程序（前端或后端）的状态。因此，我们构建了 Stately Inspector。{/* truncate */}
 
-## What is Stately Inspector?
+## 什么是 Stately Inspector？
 
-Stately Inspector is a tool that allows you to inspect your application’s state visually. It primarily works with frontend applications using XState but can also work with backend code and code that uses any state management solution.
+Stately Inspector 是一个工具，允许您直观地检查应用程序的状态。它主要适用于使用 XState 的前端应用程序，但也可以用于后端代码和使用任何状态管理解决方案的代码。
 
-[Watch a demo of Stately Inspector in our most recent office hours](https://www.youtube.com/live/-Jf9N-EaUx0?feature=shared&t=408):
+[在我们最近的办公时间观看 Stately Inspector 的演示](https://www.youtube.com/live/-Jf9N-EaUx0?feature=shared&t=408):
 
 <YouTube id="-Jf9N-EaUx0"/>
 
-## Installing Stately Inspect
+## 安装 Stately Inspect
 
-To inspect applications with Stately Inspector, install [Stately Inspect](https://github.com/statelyai/inspect) from npm via `@statelyai/inspect`:
+要使用 Stately Inspector 检查应用程序，请从 npm 安装 [Stately Inspect](https://github.com/statelyai/inspect) via `@statelyai/inspect`：
 
 ```bash
 npm install @statelyai/inspect
 ```
 
-Then, import the relevant inspector creator into your app. The creator is used to create an inspector (e.g., a browser or WebSocket inspector) to connect to XState actors and/or manually send inspection events to Stately Inspector:
+然后，将相关的 inspector 创建器导入您的应用程序。创建器用于创建一个 inspector（例如，浏览器或 WebSocket inspector），以连接到 XState actors 和/或手动发送检查事件到 Stately Inspector：
 
 ```ts
 import { createActor } from 'xstate';
@@ -48,11 +48,11 @@ const actor = createActor(machine, {
 actor.start();
 ```
 
-Now, when you run your app, you should see a new tab or popup open in your browser that looks something like this:
+现在，当您运行应用程序时，您应该会在浏览器中看到一个新标签页或弹出窗口，看起来像这样：
 
 <p>
   <ThemedImage
-    alt="The Stately Inspector view, showing a state machine for the pizza ordering process. The current state and available event is highlighted in green."
+    alt="Stately Inspector 视图，显示披萨订购过程的状态机。当前状态和可用事件以绿色突出显示。"
     sources={{
       light: '/blog/2024-01-15-introducing-stately-inspector/inspector.png',
       dark: '/blog/2024-01-15-introducing-stately-inspector/inspector-dm.png',
@@ -61,60 +61,60 @@ Now, when you run your app, you should see a new tab or popup open in your brows
 </p>
 
 
-## Sending inspection events
+## 发送检查事件
 
-The `@statelyai/inspect` package will send inspection events to the connected Stately Inspector. There are currently three kinds of events sent:
+`@statelyai/inspect` 包将检查事件发送到连接的 Stately Inspector。目前发送三种类型的事件：
 
-- Actor creation events
-- Actor-to-actor communication events
-- Actor snapshot changes
+- Actor 创建事件
+- Actor 间通信事件
+- Actor 快照更改
 
-When you pass in the `inspect` option to the actor options in XState’s `createActor(machine, options)` function, it will automatically send all of these inspection events.
+当您将 `inspect` 选项传递给 XState 的 `createActor(machine, options)` 函数中的 actor 选项时，它将自动发送所有这些检查事件。
 
-For usage with other state management solutions, you can manually send inspection events using the following methods:
+对于其他状态管理解决方案的使用，您可以使用以下方法手动发送检查事件：
 
-- `inspector.actor(actor, snapshot, info)` - send actor creation events
-- `inspector.event(actor, event, info)` - send actor-to-actor communication events
-- `inspector.snapshot(actor, snapshot, info)` - send actor snapshot changes
+- `inspector.actor(actor, snapshot, info)` - 发送 actor 创建事件
+- `inspector.event(actor, event, info)` - 发送 actor 间通信事件
+- `inspector.snapshot(actor, snapshot, info)` - 发送 actor 快照更改
 
 ```ts
 import { createBrowserInspector } from '@statelyai/inspect';
 
 const inspector = createBrowserInspector();
 
-// Imagine a todo app...
+// 想象一个待办事项应用...
 inspector.actor('todos');
 
-// When a todo is created
+// 当创建一个待办事项时
 inspector.actor('todo-1', {
   context: { status: 'active' }
 });
 
-// When a user completes a todo
+// 当用户完成一个待办事项时
 inspector.event('todo-1', { type: 'todo.complete' });
 
-// When a todo changes
+// 当待办事项更改时
 inspector.snapshot('todo-1', {
   context: { status: 'completed' }
 });
 
-// When the todos actor (not the user) sends an event to a todo
+// 当 todos actor（而不是用户）向待办事项发送事件时
 inspector.event('todo-1', { type: 'todo.update' }, {
   source: 'todos'
 });
 
-// ... etc.
+// ... 等等。
 
 ```
 
-The above is a contrived example demonstrating how you can instrument inspector events at any time from any part of your app. The three types of inspection events contain everything that Stately Inspector needs to generate two kinds of real-time diagrams automatically:
+以上是一个人为的示例，演示了如何在应用程序的任何部分随时插入检查事件。这三种类型的检查事件包含 Stately Inspector 自动生成两种实时图所需的所有内容：
 
-- **State machine diagrams** (if a state machine definition is provided)
-- **Sequence diagrams**
+- **状态机图**（如果提供了状态机定义）
+- **序列图**
 
 <p>
   <ThemedImage
-    alt="The Stately Inspector view, showing a state machine and a sequence diagram for the pizza ordering process side-by-side."
+    alt="Stately Inspector 视图，显示披萨订购过程的状态机和序列图并排。"
     sources={{
       light: '/blog/2024-01-15-introducing-stately-inspector/machine-and-sequence-diagram.png',
       dark: '/blog/2024-01-15-introducing-stately-inspector/machine-and-sequence-diagram-dm.png',
@@ -123,14 +123,14 @@ The above is a contrived example demonstrating how you can instrument inspector 
 </p>
 
 
-## Coming soon
+## 即将推出
 
-The goal of Stately Inspector is to be a universal tool that enables you to visually inspect the state of any application, frontend or backend. Right now, it’s optimized for XState (with `inspector.inspect`) or non-XState (with `inspector.actor(...)`, `inspector.event(...)`, `inspector.snapshot(...)`) state management solutions in frontend applications. We would love your feedback so that we can prioritize:
+Stately Inspector 的目标是成为一个通用工具，使您能够直观地检查任何应用程序（前端或后端）的状态。目前，它针对 XState（使用 `inspector.inspect`）或非 XState（使用 `inspector.actor(...)`、`inspector.event(...)`、`inspector.snapshot(...)`）状态管理解决方案在前端应用程序中进行了优化。我们希望听取您的反馈，以便我们可以优先考虑：
 
-- **[A websocket inspector creator](https://github.com/statelyai/feedback/issues/387)**: inspect frontend and/or backend applications remotely.
-- **[Bidirectional communication](https://github.com/statelyai/feedback/issues/388)**: send events from Stately Inspector to your live application.
-- **[Middleware for popular libraries](https://github.com/statelyai/feedback/issues/389)**: e.g., Redux, MobX, Zustand, and more.
-- **[Sync with Stately Studio](https://github.com/statelyai/feedback/issues/390)**: enrich inspected machines with information (layouts, colors, assets, annotations, etc.) from Stately Studio.
-- **[Analytics](https://github.com/statelyai/feedback/issues/391)**: view real-time analytics of flows in your application.
+- **[WebSocket inspector 创建器](https://github.com/statelyai/feedback/issues/387)**：远程检查前端和/或后端应用程序。
+- **[双向通信](https://github.com/statelyai/feedback/issues/388)**：从 Stately Inspector 向您的实时应用程序发送事件。
+- **[流行库的中间件](https://github.com/statelyai/feedback/issues/389)**：例如，Redux、MobX、Zustand 等。
+- **[与 Stately Studio 同步](https://github.com/statelyai/feedback/issues/390)**：使用来自 Stately Studio 的信息（布局、颜色、资产、注释等）丰富检查的机器。
+- **[分析](https://github.com/statelyai/feedback/issues/391)**：查看应用程序中流程的实时分析。
 
-[Let us know your thoughts on our Discord server](https://discord.stately.ai) or [submit a feature request on our GitHub board](https://feedback.stately.ai). Want to be the first to know about upcoming features? Subscribe to our [YouTube channel](https://www.youtube.com/@Statelyai) or [follow us on LinkedIn](https://www.linkedin.com/company/statelyai/) to avoid missing our next office hours live stream.
+[在我们的 Discord 服务器上告诉我们您的想法](https://discord.stately.ai) 或 [在我们的 GitHub 板上提交功能请求](https://feedback.stately.ai)。想成为第一个了解即将推出的功能的人吗？订阅我们的 [YouTube 频道](https://www.youtube.com/@Statelyai) 或 [在 LinkedIn 上关注我们](https://www.linkedin.com/company/statelyai/)，以免错过我们的下一次办公时间直播。

@@ -1,6 +1,6 @@
 ---
-title: Edit a state machine from GitHub without touching any code
-description: Import a state machine from GitHub to Stately, edit the machine, and make a pull request back to GitHub without touching any code.
+title: 从 GitHub 编辑状态机而无需触碰任何代码
+description: 将状态机从 GitHub 导入到 Stately，编辑机器，并在不触碰任何代码的情况下将拉取请求提交回 GitHub。
 authors: [laura]
 tags: [new, github, github sync, import, pr, pull request]
 date: 2024-02-07
@@ -8,46 +8,46 @@ slug: 2024-02-07-single-file-pr
 image: /blog/2024-02-07-single-file-pr.png
 ---
 
-You use XState in your codebase, and you want to make a change to a state machine. You don’t want to touch any code but want to make a pull request back to GitHub. Our single file import feature lets you do it all in the browser.
+你在代码库中使用 XState，并且想要对状态机进行更改。你不想触碰任何代码，但希望将拉取请求提交回 GitHub。我们的单文件导入功能让你可以在浏览器中完成所有操作。
 
 {/* truncate */}
 
-This time last year, [we introduced importing a single file into the Stately Studio from GitHub](/blog/2023-02-06-github-import-machines). Now, we’re taking it a step further. As part of our [bi-directional GitHub integration](/blog/2024-01-09-introducing-bidirectional-github-sync), you can import a state machine (or multiple state machines!) from a single file in GitHub, make changes in Stately Studio, and make a pull request back to GitHub without touching any code. You can do it all in the browser; no code editor required.
+去年这个时候，[我们介绍了从 GitHub 导入单个文件到 Stately Studio](/blog/2023-02-06-github-import-machines)。现在，我们更进一步。作为我们[双向 GitHub 集成](/blog/2024-01-09-introducing-bidirectional-github-sync)的一部分，你可以从 GitHub 中的单个文件导入状态机（或多个状态机！），在 Stately Studio 中进行更改，并在不触碰任何代码的情况下将拉取请求提交回 GitHub。你可以在浏览器中完成所有操作；无需代码编辑器。
 
-## Quickly visualize any state machine from GitHub
+## 快速可视化来自 GitHub 的任何状态机
 
-![Using a bookmarklet to import a state machine from GitHub to Stately Studio](single-file-import.gif)
+![使用书签小工具将状态机从 GitHub 导入到 Stately Studio](single-file-import.gif)
 
-To get any state machine from GitHub into Stately Studio, just change the `.com` part of the URL to `.stately.ai`. For example, `https://github.com/username/repo/blob/main/apps/superMachine.ts`, becomes
-`https://github.stately.ai/username/repo/blob/main/apps/superMachine.ts`. Hit enter, and you’ll be taken to Stately Studio with the machine visualized and ready to edit.
+要将任何状态机从 GitHub 导入到 Stately Studio，只需将 URL 中的 `.com` 部分更改为 `.stately.ai`。例如，`https://github.com/username/repo/blob/main/apps/superMachine.ts`，变为
+`https://github.stately.ai/username/repo/blob/main/apps/superMachine.ts`。按下回车键，你将被带到 Stately Studio，机器将被可视化并准备好进行编辑。
 
-Or, for even speedier access, use our bookmarklet. Just drag the following bookmarklet link to your bookmarks:
+或者，为了更快地访问，请使用我们的书签小工具。只需将以下书签链接拖到你的书签栏：
 
 <p>
 <a style={{border: '1px solid', borderRadius: '1rem', padding: '0.5rem 0.75rem'}} href="javascript:(function()%7Bjavascript%3A(function()%7B%20location.href%20%3D%20'https%3A%2F%2Fgithub.stately.ai%2F'%20%2B%20window.location.pathname%3B%7D)()%3B%7D)()%3B">GitHub → Stately</a>
 </p>
 
-Or add the bookmarklet manually:
+或者手动添加书签：
 
-1. Add a new bookmark to your browser.
-2. Set the bookmark’s web address to the following:
+1. 添加一个新的书签到你的浏览器。
+2. 将书签的网络地址设置为以下内容：
     ```javascript:(function(){ location.href = 'https://github.stately.ai/' + window.location.pathname;})();```
-3. Click the bookmarklet when viewing a GitHub file containing one or more machines to import that machine to Stately Studio.
+3. 在查看包含一个或多个机器的 GitHub 文件时，点击书签小工具，将该机器导入到 Stately Studio。
 
-You only need a [GitHub personal access token](/docs/import-from-github/#github-personal-access-token) and a [Stately Pro account, which you can try with a free trial](https://stately.ai/pricing).
+你只需要一个[GitHub 个人访问令牌](/docs/import-from-github/#github-personal-access-token)和一个[Stately Pro 账户，你可以试用免费试用版](https://stately.ai/pricing)。
 
-## Make GitHub pull requests from inside Stately Studio
+## 在 Stately Studio 内部创建 GitHub 拉取请求
 
-Once your machine is in Stately Studio, you can make your changes. When you’re ready to make a pull request back to GitHub, use the **Create pull request** button in the top bar. Now we’re developers here at Stately, so we know you don’t necessarily want to make a pull request if you don’t know what the code looks like, so before your pull request is created, you can see a code diff of the changes you’ve made in Stately Studio.
+一旦你的机器在 Stately Studio 中，你可以进行更改。当你准备好将拉取请求提交回 GitHub 时，使用顶部栏中的**创建拉取请求**按钮。我们是 Stately 的开发人员，所以我们知道如果你不知道代码的样子，你不一定想创建拉取请求，因此在创建拉取请求之前，你可以看到在 Stately Studio 中所做更改的代码差异。
 
 <p>
   <ThemedImage
-    alt="The pull request modal in Stately Studio showing deleted lines of code in red and inserted lines of code in green."
+    alt="Stately Studio 中的拉取请求模态窗口，显示红色删除的代码行和绿色插入的代码行。"
     sources={{
-      light: '/blog/2024-02-07-single-file-prs/diff.png',
-      dark: '/blog/2024-02-07-single-file-prs/diff-dm.png',
+      light: '/xstate-zh/blog/2024-02-07-single-file-prs/diff.png',
+      dark: '/xstate-zh/blog/2024-02-07-single-file-prs/diff-dm.png',
     }}
   />
 </p>
 
-Our GitHub integration is a premium feature of Stately Studio. You can try our premium plans with a free trial. [Sign up today](https://stately.ai) or [check out our Pro plan](/docs/studio-pro-plan), [Team plan](/docs/studio-team-plan), and [Enterprise plan](/docs/studio-enterprise-plan) features.
+我们的 GitHub 集成是 Stately Studio 的高级功能。你可以通过免费试用来试用我们的高级计划。[今天注册](https://stately.ai)或[查看我们的 Pro 计划](/docs/studio-pro-plan)、[团队计划](/docs/studio-team-plan)和[企业计划](/docs/studio-enterprise-plan)功能。

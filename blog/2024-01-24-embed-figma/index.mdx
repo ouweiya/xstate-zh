@@ -1,6 +1,6 @@
 ---
-title: Embed Figma designs in Stately
-description: You can now embed Figma frames in Stately states
+title: 在 Stately 中嵌入 Figma 设计
+description: 你现在可以在 Stately 状态中嵌入 Figma 框架
 tags: [stately, studio, figma, design, statecharts, state machines, xstate]
 authors: [nick]
 date: 2024-01-24
@@ -8,66 +8,69 @@ slug: 2024-01-24-embed-figma
 image: /blog/2024-01-24-embed-figma.png
 ---
 
-We already kicked off 2024 with several major updates to Stately such as [inspecting live XState code](/blog/2024-01-15-stately-inspector), [syncing with GitHub](/blog/2024-01-09-introducing-bidirectional-github-sync), and [writing code for actions and actors in the Studio](/blog/2024-01-09-introducing-sources). Today we’re excited to announce that we’ve also launched an integration with Figma!
+我们已经通过几个重大更新开启了 2024 年的 Stately，例如[检查实时 XState 代码](/blog/2024-01-15-stately-inspector)、[与 GitHub 同步](/blog/2024-01-09-introducing-bidirectional-github-sync)和[在 Studio 中为动作和演员编写代码](/blog/2024-01-09-introducing-sources)。
 
-You can now attach Figma frames to states in Stately.{/* truncate */}
+今天我们很高兴地宣布，我们还推出了与 Figma 的集成！
+你现在可以将 Figma 框架附加到 Stately 的状态中。
+{/* truncate */}
+
 
 <p>
   <ThemedImage
-    alt="Three Figma frames displayed in three Stately states for a music player. The ready state shows a record stack app view, following the openAlbum event, the viewingAlbum state shows the Wild Winds album coverart and information, from the viewingAlbum state, there’s a play event that takes you to the playingAlbum state which shows the album list for the Wild Winds album and a player progress bar. The pause event returns from the playingAlbum state to the viewingAlbum state."
+    alt="三个 Figma 框架显示在音乐播放器的三个 Stately 状态中。ready 状态显示唱片堆叠应用视图，following the openAlbum 事件，viewingAlbum 状态显示 Wild Winds 专辑封面和信息，从 viewingAlbum 状态，有一个 play 事件将你带到 playingAlbum 状态，该状态显示 Wild Winds 专辑的专辑列表和播放器进度条。pause 事件从 playingAlbum 状态返回到 viewingAlbum 状态。"
     sources={{
-      light: '/blog/2024-01-24-embed-figma/figma-light.png',
-      dark: '/blog/2024-01-24-embed-figma/figma-dark.png',
+      light: '/xstate-zh/blog/2024-01-24-embed-figma/figma-light.png',
+      dark: '/xstate-zh/blog/2024-01-24-embed-figma/figma-dark.png',
     }}
   />
 </p>
 
-## Improve your team workflows by combining Stately and Figma
+## 通过结合 Stately 和 Figma 改善团队工作流程
 
-Embedding Figma into Stately can significantly streamline and enhance a team’s workflow.
+将 Figma 嵌入 Stately 可以显著简化和增强团队的工作流程。
 
-Being able to view mockups of the states you are discussing makes it easy to _see_ what might be missing and to identify potential improvements. It allows team members to view designs directly as part of the app logic itself.
+能够查看你正在讨论的状态的模型，使得很容易_看到_可能缺少的内容并识别潜在的改进。它允许团队成员直接将设计视为应用逻辑的一部分。
 
-Two examples of how this can work are:
+以下是两个示例：
 
-- Engineers can import state machine code, then designers can fill out images for each state of the actual logic in the code.
+- 工程师可以导入状态机代码，然后设计师可以为代码中的每个实际逻辑状态填充图像。
 
-- Designers, PMs, and other stakeholders can create the expected behavior by embedding Figma frames into a Stately diagram, then engineers can continue adding the functionality from the automatically scaffolded code.
+- 设计师、产品经理和其他利益相关者可以通过将 Figma 框架嵌入 Stately 图表来创建预期行为，然后工程师可以继续从自动生成的代码中添加功能。
 
-This seamless integration can speed up the design process and ensure all team members are on the same page. Team members can easily share design details, run critiques, and iterate with people across different specializations.
+这种无缝集成可以加快设计过程，并确保所有团队成员都在同一页面上。团队成员可以轻松分享设计细节，进行评审，并与不同专业的人一起迭代。
 
-It also ensures that everyone is always looking at the most up-to-date design, as changes made in Figma are reflected in the embedded view. And with [GitHub Sync](blog/2024-01-09-introducing-bidirectional-github-sync) enabled, changes to the code can even automatically update how the Figma frames are organized in Stately.
+它还确保每个人始终查看最新的设计，因为在 Figma 中所做的更改会反映在嵌入视图中。并且启用[GitHub 同步](blog/2024-01-09-introducing-bidirectional-github-sync)后，对代码的更改甚至可以自动更新 Figma 框架在 Stately 中的组织方式。
 
-## How to embed Figma frames
+## 如何嵌入 Figma 框架
 
-Figma embedding is part of our [Pro plan](/docs/studio-pro-plan). You can [try all our premium features for free with our free trial](https://stately.ai/pricing).
+Figma 嵌入是我们[专业计划](/docs/studio-pro-plan)的一部分。你可以[通过我们的免费试用体验所有高级功能](https://stately.ai/pricing)。
 
-To embed Figma frames in Stately, first you need to authenticate using a personal access token.
+要在 Stately 中嵌入 Figma 框架，首先你需要使用个人访问令牌进行身份验证。
 
-1. [Get a personal access token](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens) from Figma. Set "File content" to "Allow Read-only access" so Stately can get the images.
-2. Enter this token in Stately by opening a project, finding the **Stately menu** in the top left, selecting **Account**, opening **Settings**, and clicking the **Figma** tab.
+1. 从 Figma 获取[个人访问令牌](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens)。将“文件内容”设置为“允许只读访问”，以便 Stately 可以获取图像。
+2. 在 Stately 中输入此令牌，打开一个项目，找到左上角的 **Stately 菜单**，选择 **账户**，打开 **设置**，然后点击 **Figma** 选项卡。
 
-Then you can link frames to states.
+然后你可以将框架链接到状态。
 
-3. In Figma, right click on the frame you want to embed, select **Copy/Paste as**, then **Copy link**.
-4. In Stately, select a state, open the **+** menu, choose **Embed Figma**, and paste your link.
+3. 在 Figma 中，右键点击你想要嵌入的框架，选择 **复制/粘贴为**，然后选择 **复制链接**。
+4. 在 Stately 中，选择一个状态，打开 **+** 菜单，选择 **嵌入 Figma**，然后粘贴你的链接。
 
-[Watch a video of how embedding Figma frames works](https://www.youtube.com/live/c05bOPeinSA?si=qyUlnx7f7_StLDZ_&t=1006) from our recent Office Hours.
+[观看我们最近的 Office Hours 中嵌入 Figma 框架的工作视频](https://www.youtube.com/live/c05bOPeinSA?si=qyUlnx7f7_StLDZ_&t=1006)。
 
-![Frame inside Figma showing the menu for copy/paste as, and copy link. Alongside a frame in Stately showing the plus menu and the Embed Figma option.](figmatostately.png)
+![Figma 内的框架显示复制/粘贴为菜单和复制链接选项。旁边是 Stately 中的框架，显示加号菜单和嵌入 Figma 选项。](figmatostately.png)
 
-Now any changes to this frame in Figma will be automatically reflected in Stately after each page load.
+现在，Figma 中对该框架的任何更改将在每次页面加载后自动反映在 Stately 中。
 
-You can delete the embed or adjust the size of the image by selecting the state and finding the controls at the top right of the embedded image.
+你可以通过选择状态并在嵌入图像的右上角找到控件来删除嵌入或调整图像大小。
 
-A few more details to get you rolling:
+一些更多的细节以帮助你开始：
 
-- Stately supports linking to any type of Figma node that you can get, not just frames. But we recommend generally using frames due to how well they correspond to states.
-- Figma embeds are a new type of **asset** in Stately. We also support [attaching images, videos, documents, and PDFs to states as assets](/docs/assets). You can feature a single asset on the canvas at a time. To feature a different asset, open the state details panel and drag that asset to the first position in the assets list.
-- Stately embeds Figma frames as SVG images. This means fast load times and great scaling quality across different sizes. However, a few features of Figma (like background blur) are not supported in svg exports. When you notice an issue and high visual fidelity is important, you can export the frame as a PNG image and then attach the image itself as an image asset to the Stately state (rather than as a Figma embed from a link). It just won’t be automatically synced.
+- Stately 支持链接到你可以获取的任何类型的 Figma 节点，而不仅仅是框架。但我们通常推荐使用框架，因为它们与状态的对应关系很好。
+- Figma 嵌入是 Stately 中的一种新型**资产**。我们还支持[将图像、视频、文档和 PDF 附加到状态作为资产](/docs/assets)。你可以一次在画布上展示一个资产。要展示不同的资产，请打开状态详细信息面板并将该资产拖到资产列表的第一个位置。
+- Stately 将 Figma 框架嵌入为 SVG 图像。这意味着快速加载时间和在不同尺寸下的出色缩放质量。然而，Figma 的一些功能（如背景模糊）在 svg 导出中不受支持。当你注意到问题并且高视觉保真度很重要时，你可以将框架导出为 PNG 图像，然后将图像本身作为图像资产附加到 Stately 状态（而不是作为链接的 Figma 嵌入）。它只是不会自动同步。
 
-## Try it out!
+## 试试看！
 
-We are excited to see what you do with this feature. There is a lot of potential for reducing silos between roles and helping make communication smoother.
+我们很高兴看到你如何使用这个功能。它有很大的潜力来减少角色之间的隔阂并帮助使沟通更加顺畅。
 
-Please share your feedback with us on our [social platforms](https://discord.stately.ai) or in our regular [office hours live streams](https://www.youtube.com/watch?v=-Jf9N-EaUx0&list=PLvWgkXBB3dd6PXbSoctwDXjWX-AQrxhds). If you want help getting started with embedding Figma frames or getting your team set up with Stately and XState, [the Stately team is available for workshops and consulting](https://stately.ai/pricing#services), and you can [book a demo call](https://calendly.com/d/yc8-3hq-rpc/request-a-demo) with us to learn more about how Stately can work for your team.
+请在我们的[社交平台](https://discord.stately.ai)或定期的[Office Hours 直播](https://www.youtube.com/watch?v=-Jf9N-EaUx0&list=PLvWgkXBB3dd6PXbSoctwDXjWX-AQrxhds)中与我们分享你的反馈。如果你想获得嵌入 Figma 框架或让你的团队设置 Stately 和 XState 的帮助，[Stately 团队提供研讨会和咨询服务](https://stately.ai/pricing#services)，你可以[预约演示电话](https://calendly.com/d/yc8-3hq-rpc/request-a-demo)了解更多关于 Stately 如何为你的团队工作的信息。
