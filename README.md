@@ -1,7 +1,7 @@
 # 链接
 
 - [XState 中文文档](https://ouweiya.github.io/xstate-zh)
-- [XState 官方文档](https://stately.ai/docs)
+- [XState 官方文档](https://stately.ai)
 
 # 欢迎来到 Stately 文档
 
