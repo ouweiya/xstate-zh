@@ -18,7 +18,6 @@ const config = {
   staticDirectories: ['static'],
   trailingSlash: false,
 
-
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'ouweiya', // Usually your GitHub org/user name.
@@ -39,8 +38,6 @@ const config = {
       'data-domain': 'stately.ai',
     },
   ],
-
-
 
   presets: [
     [
@@ -196,7 +193,7 @@ const config = {
             type: 'search',
             position: 'right',
           },
-          { to: '/docs', label: 'Docs', position: 'right' },
+          { to: '/docs', label: '文档', position: 'right' },
           {
             // href: 'https://tsdocs.dev/docs/xstate',
             href: 'https://www.jsdocs.io/package/xstate',
@@ -206,23 +203,23 @@ const config = {
           },
           {
             href: 'https://stately.ai/registry/projects',
-            label: 'Studio',
+            label: '工作室',
             position: 'right',
             className: 'plausible-event-name=docs+studio',
           },
           {
             href: 'https://stately.ai/editor',
-            label: 'Editor',
+            label: '编辑器',
             position: 'right',
             className: 'plausible-event-name=docs+editor',
           },
           {
             href: 'https://stately.ai/registry/discover',
-            label: 'Discover',
+            label: '发现',
             position: 'right',
             className: 'plausible-event-name=docs+discover',
           },
-          { to: 'blog', label: 'Blog', position: 'right' },
+          { to: 'blog', label: '博客', position: 'right' },
           // {
           //   type: 'docsVersionDropdown',
           //   position: 'right',
@@ -239,22 +236,22 @@ const config = {
         style: 'light',
         links: [
           {
-            label: 'Changelog',
+            label: '更新日志',
             href: 'https://stately.ai/blog/tags/changelog',
             target: '_self',
           },
           {
-            label: 'Roadmap',
+            label: '路线图',
             href: 'https://feedback.stately.ai',
             target: '_self',
           },
           {
-            label: 'Code of conduct',
+            label: '行为准则',
             href: '/code-of-conduct',
             target: '_self',
           },
           {
-            label: 'Privacy policy',
+            label: '隐私政策',
             href: '/privacy',
             target: '_self',
           },
