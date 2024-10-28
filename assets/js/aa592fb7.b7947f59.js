@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[1049],{50287:s=>{s.exports=JSON.parse('{"label":"coding conventions","permalink":"/xstate-zh/blog/tags/coding-conventions","allTagsPath":"/xstate-zh/blog/tags","count":1,"unlisted":false}')}}]);

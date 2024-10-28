@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[7589],{44927:s=>{s.exports=JSON.parse('{"label":"\u7814\u7a76","permalink":"/xstate-zh/blog/tags/\u7814\u7a76","allTagsPath":"/xstate-zh/blog/tags","count":1,"unlisted":false}')}}]);
