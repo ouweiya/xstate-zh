@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[278],{53995:s=>{s.exports=JSON.parse('{"label":"actor model","permalink":"/xstate-zh/blog/tags/actor-model","allTagsPath":"/xstate-zh/blog/tags","count":2,"unlisted":false}')}}]);

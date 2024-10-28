@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[290],{77887:s=>{s.exports=JSON.parse('{"label":"state machine","permalink":"/xstate-zh/blog/tags/state-machine","allTagsPath":"/xstate-zh/blog/tags","count":1,"unlisted":false}')}}]);
