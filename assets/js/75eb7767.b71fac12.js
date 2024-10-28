@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[5863],{58312:s=>{s.exports=JSON.parse('{"label":"Redux","permalink":"/xstate-zh/blog/tags/redux","allTagsPath":"/xstate-zh/blog/tags","count":1,"unlisted":false}')}}]);

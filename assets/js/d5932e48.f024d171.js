@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[6412],{80077:e=>{e.exports=JSON.parse('{"permalink":"/xstate-zh/blog/tags/tidefi","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Stately\u2019s engineering blog","blogTitle":"Stately Blog"}')}}]);

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[9064],{75832:s=>{s.exports=JSON.parse('{"label":"TIDEFI","permalink":"/xstate-zh/blog/tags/tidefi","allTagsPath":"/xstate-zh/blog/tags","count":1,"unlisted":false}')}}]);

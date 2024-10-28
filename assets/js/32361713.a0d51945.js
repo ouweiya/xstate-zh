@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[9608],{46575:t=>{t.exports=JSON.parse('{"permalink":"/xstate-zh/blog/tags/stately-inspect","page":1,"postsPerPage":10,"totalPages":1,"totalCount":2,"blogDescription":"Stately\u2019s engineering blog","blogTitle":"Stately Blog"}')}}]);

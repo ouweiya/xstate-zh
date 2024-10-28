@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[1487],{37596:t=>{t.exports=JSON.parse('{"permalink":"/xstate-zh/blog/tags/studio/page/2","page":2,"postsPerPage":10,"totalPages":2,"totalCount":13,"previousPage":"/xstate-zh/blog/tags/studio","blogDescription":"Stately\u2019s engineering blog","blogTitle":"Stately Blog"}')}}]);

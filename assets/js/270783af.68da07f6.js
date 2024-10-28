@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstately_docs=self.webpackChunkstately_docs||[]).push([[3404],{45785:s=>{s.exports=JSON.parse('{"label":"figma","permalink":"/xstate-zh/blog/tags/figma","allTagsPath":"/xstate-zh/blog/tags","count":3,"unlisted":false}')}}]);
