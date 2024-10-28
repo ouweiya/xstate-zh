@@ -1,0 +1,561 @@
+---
+title: 事件和转换
+---
+
+**转换**是从一个有限状态到另一个有限状态的变化，由事件触发。
+
+**事件**是一个信号、触发器或消息，会导致转换。当一个 actor 接收到一个事件时，它的状态机将确定当前状态下是否有任何启用的转换。如果存在启用的转换，状态机将执行这些转换并执行其动作。
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中可视化您的状态机并轻松添加转换。 [阅读更多关于 Stately 编辑器中的转换](/docs/editor-states-and-transitions/#transitions-and-events)。
+
+:::
+
+<EmbedMachine
+  name="Video player"
+  embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=9630e3b7-9f8e-4dc9-8b55-661f854d28b7&mode=Simulate"
+/>
+
+转换是“确定性的”；每种状态和事件的组合总是指向相同的下一个状态。当状态机接收到一个事件时，只会检查活动的有限状态，看看它们是否有该事件的转换。这些转换称为**启用转换**。如果存在启用的转换，状态机将执行转换的动作，然后转换到目标状态。
+
+转换由状态中的 `on:` 表示：
+
+```ts
+import { createMachine } from 'xstate';
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'question',
+  states: {
+    question: {
+      on: {
+        'feedback.good': {
+          target: 'thanks'
+        }
+      }
+    },
+    thanks: {}
+  },
+});
+```
+
+## 事件对象
+
+在 XState 中，事件由具有 `type` 属性和可选负载的事件对象表示：
+
+- `type` 属性是一个表示事件类型的字符串。
+- 负载是一个包含有关事件的附加数据的对象。
+
+```ts
+feedbackActor.send({
+  // 事件类型
+  type: 'feedback.update',
+  // 附加负载
+  feedback: 'This is great!',
+  rating: 5,
+});
+```
+
+## 选择转换
+
+转换是通过首先检查最深的子状态来选择的。如果转换被启用（即其守卫通过），它将被执行。如果没有，父状态将被检查，依此类推。
+
+1. 从最深的活动状态节点（即原子状态节点）开始
+2. 如果转换被启用（没有 `guard` 或其 `guard` 评估为 `true`），则选择它。
+3. 如果没有转换被启用，则上升到父状态节点并重复第1步。
+4. 最后，如果没有转换被启用，则不会进行任何转换，状态也不会改变。
+
+## 自转换 {#self-transitions}
+
+一个状态可以转换到自身。这被称为**自转换**，对于在不改变有限状态的情况下更改上下文和/或执行操作非常有用。您还可以使用自转换来重新启动一个状态。
+
+**根自转换：**
+
+```ts
+import { createMachine, assign } from 'xstate';
+
+const machine = createMachine({
+  context: { count: 0 },
+  // highlight-start
+  on: {
+    someEvent: {
+      // 没有目标
+      actions: assign({
+        count: ({context}) => context.count + 1,
+      })
+    }
+  }
+  // highlight-end
+});
+```
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=91da1d57-b146-48fd-82ce-a9dd28b7261a" title="Root self-transition"/>
+
+**状态上的自转换：**
+
+```ts
+import { createMachine, assign } from 'xstate';
+
+const machine = createMachine({
+  context: { count: 0 },
+  initial: 'inactive',
+  states: {
+    inactive: {
+      on: { activate: { target: 'active' } }
+    },
+    active: {
+      // highlight-start
+      on: {
+        someEvent: {
+          // No target
+          actions: assign({
+            count: ({context}) => context.count + 1,
+          })
+        }
+      }
+      // highlight-end
+    }
+  }
+});
+```
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=8763e570-3535-42b3-a2a2-8edd82d1207a" title="Self-transition on state"/>
+
+:::studio
+
+您可以在 Stately 编辑器中轻松可视化自转换。 [阅读更多关于 Stately 编辑器中的自转换](/docs/editor-states-and-transitions/#self-transitions)。
+
+:::
+
+## 状态之间的转换
+
+通常，转换发生在两个兄弟状态之间。这些转换通过将 `target` 设置为兄弟状态的键来定义。
+
+```ts
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    form: {
+      on: {
+        submit: {
+          // highlight-start
+            // 目标是兄弟状态的键
+          target: 'submitting',
+          // highlight-end
+        },
+      },
+    },
+    // highlight-next-line
+    submitting: {
+      // ...
+    },
+  },
+});
+```
+
+## 父状态到子状态的转换
+
+当状态机 actor 接收到一个事件时，它将首先检查最深的（[原子](state-machines-and-statecharts.mdx#atomic-states)）状态是否有任何启用的转换。如果没有，则检查父状态，依此类推，直到状态机到达根状态。
+
+当您希望事件转换到某个状态，而不管哪个兄弟状态处于活动状态时，一个有用的模式是从父状态转换到子状态。
+
+例如，下面的状态机将在 `mode.reset` 事件上转换到 `colorMode.system` 状态，而不管它当前处于哪个状态。
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  id: 'colorMode',
+  initial: 'system',
+  states: {
+    system: {},
+    auto: {},
+    light: {
+      on: {
+        'mode.toggle': { target: 'dark' }
+      }
+    },
+    dark: {
+      on: {
+        'mode.toggle': { target: 'light' }
+      }
+    }
+  },
+  on: {
+    'mode.reset': {
+      // highlight-next-line
+      target: '.system'
+    }
+  }
+});
+```
+
+## 重新进入
+
+默认情况下，当状态机从某个状态转换到相同状态或从父状态转换到该父状态的子状态（子、孙等）时，它不会重新进入该状态；也就是说，它不会执行父状态的[`exit`和`entry`动作](actions.mdx)。它不会停止现有的被调用的 actor，也不会启动新的被调用的 actor。
+
+这可以通过转换的`reenter`属性来更改：如果您希望父状态重新进入，可以设置`reenter: true`。这将导致状态在转换到自身或子状态时重新进入，执行状态的`exit`和`entry`动作。它将停止现有的被调用的 actor，并启动新的被调用的 actor。
+
+:::tip
+
+在 XState v4 中，重新进入的转换被称为**外部转换**，默认的转换被称为**内部转换**。
+
+:::
+
+**使用`reenter: true`的自转换：**
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  initial: 'someState',
+  states: {
+    someState: {
+      entry: () => console.log('someState entered'),
+      exit: () => console.log('someState exited'),
+      on: {
+        'event.normal': {
+          target: 'someState', // 或没有目标
+        },
+        'event.thatReenters': {
+          target: 'someState', // 或没有目标
+          reenter: true,
+        }
+      }
+    }
+  }
+});
+
+const actor = createActor(machine);
+actor.start();
+
+actor.send({ type: 'event.normal' });
+// 不会记录任何内容
+
+actor.send({ type: 'event.thatReenters' });
+// 记录:
+// "someState exited"
+// "someState entered"
+```
+
+**父子（或后代）转换与 `reenter: true`：**
+
+```ts
+const machine = createMachine({
+  initial: 'parentState',
+  states: {
+    parentState: {
+      entry: () => console.log('parentState entered'),
+      exit: () => console.log('parentState exited'),
+      on: {
+        'event.normal': {
+          target: '.someChildState'
+        },
+        'event.thatReenters': {
+          target: '.otherChildState',
+          reenter: true
+        }
+      },
+      initial: 'someChildState',
+      states: {
+        someChildState: {
+          entry: () => console.log('someChildState entered'),
+          exit: () => console.log('someChildState exited')
+        },
+        otherChildState: {
+          entry: () => console.log('otherChildState entered'),
+          exit: () => console.log('otherChildState exited')
+        }
+      }
+    }
+  }
+});
+
+const actor1 = createActor(machine);
+actor1.start();
+actor1.send({ type: 'event.normal' });
+// Logs:
+// "someChildState exited"
+// "someChildState entered"
+
+const actor2 = createActor(machine);
+actor2.start();
+console.log('---');
+actor2.send({ type: 'event.thatReenters' });
+// Logs:
+// "someChildState exited"
+// "parentState exited"
+// "parentState entered"
+// "otherChildState entered"
+```
+
+## 转换到任何状态
+
+兄弟后代状态：`{ target: 'sibling.child.grandchild' }`
+
+父状态到后代状态：`{ target: '.child.grandchild' }`
+
+状态到任何状态：`{ target: '#specificState' }`
+
+## 禁止转换
+
+- `{ on: { forbidden: {} } }`
+- 与省略转换不同；转换选择算法将停止查找
+- 等同于 `{ on: { forbidden: { target: undefined } } }`
+
+## 通配符转换
+
+通配符转换是一种将匹配任何事件的转换。事件描述符（`on: {...}` 对象的键）使用 `*` 通配符字符作为事件类型定义：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'asleep',
+  states: {
+    asleep: {
+      on: {
+        // highlight-start
+        // 此转换将匹配任何事件
+        '*': { target: 'awake' },
+        // highlight-end
+      },
+    },
+    awake: {},
+  },
+});
+```
+通配符转换非常有用：
+
+- 处理未被任何其他转换处理的事件。
+- 作为处理状态中任何事件的“捕获所有”转换。
+
+通配符转换的优先级最低；它只有在没有其他转换被启用时才会被执行。
+
+## 部分通配符转换
+
+部分通配符转换是一种匹配任何以特定前缀开头的事件的转换。事件描述符通过在事件类型后使用点（`.`）和通配符字符（`*`）来定义：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    prompt: {
+      on: {
+        // highlight-start
+        // 这将匹配 'feedback' 事件以及
+        // 任何以 'feedback.' 开头的事件，例如：
+        // 'feedback.good', 'feedback.bad' 等。
+        'feedback.*': { target: 'form' },
+        // highlight-end
+      },
+    },
+    form: {},
+    // ...
+  },
+});
+```
+
+通配符字符 (`*`) 只能在事件描述符的后缀中使用，紧跟在点 (`.`) 之后：
+
+### 有效的通配符示例
+
+- ✅ `mouse.*`: 匹配 `mouse`, `mouse.click`, `mouse.move` 等。
+- ✅ `mouse.click.*`: 匹配 `mouse.click`, `mouse.click.left`, `mouse.click.right` 等。
+
+### 无效的通配符
+
+- 🚫 ~~`mouse*`~~: 无效；不匹配任何事件。
+- 🚫 ~~`mouse.*.click`~~: 无效；`*` 不能在事件描述符的中间使用。
+- 🚫 ~~`*.click`~~: 无效；`*` 不能在事件描述符的前缀中使用。
+- 🚫 ~~`mouse.click*`~~: 无效；不匹配任何事件。
+- 🚫 ~~`mouse.*.*`~~: 无效；`*` 不能在事件描述符的中间使用。
+
+## 并行状态中的多个转换
+
+由于并行状态具有多个可以同时处于活动状态的区域，因此可能会同时启用多个转换。在这种情况下，将执行所有启用的转换。
+
+多个目标被指定为字符串数组：
+
+即将推出… 示例。
+
+## 其他转换
+
+- [**无事件（always）转换**](eventless-transitions.mdx) 是没有事件的转换。这些转换在其状态中的任何转换启用后*总是*被执行。
+- [**延迟（after）转换**](delayed-transitions.mdx) 是在指定持续时间后启用的转换。
+
+## 转换描述
+
+您可以向转换添加 `.description` 字符串以描述转换。这对于在可视化状态机中解释转换的目的非常有用。
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // ...
+  on: {
+    exit: {
+      // highlight-next-line
+      description: 'Closes the feedback form',
+      target: '.closed',
+    },
+  },
+});
+```
+
+## 简写
+
+如果转换只指定了一个 `target`，那么可以使用字符串目标作为简写，而不是整个转换对象：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    prompt: {
+      on: {
+        // highlight-start
+        // 这是以下内容的简写：
+        // 'feedback': { target: 'form' }
+        'feedback.good': 'thanks',
+        // highlight-end
+      },
+    },
+    thanks: {},
+    // ...
+  },
+});
+```
+
+使用字符串目标简写对于快速原型设计状态机非常有用。通常，我们建议使用完整的转换对象语法，因为它将与所有其他转换对象保持一致，并且将来更容易向转换添加动作、守卫和其他属性。
+
+## TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+转换主要使用它们启用的事件类型。
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {
+    // highlight-start
+    events: {} as
+      | { type: 'greet'; message: string }
+      | { type: 'submit' }
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  on: {
+    greet: {
+      actions: ({ event }) => {
+        event.type; // 'greet'
+        event.message; // string
+      },
+    },
+  },
+});
+```
+
+## 常见问题 {#faqs}
+
+<details>
+<summary>
+如何监听发送给 actor 的事件？
+</summary>
+
+您可以使用 [inspection API](./inspection.mdx) 来监听 actor 系统中的所有检查事件。`@xstate.event` 检查事件包含从一个 actor 发送到另一个 actor（或自身）的事件信息：
+
+```ts
+import { createActor } from 'xstate';
+import { someMachine } from './someMachine';
+
+const actor = createActor(someMachine, {
+  inspect: (inspectionEvent) => {
+    if (inspectionEvent.type === '@xstate.event') {
+      // highlight-start
+      // 从一个 actor 发送到另一个 actor 的事件对象
+      console.log(inspectionEvent.event);
+      // highlight-end
+    }
+  }
+});
+```
+
+</details>
+
+## 转换速查表
+
+使用下面的 XState 事件和转换速查表快速入门。
+
+### 速查表：事件对象
+
+```ts
+feedbackActor.send({
+  // 事件类型
+  type: 'feedback.update',
+  // 事件负载
+  feedback: 'A+ would use state machines again',
+  rating: 5,
+});
+```
+
+### 速查表：转换目标
+
+```ts
+const machine = createMachine({
+  initial: 'a',
+  states: {
+    a: {
+      on: {
+        // 兄弟状态目标
+        event: {
+          target: 'b',
+        },
+        // 兄弟子状态目标
+        otherEvent: {
+          target: 'b.c',
+        },
+      },
+    },
+    b: {
+      on: {
+        // ID目标
+        event: {
+          target: '#c',
+        },
+      },
+    },
+    c: {
+      id: 'c',
+      on: {
+        // 子状态目标
+        event: {
+          target: '.child',
+        },
+      },
+      initial: 'child',
+      states: {
+        child: {},
+      },
+    },
+  },
+  on: {
+    // 子状态目标
+    someEvent: {
+      target: '.b',
+    },
+  },
+});
+```

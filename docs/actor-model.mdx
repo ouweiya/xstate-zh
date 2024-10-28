@@ -1,0 +1,80 @@
+---
+title: Actor模型
+---
+
+[Actor模型](https://en.wikipedia.org/wiki/Actor_model) 在计算机科学中是并发计算的数学模型，其中“actor”是基本构建块。
+
+Actor模型允许开发人员通过使用actor进行通信来构建可靠的基于消息的系统。状态机和状态图可以对actor的逻辑进行建模。这些actor可以相互通信，也可以与其他actor通信。
+
+:::tip
+当你在XState中运行状态机时，它就变成了一个actor。
+:::
+
+### 什么是“actor”？
+
+Actors 是独立的“活”对象，可以通过异步消息传递相互通信。在 XState 中，我们将这些消息称为[_事件_](transitions.mdx)。
+
+- Actor 具有自己的内部封装状态，只能由 actor 自己更新。Actor 可以选择在收到消息后更新其内部状态，但不能被任何其他实体更新。
+- Actors 通过异步发送和接收事件与其他 actors 通信。
+- Actors 一次处理一条消息。它们有一个内部的“邮箱”，就像一个事件队列一样，按顺序处理事件。
+- 内部 actor 状态不在 actors 之间共享。actor 共享其内部状态的唯一方式是：
+  - 向其他 actors 发送事件
+  - 或者发出快照，这可以被视为发送给订阅者的隐式事件。
+- Actors 可以创建（生成/调用）新的 actors。
+
+你会发现你可能已经熟悉的软件中有很多与 actor 模型相似的地方。对象封装状态并相互传递消息的概念可能来自面向对象编程。而 actors 类似于现实世界中的物理概念，如细胞生物学和人际关系中的通信。
+
+## 状态
+
+Actor 具有自己的内部封装状态，只能由 actor 自己更新。Actor 可以选择在收到消息后更新其内部状态，但不能被任何其他实体更新。Actors 不共享状态。actor 共享数据的唯一方式是发送事件。
+
+[阅读更多关于 XState actors 和状态的信息](actors.mdx)。
+
+## 通过事件进行通信
+
+Actors 通过异步发送和接收事件与其他 actors 通信。Actors 使用一个内部的“邮箱”，就像一个事件队列一样，一次处理一个事件。
+
+[阅读更多关于 XState 事件和转换的信息](transitions.mdx)。
+
+## 生成
+
+Actors 可以生成新的 actors，这在 actor 需要将工作委托给另一个 actor 时非常有用。生成允许系统灵活和动态地创建和销毁 actors，以有效地处理工作负载。
+
+- [阅读更多关于在 XState 中生成 actors 的信息](spawn.mdx)。
+- [阅读关于在 XState 中调用和生成 actors 之间的区别](actors.mdx#invoking-and-spawning-actors)。
+
+## 后端开发中的 actor 模型
+
+Actor 模型通常用于协调后端系统。有直接实现 Actor 模型的框架，如 JVM 的 [Akka](https://doc.akka.io/docs/akka/current/typed/guide/introduction.html)。在 [Erlang](https://www.erlang.org/docs) 中，进程可以被视为 actors，它们可以发送和接收消息并生成新的进程。Erlang 被用于大规模分布式系统，如 Discord 和 WhatsApp。
+
+在 [Stately Sky](https://stately.ai/docs/stately-sky-getting-started) 中，状态机 actor 可以用于管理长时间运行的后端流程，如医疗患者入职流程、库存管理或多玩家协作体验，如白板画布或游戏。
+
+## 前端开发中的 actor 模型
+
+Actor 模型对于协调前端 Web 应用程序的众多活动部分特别有用。
+
+**你的前端应用程序始终是一个分布式系统**，而管理分布式系统正是 actor 模型的优势所在。这是因为在浏览器环境中**你从来没有一个“全局真理源”**，而是有**许多独立的状态和事件源**：第三方组件、本地组件状态、本地存储、查询参数、路由器、网络 I/O、DOM 事件及其监听器等。
+
+> […] 在任何非平凡的应用程序中，都不存在单一的真理源。所有应用程序，即使是前端应用程序，在某种程度上都是分布式的。– 引自：[Redux is Half of a Pattern (2/2)](https://dev.to/davidkpiano/redux-is-half-of-a-pattern-2-2-4jo3)
+
+因此，即使是简单的 Web 应用程序，具有小的特定于应用程序的状态和一些已知的特定于应用程序的事件，actor 模型也可以是有帮助的。
+
+## XState
+
+XState 中的 actors 可以：
+- **接受消息** 作为传递给其内部逻辑的[事件](/docs/transitions/#event-objects)，或者作为状态机通过[转换](transitions.mdx)接收的事件。
+- **在状态机内创建更多的 actors**，使用 `spawn` 在 [`assign`](/docs/actions/#assign-action) 中，或者使用 `spawnChild` 动作创建器。详情请参阅 [Spawn](spawn.mdx)。
+- **发送更多的消息** 作为事件，使用 `self.send` 在其自己的逻辑中，或者使用状态机中的[动作创建器](actions.mdx)如 [`sendTo`](/docs/actions/#send-to-action) 或 [`raise`](/docs/actions/#raise-action)。
+
+XState 中的 actors 具有自己的[actor 逻辑](/docs/actors/#actor-logic)，他们使用这些逻辑来：
+- **做出本地决策**
+- **确定如何响应接收到的下一个消息**
+- **修改自己的私有状态**（但只能通过消息传递相互影响）
+
+XState 中的 actors 存在于[系统](system.mdx)中，并且可以在这些系统内和跨系统相互通信。
+
+## 参考资料
+
+- [什么是 actor 模型以及何时使用它？](https://stately.ai/blog/what-is-the-actor-model)
+- [5 分钟内解释 actor 模型](https://www.youtube.com/watch?v=ELwEdb_pD0k)
+- [维基百科：Actor 模型](https://en.wikipedia.org/wiki/Actor_model)

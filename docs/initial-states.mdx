@@ -1,0 +1,79 @@
+---
+title: 初始状态
+---
+
+当状态机启动时，它首先进入**初始状态**。一个状态机只能有一个顶级初始状态；如果有多个初始状态，状态机将不知道从哪里开始！
+
+在 XState 中，初始状态由机器配置中的 `initial` 属性定义：
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+
+  // highlight-start
+  // 初始状态
+  initial: 'prompt',
+  // highlight-end
+
+  // 有限状态
+  states: {
+    // highlight-next-line
+    prompt: {
+      /* ... */
+    },
+    // ...
+  },
+});
+```
+
+在我们的视频播放器中，paused 是初始状态，因为视频播放器默认是暂停的，需要用户交互才能开始播放。
+
+:::video
+
+观看我们的 [“什么是初始状态？” 视频在 YouTube 上](https://www.youtube.com/watch?v=goCpmgyrjL0&list=PLvWgkXBB3dd4I_l-djWVU2UGPyBgKfnTQ&index=3) (1分17秒)。
+
+:::
+
+<EmbedMachine
+  name="视频播放器"
+  embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=3ebc8874-2294-480b-a06e-74845337cd8d"
+/>
+
+## 指定初始状态
+
+通常，一个状态机会有多个它可以处于的[有限状态](finite-states.mdx)。机器配置中的 `initial` 属性指定了机器应该启动的初始状态。
+
+[父状态](parent-states.mdx)也必须在它们的 `initial` 属性中指定一个初始状态。以下的 `trafficLightMachine` 将从 `'green'` 状态开始，因为它在机器配置的 `initial` 属性中指定了。
+
+当机器到达 `'red'` 父状态时，它也会处于 `'red.walk'` 状态，因为它在 `'red'` 状态的 `initial` 属性中指定了。
+
+```ts
+import { createMachine } from 'xstate';
+
+const trafficLightMachine = createMachine({
+  // highlight-next-line
+  initial: 'green',
+  states: {
+    green: {/* ... */},
+    yellow: {/* ... */},
+    red: {
+      // highlight-next-line
+      initial: 'walk',
+      states: {
+        walk: {/* ... */},
+        wait: {/* ... */},
+        stop: {/* ... */},
+      }
+    },
+  }
+});
+
+const trafficLightActor = createActor(trafficLightMachine);
+
+trafficLightActor.subscribe(state => {
+  console.log(state.value);
+});
+
+trafficLightActor.start();
+// logs 'green'
+```

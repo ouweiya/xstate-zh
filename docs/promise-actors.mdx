@@ -1,0 +1,187 @@
+---
+title: Promise actors
+---
+
+Promise actors 是表示执行某些异步任务的 promise 的 actors。它们可能会返回一些输出，或者抛出一个错误。
+
+## Promise actor 功能
+
+| | 功能 | 备注 |
+| --- | --- | --- |
+| ❌ | 接收事件 | Promise actors 目前不接收事件。 |
+| ✅ | 发送事件 | Promise actors 可以向它引用的其他 actors 发送事件，例如在其 `input` 中提供的那些。 |
+| ❌ | 生成 actors | Promise actors 目前不能生成新的 actors。 |
+| ✅ | 输入 | 你可以向 promise actors 提供 `input`。 |
+| ✅ | 输出 | Promise actors 可以生成 `output`，即 promise 的返回值。
+
+## Promise actor 逻辑
+
+你可以使用 `fromPromise(...)` actor 逻辑创建器定义 promise actor 逻辑，该创建器接受一个返回 promise 的函数，并返回可用于创建 promise actors 的 actor 逻辑。
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+async function getUser(id: string) {
+  // ...
+  return { id, /* other user data */ };
+}
+
+// highlight-start
+const promiseLogic = fromPromise(async () => {
+  const user = await getUser('123');
+
+  return user;
+});
+// highlight-end
+
+const promiseActor = createActor(promiseLogic);
+
+promiseActor.subscribe(snapshot => {
+  console.log(snapshot.status, snapshot.output);
+});
+
+promiseActor.start();
+
+// 记录 'active', undefined
+// ... (过一段时间)
+// 记录 'done', { id: '123', /* 其他用户数据 */ }
+```
+
+## Promise actor 输入
+
+你可以通过将 `input` 作为第二个参数的 `input` 属性传递给 `createActor(...)` 函数来传递 `input` 给 promise actor。在 promise 逻辑 (`fromPromise(promiseFn)`) 中，你可以读取传递给 promise 函数的第一个参数的 `input` 属性：
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+const promiseLogic = fromPromise(async ({ input }) => {
+  const user = await getUser(input.id);
+
+  return user;
+});
+
+const promiseActor = createActor(promiseLogic, {
+  // highlight-next-line
+  input: { id: '123' }
+});
+```
+
+`input` 类型是从 promise 函数的第一个参数类型推断出来的。你也可以在第二个泛型参数中提供显式的 `input` 类型：
+
+```ts
+import { fromPromise } from 'xstate';
+
+interface User {
+  name: string;
+  id: string;
+}
+
+const secondLogic = fromPromise(async ({ input }: { input: { id: string }}) => {
+  const user = await getUser(input.id); // User is inferred
+
+  return user;
+});
+
+const firstLogic = fromPromise<User, { id: string }>(async ({ input, self, /* ... */ }) => {
+  const user = await getUser(input.id);
+
+  return user;
+});
+```
+
+## Promise actor 输出
+
+要获取 promise actor 最终解析的 `output`，你可以订阅 promise actor 并检查快照的 `status` 属性。如果 `status` 是 `'done'`，你可以访问快照的 `output` 属性以获取解析值。否则，`output` 将是 `undefined`。
+
+```ts
+import { fromPromise } from 'xstate';
+
+const promiseLogic = fromPromise(async () => {
+  const user = await getUser('123');
+
+  return user;
+});
+
+const promiseActor = createActor(promiseLogic);
+
+promiseActor.subscribe(snapshot => {
+  if (snapshot.status === 'done') {
+    console.log(snapshot.output);
+    // 记录 { id: '123', /* 其他用户数据 */ }
+  }
+});
+```
+
+你也可以使用 `toPromise(...)` 将任何 actor（包括 promise actors）转换为 promise。如果你想 `await` actor 的 `output`，这将非常有用：
+
+```ts
+import { toPromise, createActor } from 'xstate';
+import { somePromiseLogic } from './somePromiseLogic';
+
+const promiseActor = createActor(somePromiseLogic);
+promiseActor.start();
+
+// highlight-next-line
+const output = await toPromise(promiseActor);
+
+console.log(output);
+// 记录 promise actor 解析的输出
+```
+
+## Promise actor 错误处理
+
+如果 promise 逻辑中发生错误，promise actor 将会以该错误拒绝。你可以订阅 promise actor，并在**错误观察者**（观察者对象的 `error` 属性）中检查快照的 `status` 属性。
+
+```ts
+import { fromPromise } from 'xstate';
+
+const promiseLogic = fromPromise(async () => {
+  // ...
+  throw new Error('Something went wrong');
+});
+
+const promiseActor = createActor(promiseLogic);
+promiseActor.subscribe({
+  // highlight-start
+  error: (error) => {
+    console.error(error);
+    // logs 'Error: Something went wrong'
+  }
+    // highlight-end
+});
+
+promiseActor.start();
+```
+
+## 停止 promise actors
+
+你可以通过调用 actor 实例的 `.stop()` 方法来停止使用 `createActor(promiseLogic)` 创建的 promise actor。这将丢弃 promise 的解析或拒绝值，并处理对 promise actor 的任何订阅。
+
+你也可以通过向其传递 `signal` 来**中止** promise actor：
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+const promiseLogic = fromPromise(async ({
+  input,
+  // highlight-next-line
+  signal
+}) => {
+  // highlight-start
+  // 如果收到信号则传递 signal 以中止获取
+  const data = await fetch('/some/url', { signal });
+  // highlight-end
+
+  return data;
+});
+
+const promiseActor = createActor(promiseLogic);
+promiseActor.start();
+
+// ...
+
+// highlight-start
+// 中止 promise actor
+promiseActor.stop();
+// highlight-end
+```

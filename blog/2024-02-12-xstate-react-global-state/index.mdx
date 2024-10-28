@@ -1,0 +1,244 @@
+---
+title: 使用 XState 和 React 管理全局状态
+description: 如何使用 XState 在 React 中管理全局状态
+tags:
+  [
+    xstate,
+    react
+  ]
+authors: [david]
+date: 2024-02-12
+slug: 2024-02-12-xstate-react-global-state
+image: /blog/2024-02-12-xstate-react-global-state.png
+---
+
+XState 是一个多功能的状态管理和编排库，可以与任何框架一起使用，包括与 [`@xstate/react`](/docs/xstate-react) 包一起使用的 React。对于许多应用程序来说，管理全局状态是一个要求，有很多选项可以在 React 中共享全局状态，比如使用 [React Context](https://react.dev/learn/passing-data-deeply-with-context) 或者像 [Redux](https://redux.js.org/)、[MobX](https://mobx.js.org/) 和 [Zustand](https://github.com/pmndrs/zustand) 这样的库。
+
+`@xstate/react` 包使得使用 `useMachine()` 和 `useActor()` 这样的钩子来管理组件级状态变得简单，但它同样适用于管理全局状态 🌎
+
+{/* truncate */}
+
+## 快速开始
+
+1. **创建全局逻辑**。这可以是一个简单的 promise 或函数，或者是一个复杂的状态机或状态图。
+1. **从该逻辑创建一个 actor 并导出它**。
+1. **从任何组件中导入该 actor** 并：
+    - 使用 `useSelector(…)` 钩子读取 actor 的快照
+    - 调用 `actorRef.send(…)` 发送事件给它。
+
+就是这样！
+
+```tsx
+import { setup, createActor } from 'xstate';
+import { useSelector } from '@xstate/react';
+
+// 全局应用逻辑
+import { globalLogic } from './globalLogic';
+
+// highlight-start
+// 创建 actor
+export const globalActor = createActor(globalLogic);
+// 启动 actor
+globalActor.start();
+// highlight-end
+
+export function App() {
+  // highlight-start
+  // 读取 actor 的快照
+  const user = useSelector(globalActor, (snapshot) => snapshot.context.user);
+  // highlight-end
+
+  return (
+    <div>
+      <h1>你好, {user.name}!</h1>
+      // highlight-start
+      // 发送事件给 actor
+      <button onClick={() => globalActor.send({ type: 'logout' })}>
+      // highlight-end
+      登出
+      </button>
+    </div>
+  );
+}
+```
+
+## 全局状态
+
+管理全局状态的最简单方法是共享一个[actor](/docs/actors)实例。可以将 actor 视为一个“存储”——你可以订阅它的状态更新（“快照”）并向它发送事件。
+
+你可以通过将 actor 作为 prop 传递或直接从模块范围引用来在任何组件中使用它。
+
+```tsx
+import { setup, createActor } from 'xstate';
+import { useSelector } from '@xstate/react';
+
+// 全局应用逻辑
+const countMachine = createMachine({
+  context: { count: 0 },
+  on: {
+    inc: {
+      actions: assign({ count: ({ context }) => context.count + 1 })
+    }
+  }
+});
+
+// highlight-start
+// 全局 actor - 应用逻辑的一个实例
+export const countActor = createActor(countMachine);
+countActor.start(); // 立即启动 actor
+// highlight-end
+
+export function App() {
+  // highlight-start
+  // 读取 actor 的快照
+  const count = useSelector(countActor, (state) => state.context.count);
+  // highlight-end
+
+  return (
+    // highlight-start
+    // 发送事件给 actor
+    <button onClick={() => countActor.send({ type: 'inc' })}>
+    // highlight-end
+      Count: {count}
+    </button>
+  );
+}
+```
+
+你可以从任何组件中读取这个全局 actor（“存储”）并向它发送事件：
+
+```tsx
+// highlight-next-line
+import { countActor } from './countActor';
+
+export function Counter() {
+  // highlight-next-line
+  const count = useSelector(countActor, (state) => state.context.count);
+
+  return (
+    // highlight-next-line
+    <button onClick={() => countActor.send({ type: 'inc' })}>
+      Current count: {count}
+    </button>
+  );
+}
+```
+
+## 副作用和生命周期
+
+actor 不仅限于作为状态存储。它们还可以用于管理副作用，比如 HTTP 请求，或者从 actor 内部触发副作用。因此，你可能不希望 actor 立即启动。你可以使用 `.start()` 方法在适当的时间启动 actor，比如在应用挂载时。
+
+:::tip
+
+如果 actor 已经启动，再次调用 `.start()` 将不会有任何效果。这使得在 `useEffect()` 中调用它是安全的，`useEffect()` [在开发环境的严格模式下会执行两次](https://react.dev/reference/react/useEffect#my-effect-runs-twice-when-the-component-mounts)。
+
+:::
+
+```ts
+import { effectfulActor } from './effectfulActor';
+
+export function App() {
+  useEffect(() => {
+    // highlight-next-line
+    effectfulActor.start();
+  }, [effectfulActor]);
+
+  // ...
+}
+```
+
+同样，你也可以通过调用 `actor.stop()` 来控制 actor 何时停止。
+
+:::info
+
+全局使用的 actor 必须显式启动 (`actor.start()`)。当使用 `@xstate/react` 钩子如 `useMachine(…)`、`useSelector(…)` 等时，actor 会自动启动和停止。
+
+:::
+
+## 使用 React Context 管理全局状态
+
+如果你更喜欢使用 [React Context](https://react.dev/learn/passing-data-deeply-with-context) 来共享全局状态，你可以将上述模式适配为使用 React Context 提供者和消费者。
+
+```tsx
+import { createContext } from 'react';
+
+const someMachine = createMachine(/* ... */);
+const someActor = createActor(someMachine);
+
+// 不要忘记启动 actor！
+someActor.start();
+
+// 将 `someActor` 传递给 `createContext` 主要是为了类型安全
+// highlight-next-line
+export const SomeActorContext = createContext(someActor);
+
+export function App() {
+  return (
+    // highlight-next-line
+    <SomeActorContext.Provider value={someActor}>
+      <Counter />
+    // highlight-next-line
+    </SomeActorContext.Provider>
+  );
+}
+```
+
+```tsx
+import { useContext } from 'react';
+import { useSelector } from '@xstate/react';
+// highlight-next-line
+import { SomeActorContext } from './SomeActorContext';
+
+export function Counter() {
+  // highlight-next-line
+  const someActor = useContext(SomeActorContext);
+  const count = useSelector(someActor, (state) => state.context.count);
+
+  return (
+    // highlight-next-line
+    <button onClick={() => someActor.send({ type: 'inc' })}>
+      Current count: {count}
+    </button>
+  );
+}
+```
+
+:::tip
+
+`@xstate/react` 包还提供了一个 `createActorContext(…)` 函数以方便使用。阅读关于[在 React 中使状态机全局化](/blog/2023-1-27-making-state-machines-global-in-react)的博客文章，并查看[`createActorContext(…)` 的文档](/docs/xstate-react#createactorcontextlogic)。
+
+:::
+
+## 不仅仅是状态机
+
+状态机非常强大且有用，但有时你不需要所有这些功能。XState v5 使你能够创建[不同类型的 actor 逻辑](/docs/category/actors)以适应你的用例，例如基于 promise、observable、转换函数、回调等的 actor 逻辑。
+
+```ts
+// highlight-next-line
+import { fromTransition, createActor } from 'xstate';
+import { useSelector } from '@xstate/react'
+
+// highlight-start
+// 演员逻辑
+const counterLogic = fromTransition((state, event) => {
+  if (event.type === 'inc') {
+    return { count: state.count + 1 };
+  }
+  return state;
+}, { count: 0 });
+// highlight-end
+
+const counterActor = createActor(counterLogic);
+counterActor.start();
+
+// Same API
+export function Counter() {
+  const count = useSelector(counterActor, (state) => state.context.count);
+
+  return (
+    <button onClick={() => counterActor.send({ type: 'inc' })}>
+      Current count: {count}
+    </button>
+  );
+}
+```

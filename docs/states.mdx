@@ -1,0 +1,345 @@
+---
+title: State
+---
+
+状态描述了机器的状态或模式，可以像*暂停*和*播放*一样简单。状态机一次只能处于一种状态。
+
+这些状态是“有限的”；机器只能在您预定义的状态之间移动。
+
+<EmbedMachine
+  name="Video player"
+  embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=741f69fd-7f01-4932-9407-6871e225bb6d"
+/>
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中可视化您的状态机并轻松添加状态。 [阅读更多关于 Stately 编辑器中的状态](editor-states-and-transitions.mdx)。
+
+:::
+
+:::tip
+
+观看我们在 YouTube 上的[“什么是状态？”视频](https://www.youtube.com/watch?v=z-6yhmSWUcc&list=PLvWgkXBB3dd4I_l-djWVU2UGPyBgKfnTQ&index=2)（53秒）。
+
+:::
+
+## 状态对象
+
+状态对象表示正在运行的机器（[actor](actor-model.mdx)）的当前状态，并包含以下属性：
+
+- **`value`**：当前状态值，可以是：
+  - 表示简单状态的字符串，例如 `'playing'`，或：
+  - 表示嵌套状态的对象，例如 `{ paused: 'buffering' }`。
+- **`context`**：当前的[上下文](context.mdx)（扩展状态）。
+- **`meta`**：包含状态节点元数据的对象。
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'question',
+  context: {
+    feedback: '',
+  },
+  states: {
+    question: {
+      meta: {
+        question: 'How was your experience?',
+      },
+    },
+  },
+});
+
+const actor = createActor(feedbackMachine);
+actor.start();
+
+console.log(actor.getSnapshot());
+// 记录包含以下内容的对象：
+// {
+//   value: 'question',
+//   context: {
+//     feedback: ''
+//   },
+//   meta: {
+//     'feedback.question': {
+//       question: 'How was your experience?'
+//     }
+//   }
+// }
+```
+
+## 访问状态快照
+
+您可以通过订阅 actor 或读取 actor 的 `.getSnapshot()` 方法来访问 actor 发出的状态（或 _快照_）。
+
+```ts
+const actor = createActor(feedbackMachine);
+
+actor.subscribe((snapshot) => {
+  console.log(snapshot);
+  // logs the current snapshot state, e.g.:
+  // { value: 'question', ... }
+  // { value: 'thanks', ... }
+});
+
+actor.start();
+
+console.log(actor.getSnapshot());
+// logs { value: 'question', ... }
+```
+
+## 状态值
+
+具有嵌套状态（或_状态图_）的状态机是一个树状结构，其中每个节点都是一个_状态节点_。根状态节点是表示整个机器的顶级状态节点。根节点可以有子状态节点，子状态节点也可以有子状态节点，依此类推。
+
+**状态值**是一个表示机器中所有活动状态节点的对象。对于没有子状态节点的状态机，状态值是一个字符串：
+
+即将推出…一个视觉示例。
+
+- `state.value === 'question'`
+- `state.value === 'thanks'`
+- `state.value === 'closed'`
+
+对于具有父状态节点的状态机，状态值是一个对象：
+
+即将推出…一个视觉示例。
+
+- `state.value === { form: 'invalid' }` - 这表示一个状态机，其活动子节点的键为 `form`，且其活动子节点的键为 `invalid`
+
+对于具有[并行状态节点](parallel-states.mdx)的状态机，状态值包含具有多个键的对象，每个键表示一个状态节点区域：
+
+```ts
+state.value ===
+  {
+    monitor: 'on',
+    mode: 'dark',
+  };
+```
+
+状态机也可能只有根状态节点而没有其他状态节点。对于这些状态机，状态值为 `null`。
+
+## 状态上下文
+
+状态机可以具有[上下文](context.mdx)，这是一个表示机器扩展状态的对象。上下文是不可变的，只能通过在动作中[分配](actions.mdx#assign-action)来更新。您可以读取 `state.context` 属性以获取当前上下文。
+
+```ts
+const currentState = feedbackActor.getSnapshot();
+
+console.log(currentState.context);
+// logs { feedback: '' }
+```
+
+- 如果在机器配置中未指定上下文，则对象为空 `{}`（默认）
+- 切勿修改此对象；应将其视为不可变/只读
+
+## 状态子节点
+
+`state.children` 属性表示当前状态中所有已生成/调用的 actor。它是一个对象，其中键表示 actor 的 ID，值表示 `ActorRef` 实例。
+
+- 这是您通过 ID 访问生成/调用的 actor 的地方
+- 这就是为什么您应该为生成/调用的 actor 分配 ID
+- 停止的 actor 不会出现在这里
+
+## `state.can(eventType)`
+
+`state.can(event)` 方法确定如果将 `event` 对象发送到机器 actor 是否会导致状态更改。如果由于发送 `event` 导致状态更改，则该方法将返回 `true`；否则返回 `false`：
+
+```js
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    form: {
+      // ...
+      on: {
+        'feedback.submit': {
+          guard: 'isValid',
+          target: 'thanks',
+        },
+      },
+    },
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+// ...
+
+const currentState = feedbackActor.getSnapshot();
+
+console.log(currentState.can({ type: 'feedback.submit' }));
+// 如果 'feedback.submit' 事件会导致状态转换，则记录 `true`，这将在以下情况下发生：
+// - 当前状态是 'form'
+// - 'isValid' 守卫评估为 `true`
+```
+
+状态被认为是“已更改”，如果给定的 `state` 和 `event` 对象启用了转换。
+
+:::warningxstate
+`state.can(...)` 方法还将通过执行它们来检查转换守卫。转换守卫应该是纯函数。
+:::
+
+## `state.hasTag(tag)`
+
+`state.hasTag(tag)` 方法确定当前状态值中的任何状态节点是否具有给定的 `tag`。这对于确定状态是否为特定状态，或状态是否属于特定状态组非常有用。
+
+```js
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    submitting: {
+      tags: ['loading'],
+      // ...
+    },
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+const currentState = feedbackActor.getSnapshot();
+
+const showLoadingSpinner = currentState.hasTag('loading');
+```
+
+优先使用 `state.hasTag(tag)` 而不是 `state.matches(stateValue)`，因为 `state.hasTag(tag)` 对机器的更改更具弹性。
+
+## `state.matches(stateValue)`
+
+`state.matches(stateValue)` 方法确定当前 `state.value` 是否与给定的 `stateValue` _匹配_。如果当前 `state.value` 是所提供 `stateValue` 的“子集”，则该方法将返回 `true`。
+
+```ts
+// state.value === 'question'
+state.matches('question'); // true
+
+// state.value === { form: 'invalid' }
+state.matches('form'); // true
+state.matches('question'); // false
+state.matches({ form: 'invalid' }); // true
+state.matches({ form: 'valid' }); // false
+
+// state.value === { 'form submitting' : 'invalid value' }
+state.matches('form submitting'); // true
+state.matches('form'); // false
+state.matches({ 'form submitting' : 'invalid value' }); // true
+state.matches({ 'form submitting' : 'value' }); // false
+```
+
+## `state.output`
+
+`state.output` 属性表示状态机在其顶级最终状态时的输出数据；即 `state.status === 'done'`。
+
+
+```ts
+const state = actor.getSnapshot();
+
+if (state.status === 'done') {
+  console.log(state.output);
+}
+```
+
+## `state.getMeta()`
+
+`state.getMeta()` 方法表示 `state` 中所有状态节点的元数据。它是一个对象，其中键表示状态节点的 ID，值是该状态节点的元数据。
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  // ...
+  states: {
+    form: {
+      meta: {
+        view: 'shortForm',
+      }
+    }
+  }
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+// 假设当前状态是 'form'
+const currentState = feedbackActor.getSnapshot();
+console.log(currentState.getMeta());
+// 记录 { 'feedback.form': { view:'shortForm' } }
+```
+
+## 状态描述
+
+您可以将 `.description` 添加到状态中，以描述其目的并与您的团队共享相关的注释。在 Stately Studio 的编辑器中，这些描述会在机器中呈现，并支持包括链接、图像和列表在内的 markdown。 [阅读更多关于 Stately Studio 中的描述](descriptions.mdx)。
+
+```ts
+states: {
+  "Loading Move Destinations": {
+    // highlight-start
+    description:
+      "Load data from the server based on the entity's id and type (project or machine). Result includes the entity's current location, and the list or tree of valid destination options to which the user may move that entity.",
+    // highlight-end
+    invoke: {
+      src: "loadMoveData",
+      id: "loadMoveData",
+      onDone: [
+        {
+          target: "Destination Menu",
+          actions: "setDestinations",
+        },
+      ],
+      onError: [
+        {
+          target: "Data Loading Error",
+        },
+      ],
+    },
+  },
+}
+```
+
+## 状态和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+_即将推出_
+
+## 状态速查表
+
+### 速查表：读取或匹配状态值
+
+```ts
+const state = actor.getSnapshot();
+
+const currentStateValue = state.value;
+
+const isLoading = state.matches('loading');
+```
+
+### 速查表：读取状态上下文
+
+```ts
+console.log(state.context);
+```
+
+### 速查表：读取状态输出
+
+```ts
+if (state.status === 'done') {
+  // 输出可能存在
+  console.log(state.output);
+} else {
+  // 输出不存在
+  state.output === undefined;
+}
+  state.output === undefined;
+}
+```
+
+### 速查表：读取状态元数据
+
+```ts
+console.log(state.getMeta());
+```
+
+## 进一步的资源
+
+[持久化状态](persistence.mdx)

@@ -1,0 +1,198 @@
+---
+title: 延迟（after）转换
+---
+
+**延迟转换** 是在设定的时间后触发的转换。延迟转换对于在应用程序逻辑中构建超时和间隔非常有用。如果在计时器结束之前发生了另一个事件，则转换不会完成。
+
+延迟转换在状态节点的 `after` 属性上定义，可以是一个数字（以毫秒为单位）或一个引用在 `delays` 设置对象中定义的延迟的字符串。
+
+:::studio
+
+您可以在 Stately 的编辑器中轻松可视化和模拟延迟转换。 [阅读更多关于 Stately 编辑器中的延迟转换](/docs/editor-states-and-transitions/#delayed-after-transitions)。
+
+:::
+
+```ts
+import { createMachine } from 'xstate';
+
+const pushTheButtonGame = createMachine({
+  initial: 'waitingForButtonPush',
+  states: {
+    waitingForButtonPush: {
+      // highlight-start
+      after: {
+        5000: {
+          target: 'timedOut',
+          actions: 'logThatYouGotTimedOut',
+        },
+      },
+      // highlight-end
+      on: {
+        PUSH_BUTTON: {
+          actions: 'logSuccess',
+          target: 'success',
+        },
+      },
+    },
+    success: {},
+    timedOut: {},
+  },
+});
+```
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=78c59862-fc40-4b1e-8f9c-42f1b2ddc410" title="按下按钮游戏"/>
+
+:::tip
+
+观看我们的 [“延迟（after）转换” 视频在 YouTube 上](https://www.youtube.com/watch?v=5RE_eazRhrw&list=PLvWgkXBB3dd4I_l-djWVU2UGPyBgKfnTQ&index=12) (1分17秒)。
+
+:::
+
+## 延迟
+
+您可以通过几种方式定义延迟：[内联](#inlined-delays)、[引用](#referenced-delays) 和作为表达式。
+
+## 内联延迟
+
+您可以通过直接指定延迟时间（以毫秒为单位）来定义内联延迟：
+
+```ts
+const machine = createMachine({
+  initial: 'idle',
+  states: {
+    idle: {
+      after: {
+        1000: { target: 'nextState' },
+      },
+    },
+    nextState: {},
+  },
+});
+```
+
+这将在 1000 毫秒后转换到 `nextState` 状态。
+
+## 引用延迟
+
+您还可以通过指定字符串延迟键并单独提供实际延迟时间来定义引用延迟。
+
+例如：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  // highlight-start
+  delays: {
+    timeout: 1000,
+  },
+  // highlight-end
+}).createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        after: {
+          // highlight-next-line
+          timeout: { target: 'nextState' },
+        },
+      },
+      nextState: {},
+    },
+  }
+);
+```
+
+## 动态延迟
+
+延迟也可以动态定义为返回延迟时间（以毫秒为单位）的函数：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {
+    context: {} as {
+      attempts: number
+    }
+  },
+  // highlight-start
+  delays: {
+    timeout: ({ context }) => {
+      return context.attempts * 1000;
+    },
+  },
+  // highlight-end
+}).createMachine({
+  initial: 'attempting',
+  states: {
+    attempting: {
+      after: {
+        // highlight-start
+        timeout: {
+          actions: assign({ attempts: ({ context }) => context.attempts + 1 }),
+          target: 'attempting',
+        },
+        // highlight-end
+      },
+    },
+    // ...
+  },
+});
+```
+
+## 生命周期
+
+当状态退出时，延迟转换计时器将被取消。
+
+## 测试
+
+- 模拟时钟
+
+## 延迟转换和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+您可以通过在 `setup()` 函数中设置延迟来强类型化您的机器的 `delays`：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  // highlight-start
+  delays: {
+    shortTimeout: 1000,
+    longTimeout: 5000,
+    eventually: 10_000
+  }
+  // highlight-end
+}).createMachine({
+  after: {
+    shortTimeout: {/* ... */}
+  }
+});
+```
+
+## 延迟转换备忘单
+
+使用下面的 XState 延迟转换备忘单快速入门。
+
+```ts
+createMachine({
+  after: {
+    DELAY: {
+      /* ... */
+    },
+  },
+}).provide({
+  delays: {
+    延迟: 1000, // 或表达式
+  },
+});
+```

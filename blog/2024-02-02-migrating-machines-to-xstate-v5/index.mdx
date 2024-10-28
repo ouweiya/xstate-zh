@@ -1,0 +1,754 @@
+---
+title: 将状态机迁移到 XState v5
+description: 迁移现有 XState v4 状态机到 XState v5 的指南
+tags:
+  [
+    stately,
+    studio,
+    重大变化,
+    迁移,
+    XState v5,
+    状态机,
+    xstate,
+  ]
+authors: [kevin]
+date: 2024-02-02
+slug: 2024-02-02-migrating-machines-to-xstate-v5
+image: /blog/2024-02-02-migrating-machines-to-xstate-v5.png
+---
+
+我们最近[宣布发布 XState v5](/blog/2023-12-01-xstate-v5)! 在其测试阶段，我们创建了一个[迁移指南](/docs/migration)，专门指出重大变化，并为开发人员提供有关 API 更改的持续更新。本篇文章是从 v4 迁移到 v5 的现有 XState 状态机的指南，旨在作为迁移指南的逐步伴侣。它还侧重于迁移[使用 TypeScript 的 XState 状态机](/docs/typescript)。
+
+{/* truncate */}
+
+:::info
+
+阅读[David 关于 XState v5 发布的博客文章](/blog/2023-12-01-xstate-v5)。
+
+喜欢视频？[观看我们在 YouTube 上的 XState v5 网络研讨会](https://www.youtube.com/live/TRVjeil-y74):
+
+<YouTube id="TRVjeil-y74" />
+
+:::
+
+我们在 Stately 的 [Stately Studio](https://stately.ai/studio) 代码库中有数十个 XState 状态机，并且也在将它们迁移到 XState v5。在咨询了我的专家队友 Mateusz 后，我学到了很多关于迁移过程的知识，并希望分享一些经验，以使您的迁移过程更加顺利。
+
+以下是您可以遵循的一系列步骤，以将现有的 XState v4 状态机迁移到 XState v5。顺序仅是建议，而不是要求。
+
+1. [安装 XState v5 和依赖项](#1-install-xstate-v5-and-dependencies)
+2. [将类型移至 `setup()` 并移除 typegen](#2-move-types-to-setup-and-remove-typegen)
+3. [将动作和守卫字符串转换为参数化对象](#3-convert-action-and-guard-strings-to-parameterized-objects)
+4. [在 `setup()` 中包含实现或存根](#4-include-implementations-or-stubs-in-setup)
+5. [提供具体实现](#5-provide-concrete-implementations)
+
+:::tip
+
+对于步骤 2-5，您可能会发现更容易处理现有状态机的一小部分，例如一个单一的事件或动作，并在步骤 2-5 中完全迁移它，以便在过程中隔离 TypeScript 错误的原因和修复。
+
+:::
+
+## 1. 安装 XState v5 和依赖项
+
+第一步是[安装 XState v5](/docs/xstate#installation)。如果您使用的是框架或库，您还可以安装其中一个集成包：
+
+- [React](/docs/xstate-react)
+- [Vue](/docs/xstate-vue)
+- [Svelte](/docs/xstate-svelte)
+
+### 同时安装 XState v4 和 v5
+
+如果您有许多状态机，并希望逐步将它们迁移到 v5，您可以按照[这里列出的迁移步骤](/docs/migration#how-can-i-use-both-xstate-v4-and-v5)同时安装 v4 和 v5。完成这些步骤后，您将在 `package.json` 中同时拥有这两个依赖项。
+
+为了安装集成包，您需要[运行一个脚本](/docs/migration#how-can-i-use-both-xstate-v4-and-v5)。
+
+以下是一个示例，库固定在撰写本文时的最新版本，但如果您愿意，也可以使用 `npm:xstate@latest`。
+
+```json5
+// 完成迁移指南中的步骤后的 package.json
+{
+  dependencies: {
+    xstate: '4.38.2',
+    xstate5: 'npm:xstate@5.6.0',
+    '@xstate/react': '3.2.2',
+    '@xstate/react5': 'npm:@xstate/react@4.0.3',
+  },
+}
+```
+
+:::tip
+
+或者，您也可以将 `xstate` 默认设置为 v5，并将 v4 用于 `xstate4`。
+
+:::
+
+### 从版本化包中导入
+
+如果同时使用双重安装（v4 和 v5），或者即使仅使用 v5，您都需要确保从 v5 包中导入 XState 函数。在文件的顶部，从 `xstatev5` 包中导入 `setup`、`assign` 和其他动作创建器等函数。
+
+:::warning
+
+避免不匹配！从 XState v5 调用 `createMachine({})`，但从 v4 导入的 XState 函数（如 `assign`）可能会导致类型错误。
+
+:::
+
+```ts
+// 在 v5 机器中...
+const machine = setup().createMachine({
+  context: {
+    prop: 'defaultValue',
+  },
+  on: {
+    next: {
+      // 确保从 v5 包中导入 assign
+      // 而不是从 v4！
+      actions: assign({ prop: 'value' }),
+    },
+  },
+});
+```
+
+## 2. 将类型移至 `setup()` 并移除 typegen
+
+基于重大变化的第一个迁移步骤之一是从 v4 的机器配置的 `schema` 属性中移除任何 TypeScript 类型。这些类型现在应该包含在传递给新的 `setup({})` 函数的对象中的新 `types` 属性下。
+
+在 v5 中仍然支持将类型传递给 `createMachine({ schema: {} })`，然而，传递它们给 `setup({})` 是首选，因为它自动将实现（以及更多）类型化。
+
+<Tabs>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  ...
+  tsTypes: {} as import('./myMachine.typegen').Typegen0,
+  schema: {
+    context: {} as {
+      prop1: string;
+      prop2: number;
+    },
+    events: {} as
+    | {
+        type: 'next';
+        value: number;
+    } | {
+        type: 'back';
+        value: number;
+      };
+    },
+    services: {} as {
+      fetchUserDetails: {
+        data: { email: string, name: string };
+      };
+    },
+  }
+});
+```
+
+</TabItem>
+
+<TabItem value="v5" label="XState v5">
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {} as {
+    context: {
+      prop1: string;
+      prop2: number;
+    };
+    events:
+      | {
+          type: 'next';
+          value: number;
+        }
+      | {
+          type: 'back';
+          value: number;
+        };
+  },
+  /* 实现 */
+  actions: {},
+  guards: {},
+  // Actor 输入和输出类型将包含在这里
+  actors: {},
+}).createMachine({
+  /* 机器配置 */
+});
+```
+
+</TabItem>
+
+</Tabs>
+
+定义类型时，您可能已经在之前的示例中注意到，通常会将一个空对象强制转换为您希望的每个属性的类型，例如 `events` 和 `actions`。
+
+```ts
+const machine = setup({
+  types: {
+    context: {} as {
+      prop1: string;
+      prop2: number;
+    };
+    events: {} as { type: 'next' } | { type: 'next' };
+  },
+})
+```
+
+这仍然有效，但更简单的方法是将整个类型对象一次性强制转换为 `types: {} as {}`。
+
+```ts
+const machine = setup({
+  types: {} as {
+    context: {
+      prop1: string;
+      prop2: number;
+    };
+    events: { type: 'next' } | { type: 'next' };
+  },
+});
+```
+
+:::warning
+
+在 v5 中链接 `setup({ types: {} }).createMachine({})` 时，我们只能在传递给 `setup` 的对象上定义类型，而不能在传递给 `createMachine` 的配置对象上定义类型。
+
+:::
+
+### 移除 typegen
+
+Typegen 在 XState v5 中不再支持，因此您可以从机器配置中移除 `tsTypes`。没有 typegen 的情况下，在动作和守卫中键入事件必须通过在实现函数中手动进行类型缩小来完成。然而，以下部分将向您展示如何键入传递给这些实现的新 `params` 参数，并跳过手动类型缩小。
+
+## 3. 将动作和守卫字符串转换为参数化对象
+
+我们可以将机器配置中的动作和守卫字符串转换为参数化对象。如果它们需要使用 `event` 属性，这对于转换上的动作和守卫特别有帮助。这允许您显式地将 `event` 属性映射到实现函数的 `params` 对象，以便它们自动键入，并且不需要额外的[类型缩小](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)。
+
+另一方面，如果它们仅使用 `context` 值（已键入），您可以继续使用引用字符串命名的 `entry` 和 `exit` 动作或守卫。甚至可以在配置中使用内联函数。
+
+例如，这些事件在 XState v5 中仍然完全可以像在 v4 中一样使用：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {} as {
+    context: {
+      prop1: string;
+    };
+  }
+} })
+.createMachine({
+  states: {
+    first: {
+      entry: 'track',
+      exit: ({ context }) => {
+        console.log(context.prop1, 'is already typed');
+      },
+    },
+  },
+});
+```
+
+对于转换事件和守卫，我们可以[将命名的动作或守卫字符串转换为动作对象](/docs/migration#use-params-to-pass-params-to-actions--guards)，这允许我们定义一个显式的 `params` 对象，该对象将在运行时由我们的实现函数接收。有两种方法可以做到这一点：
+
+1. 我们可以将 `params` 定义为[静态值](/docs/actions#action-objects)
+2. 使用[动态动作参数](/docs/actions#dynamic-action-parameters)，这是一个接收 `context` 和/或 `event` 的函数，允许您将这些值映射到 `params` 对象。
+
+<Tabs>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    next: {
+      actions: ['track'],
+    },
+    back: {
+      actions: ['track'],
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v5" label="XState v5">
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    next: {
+      actions: [
+        {
+          type: 'track',
+            // 静态定义的参数
+            params: { response: 'good' },
+          },
+          ],
+        },
+        back: {
+          actions: [
+          {
+            type: 'track',
+            // 动态定义的参数
+          params: ({ event }) => ({
+            rating: event.rating,
+          }),
+        },
+      ],
+    },
+  },
+});
+```
+
+</TabItem>
+
+</Tabs>
+
+这在 v5 中可能显得有些冗长，但它将允许我们在实现函数中跳过手动类型缩小。`params` 对象将根据我们映射到它的 `event` 属性自动键入。
+
+:::tip
+
+在映射 `event` 属性时，您定义的动作或守卫 `params` 技术上可以是任何值，而不仅仅是对象。但建议使用对象以保持一致性，并明确实现函数将接收什么。
+
+:::
+
+以下是将动作字符串转换为参数化动作的更完整示例：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {} as {
+    events: {
+      type: 'next';
+      prop1: string;
+      prop2: number;
+      prop3: boolean;
+    };
+  },
+  /* 更多设置 */
+}).createMachine({
+  on: {
+    next: {
+      target: 'first',
+      actions: [
+        {
+          guard: {
+            type: 'is this ready',
+            params: ({ event }) => ({ ready: event.ready }),
+          },
+            type: 'doThis',
+            // 稍后，动作实现函数将在第二个参数 params 中接收这个字符串值。
+            params: ({ event }) => ({ prop1: event.prop1 }),
+          },
+          {
+            type: 'doThat',
+            // 稍后，动作实现函数将在第二个参数 params 中接收这个数值。
+            params: ({ event }) => ({ prop2: event.prop2 }),
+          },
+          ],
+        },
+        },
+        states: {
+        first: {
+          entry: {
+          type: 'whenEntering',
+          // 稍后，动作实现函数将在第二个参数 params 中仅接收这两个值。
+          params: ({ event }) => ({
+            prop1: event.prop1,
+            prop2: event.prop2,
+          }),
+          },
+          exit: {
+          type: 'whenExiting',
+          // 稍后，动作实现函数将在第二个参数 params 中仅接收这两个值。
+        params: ({ event }) => ({
+          prop2: event.prop2,
+          prop3: event.prop3,
+        }),
+      },
+    },
+  },
+});
+```
+
+## 4. 在 `setup()` 中包含实现或存根
+
+我们必须在传递给 `setup()` 的对象中[提供动作、守卫和演员的实现](/docs/machines#providing-implementations)。如果状态机拥有执行这些实现所需的一切，那么这些将是实际的实现。然而，如果状态机需要引用外部世界的依赖项，那么这些将作为稍后被覆盖的存根。将存根和具体实现的组合传递给 `setup()` 是完全可以的。
+
+:::warning
+
+在 XState v5 中，实现函数的方法签名已更改。第一个参数现在是一个包含 `context` 和 `event` 属性的对象。第二个参数是 `params` 对象。
+
+```ts
+({ context, event }, params: YourParamsType) => {
+  // 实现
+};
+```
+
+使用 TypeScript 时，有必要对传递给每个实现函数的第二个 `params` 参数进行类型定义。
+
+:::
+
+### 存根动作
+
+```ts
+setup({
+  actions: {
+    执行此操作: (_, params: { prop: string }) => {
+      // 您可以在此处包含具体实现
+      console.log(params.prop);
+    },
+    // 存根实现
+    执行那操作: (_, params: { prop: number }) => {},
+    进入时: (_, params: { prop1: string; prop2: number }) => {
+      // 您可以在此处包含具体实现
+      console.log(prop1, prop2);
+    },
+    // 存根实现
+    whenExiting: (_, params: { prop2: number; prop3: boolean }) => {},
+  },
+});
+```
+
+:::tip
+
+存根动作应定义为空函数体 `() => {}`，或者可以定义为抛出错误，以强制它们稍后被覆盖。
+
+```
+actionName: (_, params: { prop: string }) => {
+  throw new Error('Not implemented');
+},
+```
+
+:::
+
+任何传递给 `setup()` 的 `assign` 动作都不应需要机器配置之外的任何内容，因为它们基于上下文或类型化的 `params` 设置值。
+
+### 存根守卫
+
+```ts
+setup({
+  guards: {
+    'is this ready': (_, params: { ready: boolean }) => {
+      // 具体实现
+      return ready;
+    },
+    // 存根实现
+    'are we there yet': (_, params: { distance: number }) => false,
+  },
+});
+```
+
+:::info
+
+存根守卫必须返回一个布尔值，即 `true` 或 `false`。
+
+:::
+
+### 存根演员
+
+可以使用实际的演员创建辅助函数来存根调用的演员，这将在实际实现中使用。这里的主要目的是键入演员的 `input` 和 `output`。有两种方法可以做到这一点：
+
+第一种方法更适用于其他类型的逻辑创建者。
+
+```ts
+setup({
+  actors: {
+    doSomethingAsync: fromPromise(
+      async (_: {
+        input: {
+          inputProp1: string;
+          inputProp2: number;
+        };
+      }): Promise<Item[]> => {
+        throw new Error('Not implemented');
+      },
+    ),
+  },
+});
+```
+
+:::warning
+
+存根的演员必须抛出错误，以强制它们稍后被覆盖。
+
+:::
+
+第二种方法更短且更适用于 `fromPromise`。
+
+```ts
+setup({
+  actors: {
+    doSomethingAsync: fromPromise<
+      // Promise-wrapped output
+      Item[],
+      // input
+      {
+        inputProp1: string;
+        inputProp2: number;
+      }
+    >(async () => {
+      throw new Error('Not implemented');
+    }),
+  },
+});
+```
+
+### 减少外部依赖
+
+即使是状态机外部的依赖项，也可以使用以下方法之一使其在状态机中可用：
+
+#### 使用 `input` 注入外部依赖
+
+如果依赖项在状态机的生命周期内不会发生变化，那么您可以将它们作为 `input` 传递给 `setup()`，它们将在状态机内部可用。
+
+```ts
+setup({
+  input: {
+    externalDependency1: someRef,
+    externalDependency2: anotherRef,
+  },
+});
+```
+
+#### 通过发送事件注入外部依赖
+
+如果依赖项预计会随着时间变化，那么您可以将这些更新作为事件发送到状态机。例如，包含依赖项引用的事件可以存储在 `context` 中，以供状态机使用。
+
+```ts
+send({
+  type: 'refs.inject',
+  externalDependency,
+});
+```
+
+然而，在某些情况下，注入依赖项并不可行或方便。可能有太多的依赖项，或者您可能希望避免将它们与状态机紧密耦合。下一节描述了如何在整个应用程序中按需提供具体实现，以覆盖存根实现。
+
+## 5. 提供具体实现
+
+Stately Studio 是一个 NextJS 应用程序，因此我们在 React 组件中使用 [@xstate/react](/docs/xstate-react) 包。我们可以使用 `useActorRef()` 钩子为我们的存根提供具体实现。此钩子允许我们传入一个状态机并接收一个 actor 引用，我们可以使用该引用向状态机发送事件。我们可以向状态机提供依赖项，例如我们的具体实现。
+
+```ts
+import { useActorRef } from '@xstate/react';
+
+const actorRef = useActorRef(
+  machine.provide({
+    actions: {
+      执行那操作: (_, prop2) => {
+        // 具体实现
+        console.log(prop2);
+      },
+      whenExiting: (_, params) => {
+        // 具体实现
+        console.log(params.prop2, params.prop3);
+      },
+    },
+  }),
+);
+```
+
+:::info
+
+调用 `machine.provide()` 返回相同的 `machine`，但带有提供的实现。如果您希望在应用程序的多个地方为同一个机器的不同实例提供不同的实现，这将非常有用。
+
+:::
+
+在其他组件中，我们可能会使用上下文提供者在组件树的各个层次提供对 `actorRef` 的访问。可以使用机器创建一个机器上下文提供者：
+
+```ts
+import { createMachine } from './machine';
+import { createActorContext } from '@xstate/react';
+
+const machine = setup({
+  /* 设置配置 */
+}).createMachine({
+  /* 机器配置 */
+});
+
+export const MachineContext = createActorContext(machine);
+```
+
+然后可以在组件树中导入并使用：
+
+```tsx
+import { MachineContext } from './machine';
+
+function App() {
+  return (
+    <MachineContext.Provider
+      logic={machine.provide({
+        actions: {
+            执行那操作: (_, prop2) => {
+            // 具体实现
+            console.log(prop2);
+            },
+            whenExiting: (_, params) => {
+            // 具体实现
+            console.log(params.prop2, params.prop3);
+          },
+        },
+      })}
+    >
+      {children}
+    </MachineContext.Provider>
+  );
+}
+```
+
+在这种情况下，[provider 被传递了一个 `logic` prop](/docs/xstate-react#createactorcontextlogic)，其值是具有提供的实现的机器。在组件树的最底层，我们可以使用 [`useActorRef()` 钩子](/docs/xstate-react#useactorrefmachine-options) 来访问 `actorRef` 并向机器发送事件。
+
+:::info
+
+这些实现函数不需要在这里再次显式键入，因为传递给它们的 `params` 参数已经通过[在上一步中传递给 `setup()` 函数的实现](#4-include-implementations-or-stubs-in-setup)进行了键入。
+
+:::
+
+### 提供演员实现
+
+必须定义以下三件事：
+
+1. 在 `setup()` 中提供[演员创建函数的具体实现或存根](#stubbing-actors)。
+2. 在主机器配置中的状态内注册 `invoke`。
+3. 如果尚未传递给 `setup()`，则为演员提供具体实现。
+
+#### 在主机器配置中的状态内注册 `invoke`
+
+这类似于在 v4 中注册调用的演员。主要区别在于我们还在这里定义了 `input`，将事件值映射到输入值。使用 `onDone` 和 `onError` 注册的动作也被定义为带有 `params` 的对象，就像[我们之前在转换动作和进入/退出动作中看到的那样](#3-convert-action-and-guard-strings-to-parameterized-objects)。
+
+```ts
+import { createMachine } from 'xstate';
+
+createMachine({
+  /* 机器配置 */
+  states: {
+    /* 其他状态 */
+    someState: {
+      invoke: {
+        src: 'doSomethingAsync', // 必需
+        id: 'doSomethingAsync', // 可选
+        input: ({ event }) => ({
+          inputProp1: event.prop1,
+          inputProp2: event.prop2,
+        }),
+        onDone: {
+          target: 'Idle',
+          actions: [
+            {
+              type: 'showSuccessToast',
+            },
+            {
+              type: 'handleOutputOnSuccess',
+              params: ({ event }) => event.output,
+            },
+          ],
+        },
+        onError: {
+          target: 'Idle',
+          actions: [{ type: 'showErrorToast' }],
+        },
+      },
+    },
+  },
+});
+```
+
+#### 如果尚未传递给 `setup()`，则为演员提供具体实现
+
+如果我们仅在 `setup()` 中定义了演员创建函数的存根，那么我们必须与其他具体实现一起为演员提供具体实现。
+
+```ts
+import { useActorRef } from '@xstate/react';
+
+const actorRef = useActorRef(
+  machine.provide({
+    actors: {
+      doSomethingAsync: fromPromise(
+        ({
+          input,
+        }: {
+          input: {
+            inputProp1: string;
+            inputProp2: number;
+          };
+        }) => {
+          return trpcProxyClient.stuff.asyncstuff.mutate(input);
+        },
+      ),
+    },
+  }),
+);
+```
+
+## 清理和故障排除
+
+### 移除 `preserveActionOrder` 和 `predictableActionArguments`
+
+您现在可以从机器配置中移除 [`preserveActionOrder` 和 `predictableActionArguments`](/docs/migration#actions-ordered-by-default-predictableactionarguments-no-longer-needed)，因为在 XState v5 中它们不再需要。动作现在默认按顺序执行，并且 [`assign` 动作](/docs/actions#assign-action) 将始终按定义的顺序运行。
+
+<Tabs>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  preserveActionOrder: true,
+  predictableActionArguments: true,
+  ...
+});
+```
+
+</TabItem>
+
+<TabItem value="v5" label="XState v5">
+
+```ts
+import { setup } from 'xstate';
+
+// preserveActionOrder 和
+// predictableActionArguments 已被移除
+const machine = setup({
+  ...
+}).createMachine({
+  ...
+});
+```
+
+</TabItem>
+
+</Tabs>
+
+### 排查 TypeScript 错误
+
+在迁移过程中，您可能会遇到许多 TypeScript 错误，不要气馁。例如，为了完全迁移机器中的任何一个 `action`，您可能需要将其转换为机器配置中的参数化对象，并在 `setup()` 中提供类型化的实现，以修复 TypeScript 错误。
+
+此外，TypeScript 可能会继续对传递给 `setup()` 的 `actions` 实现进行抱怨，直到最后一个动作被正确包含和类型化。这是因为 TypeScript 会一次性检查整个机器配置及其所有实现。
+
+:::info
+
+如果您在机器配置中的某个状态名称下看到 TypeScript 错误，很可能是该状态内的 `action` 或 `guard` 存在类型错误。
+
+:::
+
+TypeScript 可能难以准确定位机器配置中的错误位置，因此它通常会突出显示状态名称。
+
+![误导性的 TypeScript 错误，突出显示状态，而其内部动作类型是问题所在](/blog/2024-02-02-migrating-machines-to-xstate-v5/misleading-typescript-error.png)
+
+在上面的示例中，错误的真正来源是 `trackUpgradeModalLearnMoreClick` 动作尚未转换为动作对象。修复该问题后，“点击了解更多”状态名称下的错误就会消失。
+
+## 总结
+
+通过遵循上述步骤，您应该能够将现有的 XState v4 机器迁移到 XState v5，并使所有类型正常工作，而无需通过断言或类型守卫进行类型缩小。
+
+希望本指南对您将现有的 XState v4 机器迁移到 XState v5 有所帮助。如果您有任何问题或反馈，请[在我们的 Discord 上联系我们](https://discord.gg/xstate)。

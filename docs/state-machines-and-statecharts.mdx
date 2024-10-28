@@ -1,0 +1,273 @@
+---
+title: 什么是状态机和状态图？
+---
+
+状态机帮助我们建模一个过程在事件发生时如何从一个状态转变到另一个状态。
+
+状态机在软件开发中非常有用，因为它们帮助我们捕捉所有的状态、事件和它们之间的转换。使用状态机使得发现不可能的状态和不希望的转换变得更容易。
+
+状态机对应用程序逻辑进行建模。下面是一个视频播放器的逻辑。当视频播放时，它会进入全屏模式。当视频停止时，它会退出全屏模式。当视频播放器处于全屏模式时，它可以是_播放中_或_暂停中_。
+
+<EmbedMachine
+  name="Video player"
+  embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=dbcfca1c-075d-4cd6-a865-efcbd7be1544"
+/>
+
+## 状态机的好处
+
+- **易于理解。** 状态机是可视化的，易于理解。它们是与团队和利益相关者沟通的好方法。
+- **易于测试。** 状态机是确定性的，这意味着它们易于测试。您可以测试所有可能的状态及其之间的转换。
+- **易于实现。** 状态机在任何编程语言中都易于实现。您可以使用库或自己编写。
+- **易于维护。** 状态机易于维护，因为它们易于理解、测试和实现。
+- 它们提供了一种清晰简洁的方式来建模复杂的用户界面和管理应用程序状态。
+- 状态机通过提供一种结构化的方式来管理状态转换和处理事件，可以帮助减少复杂性并提高可维护性。
+- 它们还可以通过强制不同部分的应用程序之间的明确关注点分离来帮助防止错误并提高代码质量。
+- 此外，状态机可以高度可维护，并提供一种使非常复杂的前端过程更易于管理的方法。
+
+### 在后端
+
+- 状态机简化了复杂工作流的设计和实现，这可以帮助减少复杂性并提高可维护性。 https://developers.redhat.com/articles/2021/11/23/how-design-state-machines-microservices
+
+## 什么是状态图？
+
+状态图扩展了传统的有限状态机，以建模更复杂的逻辑。
+
+状态图是状态机的可视化扩展，使用方框和箭头，就像流程图和序列图一样。状态图添加了普通状态机中不可用的额外功能，包括[层次结构](parent-states.mdx)、[并发](parallel-states.mdx)和[通信](actor-model.mdx)。
+
+当您在[Stately Studio](https://stately.ai/editor)中创建状态机时，它也是一个状态图！
+
+:::studio
+
+在 Stately Studio 中，我们将状态机和状态图都称为**状态机**。
+
+:::
+
+## 状态
+
+状态描述了机器的状态或模式，可以像*睡着*和*醒着*一样简单。状态机一次只能处于一种状态。
+
+{/*  没有 alt，因为图像已经在周围的文本中描述了 */}
+
+<p>
+  <ThemedImage
+    alt="狗的状态机，包含睡着和醒着的状态。醒着状态有一个警告，因为没有转换，这意味着无法到达醒着状态。"
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/469f2d59-551f-43cb-bfc0-e6f3ea0f9d87.light.png',
+      dark: 'https://stately.ai/registry/machines/469f2d59-551f-43cb-bfc0-e6f3ea0f9d87.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看狗的状态机](https://stately.ai/registry/editor/1f84ff0d-fe41-4a92-ad5c-fadfa8b37ffb?machineId=469f2d59-551f-43cb-bfc0-e6f3ea0f9d87)。
+
+狗总是**睡着**或**醒着**。狗不能同时睡着和醒着，也不可能既不睡着也不醒着。只有这两种状态，一个精确有限的状态数量。
+
+当状态机启动时，它首先进入**初始状态**。一个机器只能有一个顶级初始状态；如果有多个初始状态，机器将不知道从哪里开始！
+
+在这个描述遛狗过程的状态图中，初始状态是**等待**遛狗。
+
+- [阅读更多关于状态的信息](states.mdx)。
+- [阅读更多关于有限状态的信息](finite-states.mdx)。
+- [阅读更多关于初始状态的信息](initial-states.mdx)。
+
+### XState 中的状态
+
+在 XState 状态机中，状态在 `states` 属性中定义。
+
+```ts
+import { createMachine } from 'xstate';
+
+const dogMachine = createMachine({
+  id: 'dog',
+  initial: 'asleep',
+  // highlight-start
+  states: {
+    asleep: {
+      // ...
+    },
+    awake: {
+      // ...
+    },
+    //...
+  }
+  // highlight-end
+});
+```
+
+:::studio
+
+### Stately Studio 中的状态
+
+圆角矩形框是状态。[阅读如何在 Stately Studio 中创建状态](states.mdx)。
+
+:::
+
+## 转换和事件
+
+狗在**睡着**和**醒着**之间的转换是通过**转换**实现的。事件引起转换；当事件发生时，机器转换到下一个状态。狗通过**醒来**和**入睡**事件在**睡着**和**醒着**之间转换。
+
+转换是“确定性的”；每种状态和事件的组合总是指向相同的下一个状态。狗永远不会**醒来**变成**睡着**或**入睡**变成**醒着**。
+
+{/* 没有 alt，因为图像已经在周围的文本中描述了 */}
+
+<p>
+  <ThemedImage
+    alt=""
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/e48e774e-c31f-4e51-a934-6b795c12b2b9.light.png',
+      dark: 'https://stately.ai/registry/machines/e48e774e-c31f-4e51-a934-6b795c12b2b9.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看狗的状态机及其事件和转换](https://stately.ai/registry/editor/1f84ff0d-fe41-4a92-ad5c-fadfa8b37ffb?machineId=e48e774e-c31f-4e51-a934-6b795c12b2b9)。
+
+通过其两个有限状态和转换，这个小狗过程是一个_有限状态机_。状态机用于描述某物的行为。机器描述了事物的状态及其之间的转换。它是一个有限状态机，因为它有有限数量的状态。（有时缩写为 FSM，喜欢行话的人会这样称呼）。
+
+[阅读更多关于转换和事件的信息](transitions.mdx)。
+
+### XState 中的事件和转换
+
+在 XState 状态机中，事件和转换在状态的 `on` 属性中定义。
+
+```ts
+import { createMachine } from 'xstate';
+
+const dogMachine = createMachine({
+  id: 'dog',
+  initial: 'asleep',
+  states: {
+    asleep: {
+      // highlight-start
+      on: {
+        'wakes up': 'awake',
+      }
+      // highlight-end
+    },
+    awake: {
+      // highlight-start
+      on: {
+        'falls asleep': 'asleep',
+      }
+      // highlight-end
+    },
+    //...
+  }
+});
+```
+
+:::studio
+
+### Stately Studio 中的事件和转换
+
+在 Stately Studio 中，箭头表示转换，箭头线上的圆角矩形表示事件。每个转换都有一个**源**状态，位于转换之前，以及一个**目标**状态，位于转换之后。转换的箭头从源状态开始，指向目标状态。[阅读如何在 Stately Studio 中创建事件和转换](editor-states-and-transitions.mdx)。
+
+:::
+
+## 终态
+
+大多数具有状态的过程将有一个_终态_，即过程完成时的最后一个状态。终态由状态的圆角矩形框上的双重边框表示。
+
+在遛狗状态图中，终态是**遛狗完成**。
+
+<p>
+  <ThemedImage
+    alt="狗的遛狗状态图，显示等待状态通过离开家的事件转换到遛狗状态，然后通过到达家的事件转换到遛狗完成的终态。"
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/988d8d05-86ba-422a-8a28-d13cbf54d481.light.png',
+      dark: 'https://stately.ai/registry/machines/988d8d05-86ba-422a-8a28-d13cbf54d481.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看遛狗状态机](https://stately.ai/registry/editor/1f84ff0d-fe41-4a92-ad5c-fadfa8b37ffb?machineId=988d8d05-86ba-422a-8a28-d13cbf54d481)。
+
+[阅读更多关于终态的信息](final-states.mdx)
+
+## 父状态
+
+父状态是可以包含更多状态的状态，也称为子状态。这些子状态只能在父状态发生时发生。在**遛狗**状态中，可能有**步行**和**跑步**的子状态。
+
+父状态由一个带标签的矩形框表示，该矩形框充当其子状态的容器。父状态有时也称为_复合状态_。
+
+{/* 没有 alt，因为图像已经在周围的文本中描述了 */}
+
+<p>
+  <ThemedImage
+    alt=""
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/aa8a9c5d-8fd9-4e47-b71a-bda219cda066.light.png',
+      dark: 'https://stately.ai/registry/machines/aa8a9c5d-8fd9-4e47-b71a-bda219cda066.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看遛狗状态机](https://stately.ai/registry/editor/1f84ff0d-fe41-4a92-ad5c-fadfa8b37ffb?machineId=aa8a9c5d-8fd9-4e47-b71a-bda219cda066)。
+
+父状态还应指定哪个子状态是初始状态。在**遛狗**父状态中，初始状态是**步行**。
+
+父状态和子状态是使状态图能够处理比普通状态机更复杂的功能之一。
+
+[阅读更多关于父状态的信息](parent-states.mdx)。
+
+## 原子状态
+
+原子状态是没有任何子状态的状态。**等待**、**遛狗完成**、**步行**和**跑步**都是原子状态。
+
+## 并行状态
+
+并行状态是其所有子状态（也称为区域）同时处于活动状态的状态。区域在并行状态容器内由虚线分隔。
+
+在**遛狗**并行状态中，可能有两个区域。一个区域包含狗的活动子状态**步行**和**跑步**，另一个区域包含狗的尾巴状态**摇尾巴**和**不摇尾巴**。狗可以在步行时摇尾巴或跑步时摇尾巴，也可以在不摇尾巴的情况下进行这些活动。
+
+{/* 因为图像已经在周围的文本中描述了，所以没有 alt */}
+
+<p>
+  <ThemedImage
+    alt=""
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/1f43dcd3-255c-40bf-b6b0-eba9a2bccb23.light.png',
+      dark: 'https://stately.ai/registry/machines/1f43dcd3-255c-40bf-b6b0-eba9a2bccb23.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看遛狗状态机](https://stately.ai/registry/editor/1f84ff0d-fe41-4a92-ad5c-fadfa8b37ffb?machineId=1f43dcd3-255c-40bf-b6b0-eba9a2bccb23)。
+
+两个区域还应指定哪个子状态是初始状态。在我们的**尾巴**区域中，初始状态是**不摇尾巴**。
+
+[阅读更多关于并行状态的信息](parallel-states.mdx)。
+
+## 自转换
+
+自转换是指当事件发生时，转换返回到相同的状态。转换箭头退出并重新进入相同的状态。
+
+描述自转换的一种有用方法是“做某事，而不是去某个地方”。
+
+在**狗乞讨**过程中，会有一个**乞讨**状态和一个**得到零食**事件。对于那些爱吃的狗来说，无论你经历多少次**得到零食**事件，狗都会回到它的**乞讨**状态。
+
+{/* 因为图像已经在周围的文本中描述了，所以没有 alt */}
+
+<p style={{'max-width': '500px'}}>
+  <ThemedImage
+    alt=""
+    sources={{
+      light:
+        'https://stately.ai/registry/machines/933419cb-dd94-453c-a2b1-de2290c0a5a5.light.png',
+      dark: 'https://stately.ai/registry/machines/933419cb-dd94-453c-a2b1-de2290c0a5a5.dark.png',
+    }}
+  />
+</p>
+
+[在 Stately Studio 中查看狗乞讨状态机](https://stately.ai/registry/editor/17986605-400c-4c00-8b33-47e3ecca478b?machineId=933419cb-dd94-453c-a2b1-de2290c0a5a5)。
+
+[阅读更多关于自转换的信息](/docs/transitions/#self-transitions)
+
+## 接下来是什么？
+
+现在您已经了解了足够的知识，可以在 [Stately Studio](https://stately.ai/editor?source=docs) 中开始使用。获取 [Stately Studio 及其功能的概述](studio.mdx)，或[继续学习 XState](xstate.mdx)。

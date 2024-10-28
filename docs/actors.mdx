@@ -1,0 +1,915 @@
+---
+title: 'Actors'
+---
+
+当你运行一个状态机时，它就变成了一个 actor：一个可以接收事件、发送事件并根据接收到的事件改变其行为的运行过程，这可能会导致 actor 之外的效果。
+
+在状态机中，actors 可以被 **调用** 或 **生成**。它们本质上是相同的，唯一的区别在于 actor 的生命周期如何控制。
+
+- 一个 **调用的 actor** 在其父状态机进入其调用的 [状态](states.mdx) 时启动，并在该状态退出时停止。
+- 一个 **生成的 actor** 在 [转换](transitions.mdx) 中启动，并在使用 [`stop(...)` 动作](/docs/actions/#stop-action) 或其父状态机停止时停止。
+
+:::studio
+
+你可以在我们的拖放式 Stately 编辑器中可视化你的状态机并轻松调用 actors。[阅读更多关于在 Stately 编辑器中调用 actors 的信息](editor-actions-and-actors.mdx)。
+
+:::
+
+:::video
+
+观看我们在 YouTube 上的 [“XState: 探索 actors” 深入视频](https://www.youtube.com/watch?v=Rj7lOvDwcYs)。
+
+:::
+
+<YouTube id="Rj7lOvDwcYs"/>
+
+## Actor 模型
+
+在 Actor 模型中，actors 是可以相互通信的对象。它们是通过异步消息传递进行通信的独立“活”实体。在 XState 中，这些消息被称为_事件_。
+
+- Actor 具有自己的内部封装状态，只能由 actor 自己更新。actor 可以选择在接收到消息时更新其内部状态，但不能被任何其他实体更新。
+- Actors 通过异步发送和接收事件与其他 actors 通信。
+- Actors 一次处理一条消息。它们有一个内部“邮箱”，充当事件队列，按顺序处理事件。
+- 内部 actor 状态不在 actors 之间共享。actor 共享其内部状态的唯一方式是：
+  - 向其他 actors 发送事件
+  - 或者发出快照，这可以被视为发送给订阅者的隐式事件。
+- Actors 可以创建（生成/调用）新的 actors。
+
+[阅读更多关于 Actor 模型的信息](actor-model.mdx)
+
+## Actor 逻辑
+
+Actor 逻辑是 actor 的逻辑“模型”（大脑、蓝图、DNA 等）。它描述了 actor 在接收到事件时应如何改变行为。你可以使用 **[actor 逻辑创建器](#actor-logic-creators)** 创建 actor 逻辑。
+
+在 XState 中，actor 逻辑由实现 `ActorLogic` 接口的对象定义，包含 `.transition(...)`、`.getInitialSnapshot()`、`.getPersistedSnapshot()` 等方法。这个对象告诉解释器在 actor 接收到事件时如何更新其内部状态以及要执行哪些效果（如果有）。
+
+## 创建 actors
+
+你可以通过 `createActor(actorLogic, options?)` 创建一个 actor，它是某些 actor 逻辑的“活”实例。`createActor(...)` 函数接受以下参数：
+
+- `actorLogic`：用于创建 actor 的 [actor 逻辑](actors.mdx#actor-logic)
+- `options`（可选）：actor 选项
+
+当你通过 `createActor(actorLogic)` 从 actor 逻辑创建一个 actor 时，你隐式地创建了一个 [actor 系统](system.mdx)，其中创建的 actor 是根 actor。从这个根 actor 及其后代生成的任何 actors 都是该 actor 系统的一部分。actor 必须通过调用 `actor.start()` 启动，这也将启动 actor 系统：
+
+```ts
+import { createActor } from 'xstate';
+import { someActorLogic } from './someActorLogic.ts';
+
+const actor = createActor(someActorLogic);
+
+actor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+
+actor.start();
+
+// 现在 actor 可以接收事件
+actor.send({ type: 'someEvent' });
+```
+
+你可以通过调用 `actor.stop()` 来停止根 actor，这也将停止 actor 系统及该系统中的所有 actors：
+
+```ts
+// 停止根 actor、actor 系统及系统中的所有 actors
+actor.stop();
+```
+
+### 调用和生成 actors
+
+一个被调用的 actor 代表一个基于状态的 actor，因此当调用状态退出时，它会停止。调用的 actors 用于有限/已知数量的 actors。
+
+一个生成的 actor 代表可以随时启动和停止的多个实体。生成的 actors 是基于动作的，用于动态或未知数量的 actors。
+
+调用和生成 actors 之间的区别可以在一个待办事项应用中体现。当加载待办事项时，`loadTodos` actor 将是一个被调用的 actor；它代表一个单一的基于状态的任务。相比之下，每个待办事项本身可以是生成的 actors，并且这些 actors 的数量是动态的。
+
+- [阅读更多关于调用 actors 的信息](invoke.mdx)
+- [阅读更多关于生成 actors 的信息](spawn.mdx)
+
+## Actor 快照
+
+当一个 actor 接收到一个事件时，它的内部状态可能会改变。当状态转换发生时，actor 可能会发出一个**快照**。你可以通过 `actor.getSnapshot()` 同步读取 actor 的快照，或者通过 `actor.subscribe(observer)` 订阅快照。
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+async function fetchCount() {
+  return Promise.resolve(42);
+}
+
+const countLogic = fromPromise(async () => {
+  const count = await fetchCount();
+
+  return count;
+});
+
+const countActor = createActor(countLogic);
+
+countActor.start();
+
+countActor.getSnapshot(); // logs undefined
+
+// 在 promise 解析之后...
+countActor.getSnapshot();
+// => {
+//   output: 42,
+//   status: 'done',
+//   ...
+// }
+```
+
+## 订阅
+
+你可以通过 `actor.subscribe(observer)` 订阅 actor 的快照值。观察者将在快照值发出时接收它。观察者可以是：
+
+- 一个接收最新快照的普通函数，或
+- 一个观察者对象，其 `.next(snapshot)` 方法接收最新快照
+
+```ts
+// 观察者作为普通函数
+const subscription = actor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+```
+
+```ts
+// 观察者作为对象
+const subscription = actor.subscribe({
+  next(snapshot) {
+    console.log(snapshot);
+  },
+  error(err) {
+    // ...
+  },
+  complete() {
+    // ...
+  },
+});
+```
+
+`actor.subscribe(observer)` 的返回值是一个具有 `.unsubscribe()` 方法的订阅对象。你可以调用 `subscription.unsubscribe()` 来取消订阅观察者：
+
+```ts
+const subscription = actor.subscribe((snapshot) => {
+  /* ... */
+});
+
+// 取消订阅观察者
+subscription.unsubscribe();
+```
+
+当 actor 停止时，所有的观察者将自动取消订阅。
+
+你可以通过在 `createActor(logic, options)` 的第二个 `options` 参数中传递状态来在特定的持久化快照（状态）下初始化 actor 逻辑。如果状态与 actor 逻辑兼容，这将创建一个在该持久化状态下启动的 actor：
+
+```ts
+const persistedState = JSON.parse(localStorage.getItem('some-persisted-state'));
+
+const actor = createActor(someLogic, {
+  // highlight-start
+  snapshot: persistedState,
+  // highlight-end
+});
+
+actor.subscribe(() => {
+  localStorage.setItem(
+    'some-persisted-state',
+    JSON.stringify(actor.getPersistedSnapshot()),
+  );
+});
+
+// Actor 将从持久化状态开始
+actor.start();
+```
+
+请参阅 [持久化](persistence.mdx) 了解更多详细信息。
+
+## `waitFor`
+
+你可以使用 `waitFor(actor, predicate, options?)` 辅助函数等待 actor 的快照满足谓词。`waitFor(...)` 函数返回一个 promise，该 promise 会在以下情况下：
+
+- 当发出的快照满足 `predicate` 函数时解析
+- 如果当前快照已经满足 `predicate` 函数，则立即解析
+- 如果抛出错误或 `options.timeout` 值已过期，则被拒绝
+
+```ts
+import { waitFor } from 'xstate';
+import { countActor } from './countActor.ts';
+
+const snapshot = await waitFor(
+  countActor,
+  (snapshot) => {
+    return snapshot.context.count >= 100;
+  },
+  {
+    timeout: 10_000, // 10 seconds (10,000 milliseconds)
+  },
+);
+
+console.log(snapshot.output);
+// => 100
+```
+
+## 错误处理
+
+你可以使用传递给 `actor.subscribe()` 的观察者对象中的 `error` 回调来订阅 actor 抛出的错误。这允许你处理由 actor 逻辑发出的错误。
+
+```ts
+import { createActor } from 'xstate';
+import { someMachine } from './someMachine';
+
+const actor = createActor(someMachine);
+
+actor.subscribe({
+  next: (snapshot) => {
+    // ...
+  },
+  // highlight-start
+  error: (err) => {
+    // 在这里处理错误
+    console.error(err);
+  }
+  // highlight-end
+});
+
+actor.start();
+```
+
+## Actor 逻辑创建器
+
+你可以从 XState 创建的 actor 逻辑类型有：
+
+- [状态机逻辑 (`createMachine(...)`)](#createmachine)
+- [Promise 逻辑 (`fromPromise(...)`)](#frompromise)
+- [转换函数逻辑 (`fromTransition(...)`)](#fromtransition)
+- [Observable 逻辑 (`fromObservable(...)`)](#fromobservable)
+- [事件 Observable 逻辑 (`fromEventObservable(...)`)](#fromeventobservable)
+- [回调逻辑 (`fromCallback(...)`)](#fromcallback)
+
+### Actor 逻辑功能
+
+| | 接收事件 | 发送事件 | 生成 actors | 输入 | 输出 |
+| --- | --- | --- | --- | --- | --- |
+| [状态机 actors](state-machine-actors.mdx) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [Promise actors](promise-actors.mdx) | ❌ | ✅ | ❌ | ✅ | ✅ |
+| [转换 actors](transition-actors.mdx) | ✅ | ✅ | ❌ | ✅ | ❌ |
+| [Observable actors](observable-actors.mdx) | ❌ | ✅ | ❌ | ✅ | ❌ |
+| [回调 actors](callback-actors.mdx) | ✅ | ✅ | ❌ | ✅ | ❌ |
+
+### 状态机逻辑 (`createMachine(...)`) {#createmachine}
+
+你可以将 actor 逻辑描述为一个[状态机](machines.mdx)。从状态机 actor 逻辑创建的 actors 可以：
+
+- 接收事件
+- 向其他 actors 发送事件
+- 调用/生成子 actors
+- 发出其状态的快照
+- 当状态机达到其顶级最终状态时输出一个值
+
+```ts
+const toggleMachine = createMachine({
+  id: 'toggle',
+  initial: 'inactive',
+  states: {
+    inactive: {},
+    active: {},
+  },
+});
+
+const toggleActor = createActor(toggleMachine);
+
+toggleActor.subscribe((snapshot) => {
+  // 快照是状态机的状态
+  console.log('state', snapshot.value);
+  console.log('context', snapshot.context);
+});
+toggleActor.start();
+// 输出 'inactive'
+toggleActor.send({ type: 'toggle' });
+// 输出 'active'
+```
+
+了解更多关于 [状态机 actors](state-machine-actors.mdx) 的信息。
+
+### Promise 逻辑 (`fromPromise(...)`) {#frompromise}
+
+Promise actor 逻辑由一个在一段时间后解析或拒绝的异步过程描述。从 promise 逻辑创建的 actors（“promise actors”）可以：
+
+- 发出 promise 的解析值
+- 输出 promise 的解析值
+
+发送事件给 promise actors 将不会有任何效果。
+
+```ts
+const promiseLogic = fromPromise(() => {
+  return fetch('https://example.com/...').then((data) => data.json());
+});
+
+const promiseActor = createActor(promiseLogic);
+promiseActor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+promiseActor.start();
+// => {
+//   output: undefined,
+//   status: 'active'
+//   ...
+// }
+
+// After promise resolves
+// => {
+//   output: { ... },
+//   status: 'done',
+//   ...
+// }
+```
+
+了解更多关于 [Promise actors](promise-actors.mdx) 的信息。
+
+### 转换函数逻辑 (`fromTransition(...)`) {#fromtransition}
+
+转换 actor 逻辑由一个[转换函数](migration.mdx#use-actor-logic-creators-for-invokesrc-instead-of-functions)描述，类似于一个[reducer](cheatsheet#creating-transition-logic)。转换函数将当前的 `state` 和接收到的 `event` 对象作为参数，并返回下一个状态。从转换逻辑创建的 actors（“转换 actors”）可以：
+
+- 接收事件
+- 发出其状态的快照
+
+```ts
+const transitionLogic = fromTransition(
+  (state, event) => {
+    if (event.type === 'increment') {
+      return {
+        ...state,
+        count: state.count + 1,
+      };
+    }
+    return state;
+  },
+  { count: 0 },
+);
+
+const transitionActor = createActor(transitionLogic);
+transitionActor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+transitionActor.start();
+// => {
+//   status: 'active',
+//   context: { count: 0 },
+//   ...
+// }
+
+transitionActor.send({ type: 'increment' });
+// => {
+//   status: 'active',
+//   context: { count: 1 },
+//   ...
+// }
+```
+
+了解更多关于 [转换 actors](transition-actors.mdx) 的信息。
+
+### Observable 逻辑 (`fromObservable(...)`) {#fromobservable}
+
+Observable actor 逻辑由一个[observable 值流](#fromObservable)描述。从 observable 逻辑创建的 actors（“observable actors”）可以：
+
+- 发出 observable 的已发出值的快照
+
+发送事件给 observable actors 将不会有任何效果。
+
+```ts
+import { interval } from 'rxjs';
+
+const secondLogic = fromObservable(() => interval(1000));
+
+const secondActor = createActor(secondLogic);
+
+secondActor.subscribe((snapshot) => {
+  console.log(snapshot.context);
+});
+
+secondActor.start();
+// 每秒:
+// 输出 0
+// 输出 1
+// 输出 2
+// ...
+```
+
+了解更多关于 [observable actors](observable-actors.mdx) 的信息。
+
+### 事件 Observable 逻辑 (`fromEventObservable(...)`) {#fromeventobservable}
+
+事件 Observable actor 逻辑由 [事件对象](transitions.mdx#event-objects) 的 Observable 流描述。从事件 Observable 逻辑创建的 actors（“事件 Observable actors”）可以：
+
+- 隐式地向其父 actor 发送事件
+- 发出其已发出事件对象的快照
+
+发送事件给事件 Observable actors 将不会有任何效果。
+
+```ts
+import { setup, fromEventObservable } from 'xstate';
+import { fromEvent } from 'rxjs';
+
+const mouseClickLogic = fromEventObservable(() =>
+  fromEvent(document.body, 'click') as Subscribable<EventObject>
+);
+
+const canvasMachine = setup({
+  actors: {
+    mouseClickLogic
+  }
+}).createMachine({
+  invoke: {
+    // 将鼠标点击事件发送到 canvas actor
+    src: 'mouseClickLogic',
+  },
+});
+
+const canvasActor = createActor(canvasMachine);
+canvasActor.start();
+```
+
+了解更多关于 [observable actors](observable-actors.mdx) 的信息。
+
+### 回调逻辑 (`fromCallback(...)`) {#fromcallback}
+
+回调 actor 逻辑由一个接收单个对象参数的回调函数描述，该对象包括 `sendBack(event)` 函数和 `receive(event => ...)` 函数。从回调逻辑创建的 actors（“回调 actors”）可以：
+
+- 通过 `receive` 函数接收事件
+- 通过 `sendBack` 函数向父 actor 发送事件
+
+```ts
+const callbackLogic = fromCallback(({ sendBack, receive }) => {
+  let lockStatus = 'unlocked';
+
+  const handler = (event) => {
+    if (lockStatus === 'locked') {
+      return;
+    }
+    sendBack(event);
+  };
+
+  receive((event) => {
+    if (event.type === 'lock') {
+      lockStatus = 'locked';
+    } else if (event.type === 'unlock') {
+      lockStatus = 'unlocked';
+    }
+  });
+
+  document.body.addEventListener('click', handler);
+
+  return () => {
+    document.body.removeEventListener('click', handler);
+  };
+});
+```
+
+回调 actors 与其他 actors 有些不同，因为它们不会执行以下操作：
+
+- 不与 `onDone` 一起工作
+- 不使用 `.getSnapshot()` 生成快照
+- 不在使用 `.subscribe()` 时发出值
+- 不能使用 `.stop()` 停止
+
+你可以选择使用 `sendBack` 将捕获的错误报告给父 actor。这对于处理回调函数中的 promise 拒绝特别有用，因为这些拒绝不会被 [`onError`](invoke.mdx#onerror) 捕获。
+
+回调函数不能是 `async` 函数。但可以在回调函数中执行 Promise。
+
+```ts
+import { setup, fromCallback } from 'xstate';
+
+const someCallback = fromCallback(({ sendBack }) => {
+  // highlight-start
+  somePromise()
+    .then((data) => sendBack({ type: 'done', data }))
+    .catch((error) => sendBack({ type: 'error', data: error }));
+  // highlight-end
+
+  return () => {
+    /* 清理函数 */
+  };
+})
+
+const machine = setup({
+  actors: {
+    someCallback
+  }
+}).createMachine({
+  initial: 'running',
+  states: {
+    running: {
+      invoke: {
+        src: 'someCallback',
+      },
+      // highlight-start
+      on: {
+        error: {
+          actions: ({ event }) => console.error(event.data),
+        },
+      },
+      // highlight-end
+    },
+  },
+});
+```
+
+了解更多关于 [回调 actors](callback-actors.mdx) 的信息。
+
+## 作为 Promise 的 actors
+
+你可以使用 `toPromise(actor)` 函数从任何 actor 创建一个 promise。当 actor 完成时（`snapshot.status === 'done'`），promise 将使用 actor 快照的 `.output` 解析；当 actor 出错时（`snapshot.status === 'error'`），promise 将使用 actor 快照的 `.error` 拒绝。
+
+```ts
+import { createMachine, createActor, toPromise } from 'xstate';
+
+const machine = createMachine({
+  // ...
+  states: {
+    // ...
+    done: { type: 'final' }
+  },
+  output: {
+    count: 42
+  }
+});
+
+const actor = createActor(machine);
+actor.start();
+
+// highlight-start
+// 创建一个 promise，该 promise 使用 actor 的输出解析
+// 或使用 actor 的错误拒绝
+const output = await toPromise(actor);
+// highlight-end
+
+console.log(output);
+// => { count: 42 }
+```
+
+如果 actor 已经完成，promise 将立即使用 actor 的 `snapshot.output` 解析。如果 actor 已经出错，promise 将立即使用 actor 的 `snapshot.error` 拒绝。
+
+## 高级 actor 逻辑
+
+高级 actor 逻辑通过附加功能增强现有的 actor 逻辑。例如，你可以创建记录或持久化 actor 状态的 actor 逻辑：
+
+```ts
+import { fromTransition, type AnyActorLogic } from 'xstate';
+
+const toggleLogic = fromTransition((state, event) => {
+  if (event.type === 'toggle') {
+    return state === 'paused' ? 'playing' : 'paused';
+  }
+
+  return state;
+}, 'paused');
+
+// highlight-start
+function withLogging<T extends AnyActorLogic>(actorLogic: T) {
+  const enhancedLogic = {
+    ...actorLogic,
+    transition: (state, event, actorCtx) => {
+      console.log('State:', state);
+      return actorLogic.transition(state, event, actorCtx);
+    },
+  } satisfies T;
+
+  return enhancedLogic;
+}
+
+const loggingToggleLogic = withLogging(toggleLogic);
+// highlight-end
+```
+
+## 自定义 actor 逻辑
+
+自定义 actor 逻辑可以通过实现 `ActorLogic` 接口的对象来定义。
+
+例如，这里有一个带有 `transition` 函数的自定义 actor 逻辑对象，它作为一个简单的 reducer 操作：
+
+```ts
+import { createActor, EventObject, ActorLogic, Snapshot } from "xstate";
+
+const countLogic: ActorLogic<
+  Snapshot<undefined> & { context: number },
+  EventObject
+> = {
+  transition: (state, event) => {
+    if (event.type === 'INC') {
+      return {
+        ...state,
+        context: state.context + 1
+      };
+    } else if (event.type === 'DEC') {
+      return {
+        ...state,
+        context: state.context - 1
+      };
+    }
+    return state;
+  },
+  getInitialSnapshot: () => ({
+    status: 'active',
+    output: undefined,
+    error: undefined,
+    context: 0
+  }),
+  getPersistedSnapshot: (s) => s
+};
+
+const actor = createActor(countLogic)
+actor.subscribe(state => {
+  console.log(state.context)
+})
+actor.start() // => 0
+actor.send({ type: 'INC' }) // => 1
+actor.send({ type: 'INC' }) // => 2
+```
+
+有关更多示例，请参阅源代码中的 `ActorLogic` 实现，例如 `fromTransition` actor 逻辑创建器，或测试中的示例。
+
+## 空 actor
+
+一个什么都不做且只有一个已发出快照的 actor：`undefined`
+
+在 XState 中，空 actor 是一个什么都不做且只有一个已发出快照的 actor：`undefined`。
+
+这对于测试非常有用，例如替代尚未实现的 actor。在框架集成中也很有用，例如 `@xstate/react`，其中 actor 可能尚不可用：
+
+```ts
+import { createEmptyActor, AnyActorRef } from 'xstate';
+import { useSelector } from '@xstate/react';
+const emptyActor = createEmptyActor();
+
+function Component(props: { actor?: AnyActorRef }) {
+  const data = useSelector(
+    props.actor ?? emptyActor,
+    (snapshot) => snapshot.context.data,
+  );
+
+  // 如果 `props.actor` 是 undefined，则 data 是 `undefined`
+  // 否则，它是来自 actor 的数据
+
+  // ...
+}
+```
+
+## Actors 和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+你可以在机器配置的 `types.actors` 属性中强类型化机器的 `actors`。
+
+```ts
+const fetcher = fromPromise(
+  async ({ input }: { input: { userId: string } }) => {
+    const user = await fetchUser(input.userId);
+
+    return user;
+  },
+);
+
+const machine = setup({
+  types: {
+    children: {} as {
+      fetch1: 'fetcher';
+      fetch2: 'fetcher';
+    }
+  }
+  // highlight-next-line
+  actors: { fetcher }
+}).createMachine({
+  invoke: {
+    // highlight-start
+    src: 'fetchData', // 强类型
+    id: 'fetch2', // 强类型
+    onDone: {
+      actions: ({ event }) => {
+      event.output; // 强类型为 { result: string }
+      },
+    },
+    input: { userId: '42' }, // 强类型
+    // highlight-end
+  },
+});
+```
+
+## 测试
+
+测试 actors 的一般策略是发送事件并断言 actor 达到预期状态，可以通过以下方式观察：
+
+- 通过 `actor.subscribe(...)` 订阅其发出的快照
+- 或者通过 `actor.getSnapshot()` 读取最新的快照。
+
+```ts
+test('some actor', async () => {
+  const actor = createActor(fromTransition((state, event) => {
+    if (event.type === 'inc') {
+      return { count: state.count + 1 }
+    }
+    return state;
+  }, { count: 0 }));
+
+  // 启动 actor
+  actor.start();
+
+  // 发送事件
+  actor.send({ type: 'inc' });
+  actor.send({ type: 'inc' });
+  actor.send({ type: 'inc' });
+
+  // 断言预期结果
+  expect(actor.getSnapshot().context).toEqual({ count: 3 });
+});
+```
+
+## Actors 速查表
+
+### 速查表：创建一个 actor
+
+```ts
+import { createActor } from 'xstate';
+import { someActorLogic } from './someActorLogic.ts';
+
+// 从 actor 逻辑创建一个 actor
+const actor = createActor(someActorLogic);
+
+// 订阅 actor 的快照值并记录它们
+actor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+
+// 启动 actor 系统
+actor.start();
+
+// 现在 actor 可以接收事件
+actor.send({ type: 'someEvent' });
+
+// 停止根 actor、actor 系统及系统中的所有 actors
+actor.stop();
+```
+
+### 速查表：状态机逻辑
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const toggleMachine = createMachine({
+  id: 'toggle',
+  initial: 'inactive',
+  states: {
+    inactive: {},
+    active: {},
+  },
+});
+
+const toggleActor = createActor(toggleMachine);
+
+toggleActor.subscribe((snapshot) => {
+  // 快照是状态机的状态
+  console.log('state', snapshot.value);
+  console.log('context', snapshot.context);
+});
+toggleActor.start();
+// 输出 'inactive'
+toggleActor.send({ type: 'toggle' });
+// 输出 'active'
+```
+
+### 速查表：Promise 逻辑
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+const promiseLogic = fromPromise(() => {
+  return fetch('https://example.com/...').then((data) => data.json());
+});
+
+const promiseActor = createActor(promiseLogic);
+promiseActor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+promiseActor.start();
+
+```
+
+### 速查表：转换函数逻辑
+
+```ts
+import { fromTransition, createActor } from 'xstate';
+
+const transitionLogic = fromTransition(
+  (state, event) => {
+    if (event.type === 'increment') {
+      return {
+        ...state,
+        count: state.count + 1,
+      };
+    }
+    return state;
+  },
+  { count: 0 },
+);
+
+const transitionActor = createActor(transitionLogic);
+transitionActor.subscribe((snapshot) => {
+  console.log(snapshot);
+});
+transitionActor.start();
+// => {
+//   status: 'active',
+//   context: { count: 0 },
+//   ...
+// }
+
+transitionActor.send({ type: 'increment' });
+// => {
+//   status: 'active',
+//   context: { count: 1 },
+//   ...
+// }
+```
+
+### 速查表：Observable 逻辑
+
+```ts
+import { fromObservable, createActor } from 'xstate';
+import { interval } from 'rxjs';
+
+const secondLogic = fromObservable(() => interval(1000));
+
+const secondActor = createActor(secondLogic);
+
+secondActor.subscribe((snapshot) => {
+  console.log(snapshot.context);
+});
+
+secondActor.start();
+// 每秒:
+// 输出 0
+// 输出 1
+// 输出 2
+// ...
+```
+
+### 速查表：事件 Observable 逻辑
+
+```ts
+import { setup, fromEventObservable, createActor } from 'xstate';
+import { fromEvent } from 'rxjs';
+
+const mouseClickLogic = fromEventObservable(() =>
+  fromEvent(document.body, 'click') as Subscribable<EventObject>
+);
+
+const canvasMachine = setup({
+  actors: {
+    mouseClickLogic
+  }
+}).createMachine({
+  invoke: {
+    // 将鼠标点击事件发送到 canvas actor
+    src: 'mouseClickLogic',
+  },
+});
+
+const canvasActor = createActor(canvasMachine);
+canvasActor.start();
+```
+
+### 速查表：回调逻辑
+
+```ts
+import { fromCallback, createActor } from 'xstate';
+
+const callbackLogic = fromCallback(({ sendBack, receive }) => {
+  let lockStatus = 'unlocked';
+
+  const handler = (event) => {
+    if (lockStatus === 'locked') {
+      return;
+    }
+    sendBack(event);
+  };
+
+  receive((event) => {
+    if (event.type === 'lock') {
+      lockStatus = 'locked';
+    } else if (event.type === 'unlock') {
+      lockStatus = 'unlocked';
+    }
+  });
+
+  document.body.addEventListener('click', handler);
+
+  return () => {
+    document.body.removeEventListener('click', handler);
+  };
+});
+```

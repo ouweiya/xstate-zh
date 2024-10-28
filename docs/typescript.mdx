@@ -1,0 +1,215 @@
+---
+title: TypeScript
+---
+
+XState v5及其相关库是用[TypeScript](https://www.typescriptlang.org)编写的，并利用复杂类型为您提供尽可能最佳的类型安全性和推断能力。
+
+:::typescript
+
+**XState v5要求TypeScript版本为5.0或更高。**
+
+为了获得最佳效果，请使用**最新的TypeScript版本**。
+
+:::
+
+请遵循以下指南，确保您的TypeScript项目已准备好使用XState v5：
+
+## 使用最新版本的TypeScript
+
+使用最新版本的TypeScript；要求版本为5.0或更高。
+
+```bash
+   npm install typescript@latest --save-dev
+```
+
+## 设置您的 `tsconfig.json` 文件
+
+- 在 `tsconfig.json` 文件中将 [`strictNullChecks`](https://www.typescriptlang.org/tsconfig#strictNullChecks) 设置为 `true`。这将确保我们的类型正常工作并帮助捕捉代码中的错误。**（强烈推荐）**。
+- 在 `tsconfig.json` 文件中将 [`skipLibCheck`](https://www.typescriptlang.org/tsconfig#skipLibCheck) 设置为 `true`。**（推荐）**。
+
+```json5
+// tsconfig.json
+{
+  "compilerOptions": {
+    // ...
+    // highlight-next-line
+    "strictNullChecks": true,
+    // or set `strict` to true, which includes `strictNullChecks`
+    // "strict": true,
+
+    // highlight-next-line
+    "skipLibCheck": true,
+  }
+}
+```
+
+## 指定类型
+
+强类型化您的机器的推荐方法是使用 `setup(...)` 函数：
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as { feedback: string },
+    events: {} as
+      | { type: 'feedback.good' }
+      | { type: 'feedback.bad' }
+  },
+  actions: {
+    logTelemetry: () => {
+      // TODO: implement
+    }
+  }
+}).createMachine({
+  // ...
+});
+```
+
+您还可以使用 `.types` 属性在 [machine config](machines.mdx) 中指定 TypeScript 类型：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  types: {} as {
+    context: { feedback: string };
+    events: { type: 'feedback.good' } | { type: 'feedback.bad' };
+    actions: { type: 'logTelemetry' };
+  },
+});
+```
+
+这些类型将在机器配置和创建的机器和actor中被推断出来，因此诸如 `machine.transition(...)` 和 `actor.send(...)` 等方法将是类型安全的。
+
+## 动态参数
+
+建议在[动作](./actions.mdx)和[守卫](./guards.mdx)中使用动态参数，因为它们允许您创建与机器不紧密耦合且强类型的可重用函数。
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as {
+      user: { name: string };
+    }
+  },
+  actions: {
+    greet: (_, params: { name: string }) => {
+      console.log(`Hello, ${params.name}!`);
+    }
+  }
+}).createMachine({
+  context: {
+    user: {
+      name: 'David'
+    }
+  },
+  // ...
+  entry: {
+    type: 'greet',
+    params: ({ context }) => ({
+      name: context.user.name
+    })
+  }
+});
+```
+
+## 断言事件
+
+:::info
+
+强烈建议尽可能使用动态参数而不是直接访问事件对象，以提高类型安全性和可重用性。
+
+:::
+
+如果使用动态参数不可行，并且您必须在动作或守卫实现中使用事件，可以使用 `assertEvent(...)` 辅助函数来断言事件类型：
+
+```ts
+import { createMachine, assertEvent } from 'xstate';
+
+const machine = createMachine({
+  types: {
+    events: {} as
+      | { type: 'greet'; message: string }
+      | { type: 'log'; message: string }
+      | { type: 'doSomethingElse' }
+  },
+  // ...
+  states: {
+    someState: {
+      entry: ({ event }) => {
+        // In the entry action, it is currently not possible to know
+        // which event this action was called with.
+
+        // Calling `assertEvent` will throw if
+        // the event is not the expected type.
+        // highlight-next-line
+        assertEvent(event, 'greet');
+
+        // Now we know the event is a `greet` event,
+        // and we can access its `message` property.
+        console.log(event.message.toUpperCase());
+      },
+      // ...
+      exit: ({ event }) => {
+        // You can also assert multiple possible event types.
+        // highlight-next-line
+        assertEvent(event, ['greet', 'log']);
+
+        // Now we know the event is a `greet` or `log` event,
+        // and we can access its `message` property.
+        console.log(event.message.toUpperCase());
+      }
+    }
+  }
+})
+```
+
+## 类型辅助工具
+
+XState 提供了一些类型辅助工具，使在 TypeScript 中使用类型变得更容易。
+
+### `ActorRefFrom<T>`
+
+从提供的 `T` actor 逻辑参数生成一个 `ActorRef`，这对于创建强类型的 actor 很有用。`T` 参数可以是任何 `ActorLogic`，例如 `createMachine(…)` 的返回值，或任何其他 actor 逻辑，例如 `fromPromise(…)` 或 `fromObservable(…)`。
+
+```ts
+import { type ActorRefFrom } from 'xstate';
+import { someMachine } from './someMachine';
+
+type SomeActorRef = ActorRefFrom<typeof someMachine>;
+```
+
+### `SnapshotFrom<T>`
+
+生成提供的 `T` 参数的 `Snapshot`，这对于创建强类型的快照非常有用。`T` 参数可以是任何 `ActorLogic` 或 `ActorRef`。
+
+```ts
+import { type SnapshotFrom } from 'xstate';
+import { someMachine } from './someMachine';
+
+type SomeSnapshot = SnapshotFrom<typeof someMachine>;
+```
+
+### `EventFromLogic<T>`
+
+生成提供的 `T` actor 逻辑参数的所有事件类型的联合。对于类型安全的事件处理非常有用。
+
+```ts
+import { type EventFromLogic } from 'xstate';
+import { someMachine } from './someMachine';
+
+// SomeEvent 将是所有事件类型的联合
+// 在 `someMachine` 中定义的类型。
+type SomeEvent = EventFromLogic<typeof someMachine>;
+```
+
+## 类型生成
+
+[类型生成](/docs/developer-tools#xstate-typegen-files) 目前尚不支持 XState v5。然而，通过上述的 `setup(...)` 函数和/或 `.types` 属性，您可以为大多数（如果不是全部）机器提供强类型。
+
+如果您之前使用类型生成来缩小在动作或守卫中使用的事件范围，可以使用 [ `assertEvent(...)` 辅助函数](#asserting-events) 来缩小事件类型。
+

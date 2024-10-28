@@ -1,0 +1,449 @@
+---
+title: '有限状态'
+---
+
+有限状态是状态机在任何给定时间内可能处于的状态之一。之所以称为“有限”，是因为状态机具有已知的有限数量的可能状态。状态表示机器在该状态下的“行为”；其状态或模式。
+
+例如，在反馈表单中，您可以处于填写表单的状态，或者处于表单正在提交的状态。您不能同时填写表单和提交表单；这是一个“不可能的状态”。
+
+状态机总是从[初始状态](initial-states.mdx)开始，并可能在[最终状态](final-states.mdx)结束。状态机始终处于有限状态。
+
+:::studio
+
+您可以在 Stately 的编辑器中轻松可视化和模拟初始状态和最终状态。[阅读更多关于 Stately 编辑器中的状态](docs/editor-states-and-transitions)。
+
+:::
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+
+  // 初始状态
+  initial: 'prompt',
+
+  // 有限状态
+  states: {
+    prompt: {
+      /* ... */
+    },
+    form: {
+      /* ... */
+    },
+    thanks: {
+      /* ... */
+    },
+    closed: {
+      /* ... */
+    },
+  },
+});
+```
+
+您可以将有限状态与[上下文](context.mdx)结合起来，这些上下文构成了机器的整体状态：
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  context: {
+    name: '',
+    email: '',
+    feedback: '',
+  },
+
+  initial: 'prompt',
+  states: {
+    prompt: {
+      /* ... */
+    },
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+// 有限状态
+console.log(feedbackActor.getSnapshot().value);
+// 输出 'prompt'
+
+// 上下文（“扩展状态”）
+console.log(feedbackActor.getSnapshot().context);
+// 输出 { name: '', email: '', feedback: '' }
+```
+
+## 初始状态
+
+初始状态是机器开始时的状态。它由机器配置中的 `initial` 属性定义：
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+
+  // highlight-start
+  // 初始状态
+  initial: 'prompt',
+  // highlight-end
+
+  // 有限状态
+  states: {
+    // highlight-next-line
+    prompt: {
+      /* ... */
+    },
+    // ...
+  },
+});
+```
+
+[阅读更多关于初始状态](initial-states.mdx)。
+
+## 状态节点
+
+在 XState 中，**状态节点**是组成整个状态图树的有限状态“节点”。状态节点在其他状态节点的 `states` 属性上定义，包括根机器配置（它本身也是一个状态节点）：
+
+```ts
+// 机器是根状态节点
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'prompt',
+
+  // 状态节点
+  states: {
+    // 状态节点
+    prompt: {
+      /* ... */
+    },
+    // 状态节点
+    form: {
+      /* ... */
+    },
+    // 状态节点
+    thanks: {
+      /* ... */
+    },
+    // 状态节点
+    closed: {
+      /* ... */
+    },
+  },
+});
+```
+
+## 标签
+
+状态节点可以有**标签**，这些标签是帮助对状态节点进行分组或分类的字符串术语。例如，您可以使用“loading”标签来表示哪些状态节点代表正在加载数据的状态，并使用 `state.hasTag(tag)` 来确定状态是否包含那些带有标签的状态节点：
+
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'prompt',
+  states: {
+    prompt: {
+      tags: ['visible'],
+      // ...
+    },
+    form: {
+      tags: ['visible'],
+      // ...
+    },
+    thanks: {
+      tags: ['visible', 'confetti'],
+      // ...
+    },
+    closed: {
+      tags: ['hidden'],
+    },
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+console.log(feedbackActor.getSnapshot().hasTag('visible'));
+// logs true
+```
+
+阅读更多关于[标签](tags.mdx)。
+
+## 元数据
+
+元数据是描述状态节点相关属性的静态数据。您可以在任何状态节点的 `.meta` 属性上指定元数据。这对于在 UI 中显示有关状态节点的信息或生成文档非常有用。
+
+`state.meta` 属性收集所有活动状态节点的 `.meta` 数据，并将它们放置在一个对象中，以状态节点的 ID 作为键，`.meta` 数据作为值：
+
+
+```ts
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'prompt',
+  meta: {
+    title: 'Feedback',
+  },
+  states: {
+    prompt: {
+      meta: {
+      content: '您的体验如何？',
+      },
+    },
+    form: {
+      meta: {
+      content: '请填写下面的表格。',
+      },
+    },
+    thanks: {
+      meta: {
+      content: '感谢您的反馈！',
+      },
+    },
+    closed: {},
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+console.log(feedbackActor.getSnapshot().meta);
+// logs the object:
+// {
+//   feedback: {
+//     title: 'Feedback',
+//   },
+//   'feedback.prompt': {
+//     content: 'How was your experience?',
+//   }
+// }
+```
+
+## 转换
+
+转换是从一个有限状态移动到另一个有限状态的方式。它们由状态节点上的 `on` 属性定义：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    prompt: {
+      on: {
+        'feedback.good': {
+          target: 'thanks',
+        },
+      },
+    },
+    thanks: {
+      /* ... */
+    },
+    // ...
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+console.log(feedbackActor.getSnapshot().value);
+// logs 'prompt'
+
+feedbackActor.send({ type: 'feedback.good' });
+
+console.log(feedbackActor.getSnapshot().value);
+// logs 'thanks'
+```
+
+阅读更多关于[事件和转换](transitions.mdx)。
+
+## 目标
+
+转换的 `target` 属性定义了当转换发生时机器应该去的地方。通常，它会指向一个兄弟状态节点：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    prompt: {
+      on: {
+        'feedback.good': {
+          // highlight-start
+            // 目标是兄弟状态节点 `thanks`
+          target: 'thanks',
+          // highlight-end
+        },
+      },
+    },
+    thanks: {
+      /* ... */
+    },
+    // ...
+  },
+});
+```
+
+`target` 也可以指向兄弟状态节点的子节点：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    prompt: {
+      on: {
+        'feedback.good': {
+          // highlight-start
+            // 目标是兄弟状态节点 `thanks.happy`
+          target: 'thanks.happy',
+          // highlight-end
+        },
+      },
+    },
+    thanks: {
+      initial: 'normal',
+      states: {
+        normal: {},
+        // highlight-next-line
+        happy: {},
+      },
+    },
+    // ...
+  },
+});
+```
+
+当目标状态节点是源状态节点的子节点时，可以省略源状态节点键：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    closed: {
+      initial: 'normal',
+      states: {
+        normal: {},
+        keypress: {},
+      },
+    },
+  },
+  on: {
+    'feedback.close': {
+      // highlight-start
+      // 目标是子状态节点 `closed`
+      target: '.closed',
+      // highlight-end
+        },
+        'key.escape': {
+      // highlight-start
+      // 目标是子状态节点 `closed.keypress`
+      target: '.closed.keypress',
+      // highlight-end
+    },
+  },
+});
+```
+
+当状态节点不变时，即源状态节点和目标状态节点相同时，可以省略 `target` 属性：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    form: {
+      on: {
+        'feedback.update': {
+          // highlight-start
+          // 没有定义目标 – 保持在 `form` 状态节点
+          // 等同于 `target: '.form'` 或 `target: undefined`
+          // highlight-end
+          actions: 'updateForm',
+        },
+      },
+    },
+  },
+});
+```
+
+状态节点也可以通过其 `id` 进行定位，方法是在 `target` 前加上 `#`，后跟状态节点的 `id`：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    // highlight-start
+    closed: {
+      id: 'finished',
+    },
+    // highlight-end
+    // ...
+  },
+  on: {
+    'feedback.close': {
+      // highlight-next-line
+      target: '#finished',
+    },
+  },
+});
+```
+
+## 标识状态节点
+
+状态可以通过唯一的 ID 进行标识：`id: 'myState'`。这对于从任何其他状态定位一个状态非常有用，即使它们有不同的父状态：
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  initial: 'prompt',
+  states: {
+    // ...
+    closed: {
+      // highlight-next-line
+      id: 'finished',
+      type: 'final',
+    },
+    // ...
+  },
+  on: {
+    'feedback.close': {
+      // highlight-start
+      // 通过其 ID 定位 `.closed` 状态
+      target: '#finished',
+      // highlight-end
+    },
+  },
+});
+```
+
+状态 ID 不会影响 `state.value`。在上面的示例中，即使状态节点被标识为 `#finished`，`state.value` 仍然是 `closed`。
+
+## 其他状态类型
+
+在状态图中，还有其他类型的状态：
+
+- [父状态（也称为复合状态）](parent-states.mdx)
+- [并行状态](parallel-states.mdx)
+- [历史状态](history-states.mdx)
+- [最终状态](final-states.mdx)
+
+## 建模状态
+
+- 从简单和浅层开始。在行为逻辑的表现取决于它所处的某个有限状态之前，不要创建多个有限状态。
+- 可以建模选择伪状态
+
+## 有限状态和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+_即将推出_
+
+## 有限状态速查表
+
+_即将推出_

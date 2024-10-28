@@ -1,0 +1,344 @@
+---
+title: 守卫
+---
+
+**守卫** 是状态机在处理事件时检查的条件函数。如果条件为 `true`，状态机将执行到下一个状态的转换。如果条件为 `false`，状态机将继续检查其他条件以决定下一个状态。
+
+**受守卫保护的转换** 是仅在其 `守卫` 评估为 `true` 时才启用的转换。守卫决定了转换是否可以启用。任何转换都可以是受守卫保护的转换。
+
+:::studio
+
+你可以在 Stately 的编辑器中轻松可视化和模拟受守卫保护的转换。[阅读更多关于 Stately 编辑器中的守卫](/docs/editor-states-and-transitions/#add-guards)。
+
+:::
+
+守卫应该是纯的、同步的函数，返回 `true` 或 `false`。
+
+```ts
+const feedbackMachine = createMachine(
+  {
+    // ...
+    states: {
+      form: {
+        on: {
+          'feedback.submit': {
+            // highlight-next-line
+            guard: 'isValid',
+            target: 'submitting',
+          },
+        },
+      },
+      submitting: {
+        // ...
+      },
+    },
+  },
+  {
+    // highlight-start
+    guards: {
+      isValid: ({ context }) => {
+        return context.feedback.length > 0;
+      },
+    },
+    // highlight-end
+  },
+);
+```
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=2e91a914-7f83-45fe-9216-e1b5c495a44a" title="带有守卫的反馈表单"/>
+
+## 多个受守卫保护的转换
+
+如果你希望在某些情况下单个事件转换到不同的状态，你可以提供一个受守卫保护的转换数组。每个转换将按顺序进行测试，第一个 `守卫` 评估为 `true` 的转换将被执行。
+
+你可以指定一个默认转换作为数组中的最后一个转换。如果没有一个守卫评估为 `true`，将执行默认转换。
+
+```ts
+const feedbackMachine = createMachine({
+  // ...
+  prompt: {
+    on: {
+      // highlight-start
+      'feedback.provide': [
+        // 如果 'sentimentGood' 守卫评估为 `true`，则执行
+        {
+          guard: 'sentimentGood',
+          target: 'thanks',
+        },
+        // 如果上述受守卫保护的转换都未执行
+        // 且 'sentimentBad' 守卫评估为 `true`，则执行
+        {
+          guard: 'sentimentBad',
+          target: 'form',
+        },
+        // 默认转换
+        { target: 'form' },
+      ],
+      // highlight-end
+    },
+  },
+});
+```
+
+## 内联守卫
+
+你可以将守卫定义为内联函数。这对于快速原型设计逻辑非常有用，但我们通常推荐使用序列化的守卫（字符串或对象）以便更好地重用和可视化。
+
+```ts
+on: {
+  event: {
+    guard: ({ context, event }) => true,
+    target: 'someState'
+  }
+}
+```
+
+## 守卫对象
+
+守卫可以定义为一个带有 `type` 的对象，`type` 是引用提供的守卫实现的类型，还可以有可选的 `params`，这些参数可以被实现的守卫读取：
+
+```ts
+const feedbackMachine = createMachine(
+  {
+    // ...
+    states: {
+      // ...
+      form: {
+        on: {
+          submit: {
+            // highlight-next-line
+            guard: { type: 'isValid', params: { maxLength: 50 } },
+            target: 'submitting',
+          },
+        },
+      },
+      // ...
+    },
+  },
+  {
+    // highlight-start
+    guards: {
+      isValid: ({ context }, params) => {
+        return (
+          context.feedback.length > 0 &&
+          context.feedback.length <= params.maxLength
+        );
+      },
+    },
+    // highlight-end
+  },
+);
+```
+
+守卫可以通过在 `.provide()` 方法中提供自定义守卫实现来提供或覆盖：
+
+```ts
+const feedbackActor = createActor(
+  // highlight-start
+  feedbackMachine.provide({
+    guards: {
+      isValid: ({ context }, params) => {
+        return (
+          context.feedback.length > 0 &&
+          context.feedback.length <= params.maxLength &&
+          isNotSpam(context.feedback)
+        );
+      },
+    },
+  }),
+  // highlight-end
+).start();
+```
+
+## 高级守卫
+
+XState 提供了高级守卫，这些守卫是由其他守卫组成的。有三种高级守卫——`and`、`or` 和 `not`：
+
+- `and([...])` - 如果 `and([...guards])` 中的所有守卫都评估为 `true`，则评估为 `true`
+- `or([...])` - 如果 `or([...guards])` 中的任意一个守卫评估为 `true`，则评估为 `true`
+- `not(...)` - 如果 `not(guard)` 中的守卫评估为 `false`，则评估为 `true`
+
+```ts
+on: {
+  event: {
+    guard: and(['isValid', 'isAuthorized']);
+  }
+}
+```
+
+高级守卫可以组合：
+
+```ts
+on: {
+  event: {
+    guard: and(['isValid', or(['isAuthorized', 'isGuest'])]);
+  }
+}
+```
+
+## 状态内守卫
+
+你可以使用 `stateIn(stateValue)` 守卫来检查当前状态是否匹配提供的 `stateValue`。这对于[并行状态](parallel-states.mdx)最有用。
+
+```ts
+on: {
+  event: {
+    guard: stateIn('#state1');
+  },
+  anotherEvent: {
+    guard: stateIn({ form: 'submitting' })
+  }
+}
+```
+
+状态内守卫匹配整个状态机的状态，而不是状态节点。通常不需要为常规状态使用状态内守卫。首先尝试在状态机中建模转换，以避免使用状态内守卫。
+
+## 简写
+
+建议将守卫定义为守卫对象，例如 `{ type: 'someGuard', params: { ... } }`。但是，如果守卫没有参数，你可以将其指定为字符串：
+
+```ts
+on: {
+  someEvent: {
+    // 等效于：
+    // guard: { type: 'someGuard' }
+    // highlight-next-line
+    guard: 'someGuard';
+  }
+}
+```
+
+## 守卫与 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+你可以通过在 `setup({ guards: { … } })` 中设置守卫的实现来强类型化你的状态机的 `guards`。你可以在守卫函数的第二个参数中提供 `params` 类型：
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  // highlight-start
+  guards: {
+    isGreaterThan: (_, params: { count: number; min: number; }) => {
+      return params.count > params.min;
+    }
+  }
+  // highlight-end
+}).createMachine({
+  // ...
+  on: {
+    someEvent: {
+      guard: {
+        type: 'isGreaterThan',
+        // 强类型化的参数
+        params: ({ event }) => ({
+          count: event.count,
+          min: 10
+        })
+      },
+      // ...
+    },
+  },
+});
+```
+
+## 守卫速查表
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine(
+  {
+    // ...
+    states: {
+      form: {
+        on: {
+          'feedback.submit': {
+            // highlight-next-line
+            guard: 'isValid',
+            target: 'submitting',
+          },
+        },
+      },
+      submitting: {
+        // ...
+      },
+    },
+  },
+  {
+    // highlight-start
+    guards: {
+      isValid: ({ context }) => {
+        return context.feedback.length > 0;
+      },
+    },
+    // highlight-end
+  },
+);
+```
+
+### 速查表：多个受守卫保护的转换
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // ...
+  prompt: {
+    on: {
+      // highlight-start
+      'feedback.provide': [
+        // 如果 'sentimentGood' 守卫评估为 `true`，则执行
+        {
+          guard: 'sentimentGood',
+          target: 'thanks',
+        },
+        // 如果上述受守卫保护的转换都未执行
+        // 且 'sentimentBad' 守卫评估为 `true`，则执行
+        {
+          guard: 'sentimentBad',
+          target: 'form',
+        },
+        // 默认转换
+        { target: 'form' },
+      ],
+      // highlight-end
+    },
+  },
+});
+```
+
+### 速查表：高级守卫
+
+```ts
+import { createMachine } from 'xstate';
+
+const loginMachine = createMachine({
+  on: {
+    event: {
+      guard: and(['isValid', 'isAuthorized']);
+    }
+  }
+});
+```
+
+### 速查表：组合的高级守卫
+
+```ts
+import { createMachine } from 'xstate';
+
+const loginMachine = createMachine({
+  on: {
+    event: {
+      guard: and(['isValid', or(['isAuthorized', 'isGuest'])]);
+    }
+  }
+});
+```

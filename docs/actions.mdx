@@ -1,0 +1,1108 @@
+---
+title: 'Actions'
+---
+
+动作是一次性执行的效果。当状态机转换时，它可能会执行动作。动作响应事件发生，通常在转换中的 `actions: [...]` 属性中定义。动作也可以在进入状态的任何转换中定义在状态的 `entry: [...]` 属性中，或者在退出状态的任何转换中定义在状态的 `exit: [...]` 属性中。
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中可视化您的状态机并轻松添加动作。 [阅读更多关于 Stately 编辑器中的动作](editor-actions-and-actors.mdx)。
+
+:::
+
+动作也可以在状态的 `entry` 或 `exit` 上定义，可以是单个动作或数组。
+
+```ts
+import { setup } from 'xstate';
+
+function trackResponse(response: string) {
+  // ...
+}
+
+const feedbackMachine = setup({
+  actions: {
+    track: (_, params: { response: string }) => {
+      trackResponse(params.response);
+      // 记录 { response: 'good' }
+    },
+    showConfetti: () => {
+      // ...
+    }
+  }
+}).createMachine({
+  // ...
+  states: {
+    // ...
+    question: {
+      on: {
+        'feedback.good': {
+          actions: [
+            { type: 'track', params: { response: 'good' } }
+          ]
+        }
+      },
+      exit: [
+        { type: 'exitAction' }
+      ]
+    }
+    thanks: {
+      entry: [
+        { type: 'showConfetti' }
+      ],
+    }
+  }
+});
+```
+
+动作示例：
+
+- 记录消息
+- 发送消息到另一个[actor](actors.mdx)
+- 更新上下文
+
+## 进入和退出动作
+
+进入动作是在任何进入状态节点的转换上发生的动作。退出动作是在任何退出状态节点的转换上发生的动作。
+
+进入和退出动作使用状态节点上的 `entry: [...]` 和 `exit: [...]` 属性定义。您可以在一个状态上触发多个进入和退出动作。顶级最终状态不能有退出动作，因为机器已停止且无法再进行转换。
+
+<EmbedMachine
+  embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=f46674a5-4da3-4aca-9900-17c6ef471f50"
+  title="反馈表单"
+/>
+
+## 动作对象
+
+动作对象有一个动作 `type` 和一个可选的 `params` 对象：
+
+- 动作的 `type` 属性描述动作。具有相同类型的动作具有相同的实现。
+- 动作的 `params` 属性包含与动作相关的参数化值。
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  actions: {
+    track: (_, params: { response: string }) => {
+      /* ... */
+    },
+  },
+}).createMachine({
+  // ...
+  states: {
+    // ...
+    question: {
+      on: {
+        'feedback.good': {
+          actions: [
+            // highlight-start
+            {
+                // 动作类型
+                type: 'track',
+                // 动作参数
+              params: { response: 'good' },
+            },
+            // highlight-end
+          ],
+        },
+      },
+    },
+  },
+});
+```
+
+## 动态动作参数
+
+您可以通过使用返回参数的函数在 `params` 属性中动态传递参数。该函数接受一个包含当前 `context` 和 `event` 的对象作为参数。
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  actions: {
+    logInitialRating: (_, params: { initialRating: number }) => {
+      // ...
+    },
+  },
+}).createMachine({
+  context: {
+    initialRating: 3,
+  },
+  entry: [
+    {
+      type: 'logInitialRating',
+      // highlight-start
+      params: ({ context }) => ({
+        initialRating: context.initialRating,
+      }),
+      // highlight-end
+    },
+  ],
+});
+```
+
+这是使动作更具可重用性的推荐方法，因为您可以定义不依赖于机器的 `context` 或 `event` 类型的动作。
+
+```ts
+import { setup } from 'xstate';
+
+// highlight-start
+function logInitialRating(_, params: { initialRating: number }) {
+  console.log(`Initial rating: ${params.initialRating}`);
+}
+// highlight-end
+
+const feedbackMachine = setup({
+  actions: { logInitialRating },
+}).createMachine({
+  context: { initialRating: 3 },
+  entry: [
+    {
+      type: 'logInitialRating',
+      // highlight-start
+      params: ({ context }) => ({
+        initialRating: context.initialRating,
+      }),
+      // highlight-end
+    },
+  ],
+});
+```
+
+## 内联动作
+
+您可以将动作声明为内联函数：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  entry: [
+    // highlight-start
+    // 内联动作
+    ({ context, event }) => {
+      console.log(/* ... */);
+    },
+    // highlight-end
+  ],
+});
+```
+
+内联动作对于原型设计和简单情况非常有用，但我们通常建议使用动作对象。
+
+## 实现动作
+
+您可以在 `setup(...)` 函数的 `actions` 属性中设置命名动作的实现
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  // highlight-start
+  actions: {
+    track: (_, params: { msg: string }) => {
+      // 动作实现
+      // ...
+    },
+  },
+  // highlight-end
+}).createMachine({
+  // 机器配置
+  entry: [{ type: 'track', params: { msg: 'entered' } }],
+});
+```
+
+您还可以在 `machine.provide(...)` 方法中提供动作实现，以覆盖现有的动作实现。该方法会创建一个具有相同配置但使用提供的实现的新机器：
+
+```ts
+const feedbackActor = createActor(
+  // highlight-start
+  feedbackMachine.provide({
+    actions: {
+      track: ({ context, event }, params) => {
+        // 不同的动作实现
+        // （覆盖之前的实现）
+        // ...
+      },
+    },
+  }),
+  // highlight-end
+);
+```
+
+## 内置动作
+
+XState 提供了许多有用的内置动作，它们是您的状态机逻辑的核心部分，而不仅仅是副作用。
+
+:::warning
+
+内置动作，例如 `assign(…)`、`sendTo(…)` 和 `raise(…)`，**不是命令式的**；它们返回一个特殊的[动作对象](#action-objects)（例如 `{ type: 'xstate.assign', … }`），由状态机解释。不要在自定义动作函数中调用内置动作。
+
+```ts
+// ❌ 这将不会有任何效果
+const machine = createMachine({
+  context: { count: 0 },
+  // highlight-start
+  entry: ({ context }) => {
+    // 这个动作创建器只返回一个动作对象
+    // 类似于 { type: 'xstate.assign', ... }
+    assign({ count: context.count + 1 });
+  },
+  // highlight-end
+});
+
+// ✅ 这将按预期工作
+const machine = createMachine({
+  context: { count: 0 },
+  // highlight-start
+  entry: assign({
+    count: ({ context }) => context.count + 1,
+  }),
+  // highlight-end
+});
+
+// ✅ 命令式内置动作在 `enqueueActions(…)` 中可用
+const machine = createMachine({
+  context: { count: 0 },
+  // highlight-start
+  entry: enqueueActions(({ context, enqueue }) => {
+    enqueue.assign({
+      count: context.count + 1,
+    });
+  }),
+  // highlight-end
+});
+```
+
+:::
+
+## Assign 动作
+
+`assign(...)` 动作是一种特殊的动作，用于将数据分配到状态上下文中。在 `assign(assignments)` 中的 `assignments` 参数是指定上下文分配的地方。
+
+分配可以是键值对的对象，其中键是 `context` 键，值可以是静态值或返回新值的表达式：
+
+```ts
+import { setup } from 'xstate';
+
+const countMachine = setup({
+  types: {
+    events: {} as { type: 'increment'; value: number },
+  },
+}).createMachine({
+  context: {
+    count: 0,
+  },
+  on: {
+    increment: {
+      // highlight-start
+      actions: assign({
+        count: ({ context, event }) => context.count + event.value,
+      }),
+      // highlight-end
+    },
+  },
+});
+
+const countActor = createActor(countMachine);
+countActor.subscribe((state) => {
+  console.log(state.context.count);
+});
+countActor.start();
+// logs 0
+
+countActor.send({ type: 'increment', value: 3 });
+// logs 3
+
+countActor.send({ type: 'increment', value: 2 });
+// logs 5
+```
+
+对于更动态的分配，传递给 `assign(...)` 的参数也可以是一个返回部分或全部 `context` 值的函数：
+
+```ts
+import { setup } from 'xstate';
+
+const countMachine = setup({
+  types: {
+    events: {} as { type: 'increment'; value: number },
+  },
+}).createMachine({
+  context: {
+    count: 0,
+  },
+  on: {
+    increment: {
+      // highlight-start
+      actions: assign(({ context, event }) => {
+        return {
+          count: context.count + event.value,
+        };
+      }),
+      // highlight-end
+    },
+  },
+});
+```
+
+:::warningxstate
+
+不要直接修改 `context` 对象。相反，您应该使用 `assign(...)` 动作来不可变地更新 `context`。如果您修改 `context` 对象，可能会导致意外行为，例如修改其他 actor 的 `context`。
+
+:::
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中使用 `assign(...)` 动作创建状态机。 [阅读更多关于 Stately 编辑器中的内置 assign 动作](https://stately.ai/docs/editor-actions-and-actors/#xstate-built-in-actions)。
+
+:::
+
+## Raise 动作
+
+Raise 动作是一种特殊的动作，用于“触发”一个事件，该事件由同一个状态机接收。触发事件是状态机向自身“发送”事件的方式：
+
+```ts
+import { createMachine, raise } from 'xstate';
+
+const machine = createMachine({
+  // ...
+  // highlight-next-line
+  entry: raise({ type: 'someEvent', data: 'someData' });
+});
+```
+
+内部，当一个事件被触发时，它会被放入一个“内部事件队列”。在当前转换完成后，这些事件将按插入顺序（[先进先出，或 FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>))进行处理。只有在内部事件队列中的所有事件都被处理完后，外部事件才会被处理。
+
+触发的事件可以是动态的：
+
+```ts
+import { createMachine, raise } from 'xstate';
+
+const machine = createMachine({
+  // ...
+  // highlight-start
+  entry: raise(({ context, event }) => ({
+    type: 'dynamicEvent',
+    data: context.someValue,
+  })),
+  // highlight-end
+});
+```
+
+事件也可以在延迟后触发，这样它们不会被放入内部事件队列，因为它们不会立即被处理：
+
+```ts
+import { createMachine, raise } from 'xstate';
+
+const machine = createMachine({
+  // ...
+  entry: raise(
+    { type: 'someEvent' },
+    // highlight-next-line
+    { delay: 1000 }
+  );
+});
+```
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中使用 `raise(...)` 动作创建状态机。 [阅读更多关于 Stately 编辑器中的内置 raise 动作](https://stately.ai/docs/editor-actions-and-actors/#xstate-built-in-actions)。
+
+:::
+
+## Send-to 动作
+
+`sendTo(...)` 动作是一种特殊的动作，用于向特定的 actor 发送事件。
+
+```ts
+const machine = createMachine({
+  on: {
+    transmit: {
+      // highlight-start
+      actions: sendTo('someActor', { type: 'someEvent' }),
+      // highlight-end
+    },
+  },
+});
+```
+
+事件可以是动态的：
+
+```ts
+const machine = createMachine({
+  on: {
+    transmit: {
+      // highlight-start
+      actions: sendTo('someActor', ({ context, event }) => {
+        return { type: 'someEvent', data: context.someData };
+      }),
+      // highlight-end
+    },
+  },
+});
+```
+
+目标 actor 可以是 actor 的 ID 或 actor 引用本身：
+
+```ts
+const machine = createMachine({
+  context: ({ spawn }) => ({
+    someActorRef: spawn(fromPromise(/* ... */)),
+  }),
+  on: {
+    transmit: {
+      // highlight-start
+      actions: sendTo(({ context }) => context.someActorRef, {
+        type: 'someEvent',
+      }),
+      // highlight-end
+    },
+  },
+});
+```
+
+其他选项，例如 `delay` 和 `id`，可以作为第三个参数传递：
+
+```ts
+const machine = createMachine({
+  on: {
+    transmit: {
+      actions: sendTo(
+        'someActor',
+        { type: 'someEvent' },
+        // highlight-start
+        {
+          id: 'transmission',
+          delay: 1000,
+        },
+        // highlight-end
+      ),
+    },
+  },
+});
+```
+
+延迟动作可以通过它们的 `id` 取消。请参阅 [`cancel(...)`](https://stately.ai/docs/actions#cancel-action)。
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中使用 `sendTo(...)` 动作创建状态机。 [阅读更多关于 Stately 编辑器中的内置 sendTo 动作](https://stately.ai/docs/editor-actions-and-actors/#xstate-built-in-actions)。
+
+:::
+
+## Send-parent 动作
+
+`sendParent(...)` 动作是一种特殊的动作，用于向父 actor 发送事件（如果存在父 actor）。
+
+:::tip
+
+建议使用 `sendTo(...)` 通过 [input](./input.ts) 或事件将 actor 引用（例如父 actor 引用）传递给其他 actor，并将这些 actor 引用存储在 `context` 中，而不是使用 `sendParent(...)`。这可以避免 actor 之间的紧密耦合，并且可以更安全地进行类型检查。
+
+<details>
+<summary>使用 input 的示例：</summary>
+
+```ts
+import { createMachine, sendTo } from 'xstate';
+
+const childMachine = createMachine({
+  context: ({ input }) => ({
+    parentRef: input.parentRef,
+  }),
+  on: {
+    someEvent: {
+      // highlight-start
+      actions: sendTo(({ context }) => context.parentRef, {
+        type: 'tellParentSomething',
+      }),
+      // highlight-end
+    },
+  },
+});
+
+const parentMachine = createMachine({
+  // ...
+  invoke: {
+    id: 'child',
+    src: childMachine,
+    // highlight-start
+    input: ({ self }) => ({
+      parentRef: self,
+    }),
+    // highlight-end
+  },
+  on: {
+    tellParentSomething: {
+      actions: () => {
+        console.log('子 actor 告诉父 actor 一些事情');
+      },
+    },
+  },
+});
+
+const parentActor = createActor(parentMachine);
+
+parentActor.start();
+```
+
+</details>
+
+<details>
+<summary>使用 input 的示例（TypeScript）：</summary>
+
+```ts
+import { ActorRef, createActor, log, sendTo, setup, Snapshot } from 'xstate';
+
+// highlight-start
+type ChildEvent = {
+  type: 'tellParentSomething';
+  data?: string;
+};
+type ParentActor = ActorRef<Snapshot<unknown>, ChildEvent>;
+// highlight-end
+
+const childMachine = setup({
+  types: {
+    context: {} as {
+      parentRef: ParentActor
+    },
+    input: {} as {
+      parentRef: ParentActor;
+    },
+  },
+}).createMachine({
+  context: ({ input: { parentRef } }) => ({parentRef}),
+// highlight-start
+  entry: sendTo(({ context }) => context.parentRef, {
+    type: 'tellParentSomething',
+    data: 'Hi parent!',
+  }),
+// highlight-end
+});
+
+export const parent = setup({
+  actors: { child: childMachine },
+}).createMachine({
+// highlight-start
+  invoke: {
+    src: 'child',
+    input: ({ self }) => ({
+      parentRef: self,
+    }),
+  },
+// highlight-end
+  on: {
+    tellParentSomething: {
+      actions: log( ({event:{data}})=> `Child actor says "${data}"`),
+    },
+  },
+});
+
+createActor(parent).start();
+```
+</details>
+
+:::
+
+## 排队动作
+
+`enqueueActions(...)` 动作创建器是一个高级动作，它将动作按顺序排队执行，而不实际执行任何动作。它接受一个回调，该回调接收 `context`、`event` 以及 `enqueue` 和 `check` 函数：
+
+- `enqueue(...)` 函数用于排队一个动作。它接受一个动作对象或动作函数：
+
+  ```ts
+  actions: enqueueActions(({ enqueue }) => {
+    // 排队一个动作对象
+    enqueue({ type: 'greet', params: { message: 'hi' } });
+
+    // 排队一个动作函数
+    enqueue(() => console.log('Hello'));
+
+    // 排队一个没有参数的简单动作
+    enqueue('doSomething');
+  });
+  ```
+
+- `check(...)` 函数用于有条件地排队一个动作。它接受一个守卫对象或守卫函数，并返回一个表示守卫是否评估为 `true` 的布尔值：
+  ```ts
+  actions: enqueueActions(({ enqueue, check }) => {
+    if (check({ type: 'everythingLooksGood' })) {
+      enqueue('doSomething');
+    }
+  });
+  ```
+- `enqueue` 上还有一些辅助方法用于排队内置动作：
+  - `enqueue.assign(...)`：排队一个 `assign(...)` 动作
+  - `enqueue.sendTo(...)`：排队一个 `sendTo(...)` 动作
+  - `enqueue.raise(...)`：排队一个 `raise(...)` 动作
+  - `enqueue.spawnChild(...)`：排队一个 `spawnChild(...)` 动作
+  - `enqueue.stopChild(...)`：排队一个 `stopChild(...)` 动作
+  - `enqueue.cancel(...)`：排队一个 `cancel(...)` 动作
+
+排队的动作可以有条件地调用，但不能异步排队。
+
+```ts
+const machine = createMachine({
+  // ...
+  entry: enqueueActions(({ context, event, enqueue, check }) => {
+    // assign 动作
+    enqueue.assign({
+      count: context.count + 1,
+    });
+
+    // 条件动作（替代 choose(...)）
+    if (event.someOption) {
+      enqueue.sendTo('someActor', { type: 'blah', thing: context.thing });
+
+      // 其他动作
+      enqueue('namedAction');
+      // 带参数
+      enqueue({ type: 'greet', params: { message: 'hello' } });
+    } else {
+      // 内联
+      enqueue(() => console.log('hello'));
+
+      // 甚至内置动作
+    }
+
+    // 使用 check(...) 基于守卫条件性地排队动作
+    if (check({ type: 'someGuard' })) {
+      // ...
+    }
+
+    // 无返回值
+  }),
+});
+```
+
+您可以使用带有引用的排队动作的参数：
+
+```ts
+import { setup, enqueueActions } from 'xstate';
+
+const machine = setup({
+  actions: {
+    // highlight-start
+    doThings: enqueueActions(({ enqueue }, params: { name: string }) => {
+      enqueue({ type: 'greet', params: { name } });
+      // ...
+    }),
+    // highlight-end
+    greet: (_, params: { name: string }) => {
+      console.log(`Hello ${params.name}!`);
+    },
+  },
+}).createMachine({
+  // ...
+  // highlight-start
+  entry: {
+    type: 'doThings',
+    params: { name: 'World' },
+  },
+  // highlight-end
+});
+```
+
+## 日志动作
+
+`log(...)` 动作是一种简单的方法，可以将消息记录到控制台。
+
+```ts
+import { createMachine, log } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    someEvent: {
+      // highlight-start
+      actions: log('some message'),
+      // highlight-end
+    },
+  },
+});
+```
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中使用 `log(...)` 动作创建状态机。 [阅读更多关于 Stately 编辑器中的内置 log 动作](https://stately.ai/docs/editor-actions-and-actors/#xstate-built-in-actions)。
+
+:::
+
+## 取消动作
+
+`cancel(...)` 动作通过其 ID 取消延迟的 `sendTo(...)` 或 `raise(...)` 动作：
+
+```ts
+import { createMachine, sendTo, cancel } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    event: {
+      actions: sendTo(
+        'someActor',
+        { type: 'someEvent' },
+        {
+          // highlight-next-line
+          id: 'someId',
+          delay: 1000,
+        },
+      ),
+    },
+    cancelEvent: {
+      // highlight-next-line
+      actions: cancel('someId'),
+    },
+  },
+});
+```
+
+## 停止子 actor 动作
+
+`stopChild(...)` 动作用于停止子 actor。actor 只能从其父 actor 停止：
+
+```ts
+import { createMachine, stopChild } from 'xstate';
+
+const machine = createMachine({
+  context: ({ spawn }) => ({
+    spawnedRef: spawn(fromPromise(/* ... */), { id: 'spawnedId' }),
+  }),
+  on: {
+    stopById: {
+      // highlight-next-line
+      actions: stopChild('spawnedId'),
+    },
+    stopByRef: {
+      // highlight-next-line
+      actions: stopChild(({ context }) => context.spawnedRef),
+    },
+  },
+});
+```
+
+## 建模
+
+如果您只需要在响应事件时执行动作，您可以创建一个仅定义了 `actions: [ ... ]` 的[自转换](/docs/transitions#self-transitions)。例如，一个只需要在转换中分配给 `context` 的机器可能如下所示：
+
+```ts
+import { createMachine } from 'xstate';
+
+const countMachine = createMachine({
+  context: {
+    count: 0,
+  },
+  // highlight-start
+  on: {
+    increment: {
+      actions: assign({
+        count: ({ context, event }) => context.count + event.value,
+      }),
+    },
+    decrement: {
+      actions: assign({
+        count: ({ context, event }) => context.count - event.value,
+      }),
+    },
+  },
+  // highlight-end
+});
+```
+
+## 简写
+
+对于简单的动作，您可以指定一个动作字符串而不是动作对象。尽管我们更喜欢为了保持一致性使用对象。
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // ...
+  states: {
+    // ...
+    question: {
+      on: {
+        'feedback.good': {
+          // highlight-start
+          actions: ['track'],
+          // highlight-end
+        },
+      },
+    },
+  },
+});
+```
+
+## 动作和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。 [阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+要强类型设置动作类型，请使用 `setup({ ... })` 函数，并将动作实现放在 `actions: { ... }` 对象中。键是动作类型，值是动作函数实现。
+
+您还应该强类型化动作函数的参数，这些参数作为第二个参数传递给动作函数。
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  // highlight-start
+  actions: {
+    track: (_, params: { response: string }) => {
+      // ...
+    },
+    increment: (_, params: { value: number }) => {
+      // ...
+    },
+  },
+  // highlight-end
+}).createMachine({
+  // ...
+  entry: [
+    { type: 'track', params: { response: 'good' } },
+    { type: 'increment', params: { value: 1 } },
+  ],
+});
+```
+
+如果您没有使用 `setup({ ... })`（强烈推荐），您可以在机器配置的 `types.actions` 属性中强类型化您的 `actions`。
+
+
+```ts
+const machine = createMachine({
+  types: {} as {
+    // highlight-start
+    actions:
+      | {
+          type: 'track';
+          params: {
+            response: string;
+          };
+        }
+      | { type: 'increment'; params: { value: number } };
+    // highlight-end
+  },
+  // ...
+  entry: [
+    { type: 'track', params: { response: 'good' } },
+    { type: 'increment', params: { value: 1 } },
+  ],
+});
+```
+
+## 动作速查表
+
+### 速查表：进入和退出动作
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  // highlight-start
+  // 根上的进入动作
+  entry: [{ type: 'entryAction' }],
+  exit: [{ type: 'exitAction' }],
+  // highlight-end
+  initial: 'start',
+  states: {
+    start: {
+      // highlight-start
+      entry: [{ type: 'startEntryAction' }],
+      exit: [{ type: 'startExitAction' }],
+      // highlight-end
+    },
+  },
+});
+```
+
+### 速查表：转换动作
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    someEvent: {
+      actions: [
+        // highlight-start
+        { type: 'doSomething' },
+        { type: 'doSomethingElse' },
+        // highlight-end
+      ],
+    },
+  },
+});
+```
+
+### 速查表：内联动作函数
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    someEvent: {
+      actions: [
+        // highlight-start
+        ({ context, event }) => {
+          console.log(context, event);
+        },
+        // highlight-end
+      ],
+    },
+  },
+});
+```
+
+### 速查表：设置动作
+
+```ts
+import { setup } from 'xstate';
+
+const someAction = () => {
+  //...
+};
+
+const machine = setup({
+  actions: {
+    someAction,
+  },
+}).createMachine({
+  entry: [
+    // highlight-start
+    { type: 'someAction' },
+    // highlight-end
+  ],
+  // ...
+});
+```
+
+### 速查表：提供动作
+
+```ts
+import { setup } from 'xstate';
+
+const someAction = () => {
+  //...
+};
+
+const machine = setup({
+  actions: {
+    someAction,
+  },
+}).createMachine({
+  // ...
+});
+
+const modifiedMachine = machine.provide({
+  someAction: () => {
+    // 覆盖的动作实现
+  },
+});
+```
+
+### 速查表：assign 动作
+
+#### 使用属性分配器
+
+```ts
+import { createMachine } from 'xstate';
+
+const countMachine = createMachine({
+  context: {
+    count: 0,
+  },
+  on: {
+    increment: {
+      // highlight-start
+      actions: assign({
+        count: ({ context, event }) => {
+          return context.count + event.value;
+        },
+      }),
+      // highlight-end
+    },
+  },
+});
+```
+
+#### 使用函数分配器
+
+```ts
+import { createMachine } from 'xstate';
+
+const countMachine = createMachine({
+  context: {
+    count: 0,
+  },
+  on: {
+    increment: {
+      // highlight-start
+      actions: assign(({ context, event }) => {
+        return {
+          count: context.count + event.value,
+        };
+      }),
+      // highlight-end
+    },
+  },
+});
+```
+
+### 速查表：raise 动作
+
+```ts
+import { createMachine, raise } from 'xstate';
+
+const machine = createMachine({
+  on: {
+    someEvent: {
+      // highlight-start
+      actions: raise({ type: 'anotherEvent' }),
+      // highlight-end
+    },
+  },
+});
+```
+
+### 速查表：send-to 动作
+
+```ts
+const machine = createMachine({
+  on: {
+    transmit: {
+      // highlight-start
+      actions: sendTo('someActor', { type: 'someEvent' }),
+      // highlight-end
+    },
+  },
+});
+```
+
+### 速查表：排队动作
+
+```ts
+import { createMachine, enqueueActions } from 'xstate';
+
+const machine = createMachine({
+  // highlight-start
+  entry: enqueueActions(({ enqueue, check }) => {
+    enqueue({ type: 'someAction' });
+
+    if (check({ type: 'someGuard' })) {
+      enqueue({ type: 'anotherAction' });
+    }
+
+    enqueue.assign({
+      count: 0,
+    });
+
+    enqueue.sendTo('someActor', { type: 'someEvent' });
+
+    enqueue.raise({ type: 'anEvent' });
+  }),
+  // highlight-end
+});
+```

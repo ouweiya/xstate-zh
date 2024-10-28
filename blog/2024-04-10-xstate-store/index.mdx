@@ -1,0 +1,255 @@
+---
+title: 介绍 XState Store
+description: 一个受 XState 启发的简单且小巧的状态管理库
+tags:
+  [
+    xstate,
+    state,
+    store,
+    state management
+  ]
+authors: [david]
+date: 2024-04-10
+slug: 2024-04-10-xstate-store
+---
+
+世界需要另一个状态管理库吗？可能不需要，但如果你对 XState 感兴趣，你一定要看看这个。
+
+XState Store 是一个受 XState 启发的简单且小巧的状态管理库。如果你只需要一种方法来更新存储中的数据并订阅存储中的更改，XState Store 适合你。它是：
+
+- **极其简单**。提供初始上下文和过渡函数给 `createStore(…)` 函数，你就可以开始了。
+- **极其小巧**。压缩后小于 1kb。
+- **与 XState 兼容**。共享与 XState 相同的 actor API，使得在需要处理更多复杂性时，集成/迁移变得容易。
+- **额外的类型安全**。用 TypeScript 编写，自动从你的上下文和过渡中推断出强类型的事件和快照。
+- **基于事件**。与 XState 一样工作；发送事件以触发过渡。
+- **支持 Immer**。通过 `createStoreWithProducer(producer, …)` 轻松添加 [Immer](https://github.com/immerjs/immer) 以进行“可变”上下文更新。
+
+{/* truncate */}
+
+:::info
+
+阅读 [`@xstate/store` 文档](/docs/xstate-store) 了解更多信息。
+
+:::
+
+通过 [npm](https://www.npmjs.com/package/@xstate/store) 安装：
+
+```bash
+npm install @xstate/store
+```
+
+创建你的存储并在任何地方使用它：
+
+```ts
+import { createStore } from '@xstate/store';
+
+const store = createStore({
+  count: 0
+}, {
+  inc: {
+    count: (context, event: { by: number }) => context.count + event.by
+  }
+});
+
+store.subscribe((snapshot) => {
+  console.log(snapshot.context);
+});
+
+store.send({ type: 'inc', by: 1 });
+// logs { count: 1 }
+store.send({ type: 'inc', by: 2 });
+// logs { count: 3 }
+```
+
+即使在 React 中：
+
+```tsx
+// highlight-next-line
+import { useSelector } from '@xstate/store/react';
+import { store } from './store';
+
+function Counter() {
+  // highlight-next-line
+  const count = useSelector(store, (state) => state.context.count);
+
+  // highlight-next-line
+  return <button onClick={() => store.send({ type: 'inc', by: 1 })}>
+    {count}
+  </button>;
+}
+```
+
+## 动机
+
+市面上有很多状态管理库，如 XState、Redux、MobX、Zustand、Pinia 等。它们通常分为两类：**直接**和**间接**状态操作。
+
+- 直接状态操作最简单，因为你可以在应用程序中的任何地方、任何时间直接更新状态。然而，这可能会导致错误和不可预测的行为，因为逻辑没有集中，需要大量的防御性编程。
+- 间接状态操作最简单，因为你可以将所有状态操作集中在一个地方。这可能会有点冗长，因为你需要发送/派发事件（或在 Redux 术语中称为“动作”）到一个集中位置，但这意味着你有一个应用逻辑的单一事实来源。这种集中来源使得测试、检查、调试和重用变得更加容易。
+
+[XState](https://stately.ai/docs/xstate) 选择了一条少有人走的路，强烈推崇间接状态操作，因为它可以更好地扩展更复杂的应用逻辑。然而，XState 有一个相当大的学习曲线，因为它还实现了状态机、状态图和 actor 模型——所有这些对于许多开发者来说都是新的（且重要的！）概念。此外，我们看到团队不仅使用 XState 进行复杂的状态管理，还用于简单的数据更新，而使用完整的状态机可能有些过头。
+
+为了不让开发者在简单状态管理时离开 XState 生态系统，我们创建了 `@xstate/store`，它与 XState 共享相同的原则，具有相同的 API，但更简单易用。如果你需要扩展到更复杂的状态管理，你可以轻松迁移到 XState。
+
+总之，如果你只需要一种方法来更新存储中的数据并订阅存储中的更改，并与应用程序的其他部分共享这些数据，请使用 `@xstate/store`。如果你需要更复杂的状态管理，包括有限状态、效果（动作、调用/生成的 actor），请使用 XState。
+
+| 功能 | `@xstate/store` | `xstate` |
+| --- | --- | --- |
+| 有限状态 | ❌ | ✅ |
+| 上下文 | ✅ | ✅ |
+| 事件 | ✅ | ✅ |
+| 过渡 | ✅ | ✅ |
+| 守卫 | ❌ | ✅ |
+| 效果 | ❌ | ✅ |
+| Actor 模型 | ❌ | ✅ |
+
+## 超简单示例
+
+这是一个人为的示例，用于演示 API。
+
+```ts
+import { createStore } from '@xstate/store';
+
+// 1. 创建一个存储
+export const donutStore = createStore(
+  // 初始上下文数据
+  { donuts: 0, favoriteFlavor: 'chocolate' },
+
+  // 过渡
+  {
+    addDonut: {
+      donuts: (context) => context.donuts + 1
+    },
+    changeFlavor: {
+      favoriteFlavor: (context, event: { flavor: string }) => event.flavor
+    },
+    eatAllDonuts: {
+      donuts: 0
+    }
+  }
+);
+
+console.log(store.getSnapshot());
+// {
+//   status: 'active',
+//   context: {
+//     donuts: 0,
+//     favoriteFlavor: 'chocolate'
+//   }
+// }
+
+// 2. 订阅存储
+store.subscribe((snapshot) => {
+  console.log(snapshot.context);
+});
+
+// 3. 发送事件
+store.send({ type: 'addDonut' });
+// logs { donuts: 1, favoriteFlavor: 'chocolate' }
+
+store.send({
+  type: 'changeFlavor',
+  flavor: 'strawberry' // Strongly-typed!
+});
+// logs { donuts; 1, favoriteFlavor: 'strawberry' }
+```
+
+总体而言，API 是：
+
+1. 使用 `createStore(initialContext, transitions)` 创建一个存储。
+2. 使用 `store.subscribe(callback)` 订阅该存储的更新。
+3. 使用 `store.send(event)` 发送事件以触发过渡。
+4. （可选）使用 `store.getSnapshot()` 获取存储的当前快照。
+
+:::info
+
+阅读 [`@xstate/store` 文档](/docs/xstate-store) 了解更多信息。
+
+:::
+
+## 超能力
+
+我们在 `@xstate/store` 中加入了一些不错的功能，使状态管理尽可能顺利。⛵️
+
+首先，你可以开箱即用地获得**强类型**，适用于状态上下文和事件，而无需编写任何尴尬的泛型类型参数。当然，intellisense 对 `store.send({ … })` 中的事件也能很好地工作。请注意，要使这种魔法生效，需要 TypeScript 版本 5.4 或更高版本。
+
+```ts
+import { createStore } from '@xstate/store';
+
+const store = createStore({
+  count: 0
+}, {
+  inc: {
+    count: (context, event: { by: number }) => context.count + event.by
+  }
+});
+
+store.send({
+  type: 'inc', // 强类型！
+  by: 1 // 也是强类型！
+});
+
+// @ts-expect-error
+store.send({ type: 'unknownEvent' });
+```
+
+其次，有一些方便的方法可以在过渡中更新 `context`，类似于在 XState 中使用 `assign(…)`。你可以：
+
+- 使用对象来更新特定的 `context` 属性：
+  ```ts
+  const store = createStore({
+    count: 0
+  }, {
+    inc: {
+      count: (context, event: { by: number }) => context.count + event.by
+    }
+  });
+  ```
+- 使用对象将 `context` 属性更新为静态值：
+  ```ts
+  const store = createStore({
+    count: 0
+  }, {
+    reset: {
+      count: 0 // 不需要函数
+    }
+  });
+  ```
+- 使用函数更新整个 `context`（可以是部分或全部更新）：
+  ```ts
+  const store = createStore({
+    count: 0,
+    greeting: 'Hello'
+  }, {
+    adios: (context) => ({ greeting: 'Goodbye' }) // 与 { count } 合并
+  });
+  ```
+
+但是，如果你想让复杂的 `context` 更新变得更容易，你可以通过将 [Immer](https://immerjs.github.io/immer/docs/introduction) 的 `producer` 函数插入到 `createStoreWithProducer(producer, …)` 中来轻松使用 Immer：
+
+```ts
+import { createStoreWithProducer } from '@xstate/store';
+// highlight-next-line
+import { produce } from 'immer';
+
+const store = createStoreWithProducer(
+  // highlight-next-line
+  produce,
+  {
+    todos: []
+  }, {
+    addTodo: (context, event: { todo: string }) => {
+      // highlight-next-line
+      context.todos.push(event.todo);
+    }
+  });
+```
+
+## 接下来是什么
+
+`@xstate/store` 不计划添加新功能，因为它旨在保持小巧、简单和专注。然而，我们希望添加与其他框架（如 Vue、Angular、Svelte、Solid 等）的集成，并非常感谢社区对此的贡献。我们也不会忘记示例；请关注 XState 仓库的 `/examples` 目录中的示例，例如[这个小型 React 计数器示例](https://github.com/statelyai/xstate/tree/main/examples/store-counter-react)。
+
+除此之外，接下来你要做的就是试用它！如果你使用过 Zustand、Redux、Pinia 或 XState，你会发现 `@xstate/store` 非常熟悉。请记住，你应该选择最适合你需求和团队偏好的状态管理库。然而，如果需要，迁移到（或从）`@xstate/store` 到 Redux、Zustand、Pinia、XState 或其他状态管理库是很简单的。
+
+我们对 `@xstate/store` 的目标是提供一个简单但强大的_基于事件_的状态管理解决方案，并且是类型安全的。我们相信，间接（基于事件）的状态管理可以更好地组织应用逻辑，特别是当它变得复杂时，而 `@xstate/store` 是这种方法的一个很好的起点。
+
+试试看吧，如果有任何问题，请随时在[我们的 Discord](https://discord.gg/xstate) 中提问，或在 [XState GitHub 仓库](https://github.com/statelyai/xstate/issues) 中报告错误。我们一直在寻找改进体验的反馈！

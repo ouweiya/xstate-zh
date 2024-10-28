@@ -1,0 +1,165 @@
+---
+title: 无事件（always）转换
+---
+
+**无事件转换** 是在没有显式事件的情况下发生的转换。这些转换在转换启用时 *总是* 发生。
+
+无事件转换在 `always` 状态属性上指定，通常称为“always”转换。
+
+:::studio
+
+您可以在 Stately 的编辑器中轻松可视化和模拟无事件转换。[阅读更多关于 Stately 编辑器中的无事件转换](/docs/editor-states-and-transitions/#eventless-always-transitions)。
+
+:::
+
+```ts
+import { createMachine } from 'xstate';
+const machine = createMachine({
+  states: {
+    form: {
+      initial: 'valid',
+      states: {
+        valid: {},
+        invalid: {}
+      },
+      // highlight-start
+      always: {
+        guard: 'isValid',
+        target: 'valid',
+      }
+      // highlight-end
+    }
+  }
+});
+```
+
+## 无事件转换和守卫
+
+无事件转换在正常转换之后立即发生。它们只有在启用时才会发生，例如，当它们的[守卫](guards.mdx)为真时。这使得无事件转换在某些条件为真时执行操作非常有用。
+
+## 避免无限循环
+
+:::warningxstate
+
+由于没有守卫的“always”转换总是运行，您应该小心不要创建无限循环。XState 将帮助防止大多数无限循环场景。
+
+:::
+
+没有 `target` 也没有 `guard` 的无事件转换将导致无限循环。如果 `guard` 一直返回 true，使用 `guard` 和 `actions` 的转换可能会遇到无限循环。
+
+您应该通过以下方式定义无事件转换：
+
+- `target`
+- `guard` + `target`
+- `guard` + `actions`
+- `guard` + `target` + `actions`
+
+如果声明了 `target`，其值应与当前状态节点不同。
+
+## 何时使用
+
+当需要状态更改但没有特定触发器时，无事件转换会非常有用。
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  id: 'kettle',
+  initial: 'lukewarm',
+  context: {
+    temperature: 80,
+  },
+  states: {
+    lukewarm: {
+      on: {
+        boil: { target: 'heating' }
+      }
+    },
+    heating: {
+      always: {
+        guard: ({ context }) => context.temperature > 100,
+        target: 'boiling'
+      }
+    },
+    boiling: {
+      entry: ['turnOffLight'],
+      always: {
+        guard: ({ context }) => context.temperature <= 100,
+        target: 'heating'
+      }
+    }
+  },
+  on: {
+    'temp.update': {
+      actions: ['updateTemperature'],
+    }
+  },
+});
+```
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?mode=design&machineId=b2a299ef-efb8-4049-a242-2d197d27c931" title="带有无事件转换的水壶"/>
+
+## 无事件转换和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+无事件转换可能由任何事件启用，因此 `event` 类型是所有可能事件的联合。
+
+```ts
+const machine = createMachine({
+  types: {} as {
+    events:
+      | { type: 'greet'; message: string }
+      | { type: 'submit' };
+  },
+  // ...
+  always: {
+    actions: ({ event }) => {
+      event.type; // 'greet' | 'submit'
+    },
+    guard: ({ event }) => {
+      event.type; // 'greet' | 'submit'
+      return true;
+    },
+  },
+});
+```
+
+## 无事件转换备忘单
+
+### 备忘单：根无事件（always）转换
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  always: {
+    guard: 'isValid',
+    actions: ['doSomething'],
+  },
+  // ...
+});
+```
+
+### Cheatsheet: state eventless (always) transition
+
+```ts
+const machine = createMachine({
+  initial: 'start',
+  states: {
+    start: {
+      always: {
+        guard: 'isValid',
+        target: 'otherState',
+      },
+    },
+    otherState: {/* ... */}
+  }
+});
+```

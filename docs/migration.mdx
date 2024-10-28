@@ -1,0 +1,2534 @@
+---
+title: '从 XState v4 迁移到 v5'
+---
+
+下面的指南解释了如何从 XState 版本 4 迁移到版本 5。从 XState v4 迁移到 v5 应该是一个简单的过程。如果您遇到困难或有任何问题，请通过 [我们的 Discord](https://discord.gg/xstate) 联系 Stately 团队。
+
+:::new
+
+阅读 [David 关于 XState v5 发布的博客文章](/blog/2023-12-01-xstate-v5)。
+
+:::
+
+本指南适用于希望将代码库从 v4 更新到 v5 的开发人员，也适用于任何希望了解 v4 和 v5 之间差异的开发人员。
+
+:::video
+
+喜欢视频？[观看我们在 YouTube 上的 XState v5 网络研讨会](https://www.youtube.com/live/TRVjeil-y74)。
+
+:::
+
+## XState v5 和 TypeScript
+
+XState v5 及其相关库是用 TypeScript 编写的，并利用复杂的类型为您提供最佳的类型安全性和推断能力。**XState v5 需要 TypeScript 版本 5.0 或更高版本。** 为了获得最佳效果，请使用最新的 TypeScript 版本。
+
+请遵循以下指南以确保您的 TypeScript 项目准备好使用 XState v5：
+
+- 使用最新版本的 TypeScript，版本 5.0 或更高（必需）
+
+  ```bash
+  npm install typescript@latest --save-dev
+  ```
+
+- 在您的 `tsconfig.json` 文件中将 [`strictNullChecks`](https://www.typescriptlang.org/tsconfig#strictNullChecks) 设置为 `true`。这将确保我们的类型正常工作，并有助于捕捉代码中的错误（强烈推荐）
+
+  ```json5
+  // tsconfig.json
+  {
+    "compilerOptions": {
+      // ...
+      // highlight-next-line
+      "strictNullChecks": true
+      // 或将 `strict` 设置为 true，这包括 `strictNullChecks`
+      // "strict": true
+    }
+  }
+  ```
+
+- 在您的 `tsconfig.json` 文件中将 [`skipLibCheck`](https://www.typescriptlang.org/tsconfig#skipLibCheck) 设置为 `true`（推荐）
+
+## 创建机器和演员
+
+### 使用 `createMachine()`，而不是 `Machine()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`Machine(config)` 函数现在称为 `createMachine(config)`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  // ...
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { Machine } from 'xstate';
+
+const machine = Machine({
+  // ...
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `createActor()`，而不是 `interpret()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`interpret()` 函数已重命名为 `createActor()`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const machine = createMachine(/* ... */);
+
+// ✅
+const actor = createActor(machine, {
+  // actor 选项
+});
+```
+
+</TabItem>
+<TabItem value="v4" label="XState v4">
+
+```ts
+import { createMachine, interpret } from 'xstate';
+
+const machine = createMachine(/* ... */);
+
+// ❌ 已弃用
+const actor = interpret(machine, {
+  // actor 选项
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `machine.provide()`，而不是 `machine.withConfig()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`machine.withConfig()` 方法已重命名为 `machine.provide()`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const specificMachine = machine.provide({
+  actions: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  actors: {
+    /* ... */
+  },
+  // ...
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const specificMachine = machine.withConfig({
+  actions: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  services: {
+    /* ... */
+  },
+  // ...
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `input` 设置上下文，而不是 `machine.withContext()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`machine.withContext(...)` 方法不能再使用，因为 `context` 不能再直接覆盖。请改用 [input](input.mdx)：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  context: ({ input }) => ({
+    actualMoney: Math.min(input.money, 42),
+  }),
+});
+
+const actor = createActor(machine, {
+  input: {
+    money: 1000,
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  context: {
+    actualMoney: 0,
+  },
+});
+
+const moneyMachine = machine.withContext({
+  actualMoney: 1000,
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 动作默认按顺序执行，不再需要 `predictableActionArguments`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+动作现在默认按顺序执行，因此不再需要 `predictableActionArguments` 标志。分配动作将始终按定义的顺序运行。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  entry: [
+    ({ context }) => {
+      console.log(context.count); // 0
+    },
+    assign({ count: 1 }),
+    ({ context }) => {
+      console.log(context.count); // 1
+    },
+    assign({ count: 2 }),
+    ({ context }) => {
+      console.log(context.count); // 2
+    },
+  ],
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  predictableActionArguments: true,
+  entry: [
+    (context) => {
+      console.log(context.count); // 0
+    },
+    assign({ count: 1 }),
+    (context) => {
+      console.log(context.count); // 1
+    },
+    assign({ count: 2 }),
+    (context) => {
+      console.log(context.count); // 2
+    },
+  ],
+});
+```
+
+</TabItem>
+</Tabs>
+
+### `spawn()` 函数已被移除
+
+不再使用导入的 `spawn()` 函数在 `assign(...)` 动作中创建演员：
+
+- 使用 `spawnChild(...)` 动作创建器（首选）
+- 或者在 `assign(...)` 动作中使用传递给分配函数的第一个参数中的 `spawn(...)` 方法（如果需要在 `context` 中使用演员引用）
+
+阅读有关[生成演员](./spawn.mdx)的文档以获取更多信息。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+// highlight-next-line
+import { spawnChild, assign } from 'xstate';
+
+// 生成一个直接子演员：
+const machine1 = createMachine({
+  // ...
+  // highlight-start
+  entry: spawnChild('someChildLogic', {
+    id: 'someChild',
+  })
+  // highlight-end
+});
+
+// 生成一个在 [`context`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%5B%7B%22uri%22%3A%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FD%3A%2FDOC%2Fxstate-doc%2Fdocs%2Fmigration.mdx%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22pos%22%3A%7B%22line%22%3A216%2C%22character%22%3A2%7D%7D%5D%2C%221e3bedd9-7dd0-41fd-9f83-d76e3d7b4562%22%5D "Go to definition") 中有演员引用的子演员：
+const machine2 = createMachine({
+  // ...
+  entry: assign({
+    // highlight-next-line
+    child: ({ spawn }) => spawn('someChildLogic')
+  })
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌
+import { assign, spawn } from 'xstate';
+
+const machine = createMachine({
+  // ...
+  entry: assign({
+    // highlight-next-line
+    child: () => spawn('someChildLogic')
+  })
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `getNextSnapshot(…)` 代替 `machine.transition(…)`
+
+`machine.transition(…)` 方法现在需要一个“演员范围”作为第三个参数，该参数由 `createActor(…)` 内部创建。相反，使用 `getNextSnapshot(…)` 根据当前快照和事件从某些演员逻辑中获取下一个快照：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import {
+  createMachine,
+  // highlight-next-line
+  getNextSnapshot
+} from 'xstate';
+
+const machine = createMachine({
+  // ...
+});
+
+// highlight-start
+const nextState = getNextSnapshot(
+  machine,
+  machine.resolveState({ value: 'green' }),
+  { type: 'timer' }
+);
+// highlight-end
+
+nextState.value; // yellow
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  // ...
+});
+
+const nextState = machine.transition(
+  'green',
+  { type: 'timer' }
+);
+
+nextState.value; // yellow
+```
+
+</TabItem>
+</Tabs>
+
+### 显式发送事件而不是使用 `autoForward`
+
+`autoForward` 属性在调用配置中已被移除。相反，请显式发送事件。
+
+通常，不推荐将所有事件转发给演员。相反，只转发演员需要的特定事件。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someSource',
+    id: 'someId'
+  },
+  // highlight-start
+  always: {
+    // 将事件转发给被调用的演员
+    // 这在 XState v5 中不会导致无限循环
+    actions: sendTo('someId', ({ event }) => event)
+  }
+  // highlight-end
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someSource',
+    id: 'someId'
+    // highlight-next-line
+    autoForward: true // deprecated
+  }
+});
+```
+
+</TabItem>
+</Tabs>
+
+## 状态
+
+### 使用 `state.getMeta()` 代替 `state.meta`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`state.meta` 属性已重命名为 `state.getMeta()`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+state.getMeta();
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+state.meta;
+```
+
+</TabItem>
+</Tabs>
+
+### `state.toStrings()` 方法已被移除
+
+:::breakingchange
+
+重大变更
+
+:::
+
+```ts
+import { type StateValue } from 'xstate';
+
+export function getStateValueStrings(stateValue: StateValue): string[] {
+  if (typeof stateValue === 'string') {
+    return [stateValue];
+  }
+  const valueKeys = Object.keys(stateValue);
+
+  return valueKeys.concat(
+    ...valueKeys.map((key) =>
+      getStateValueStrings(stateValue[key]!).map((s) => key + '.' + s)
+    )
+  );
+}
+
+// ...
+
+const stateValueStrings = getStateValueStrings(stateValue);
+// 例如 ['green', 'yellow', 'red', 'red.walk', 'red.wait', …]
+```
+
+### 使用 `state._nodes` 代替 `state.configuration`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`state.configuration` 属性已重命名为 `state._nodes`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+state._nodes;
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+state.configuration;
+```
+
+</TabItem>
+</Tabs>
+
+### 从检查 API 读取事件，而不是 `state.events`
+
+`state.events` 属性已被移除，因为事件不是状态的一部分，除非您明确将它们添加到状态的 `context` 中。请使用 [检查 API](./inspection.mdx) 来观察事件，或者将事件明确添加到状态的 `context` 中：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import { createActor } from 'xstate';
+import { someMachine } from './someMachine';
+
+const actor = createActor(someMachine, {
+  // highlight-start
+  inspect: (inspEvent) => {
+    if (inspEvent.type === '@xstate.event') {
+      console.log(inspEvent.event);
+    }
+  }
+  // highlight-end
+});
+```
+
+</TabItem>
+
+<TabItem value="v5-alt" label="XState v5 (context)">
+
+```ts
+// ✅
+import { setup, createActor } from 'xstate';
+
+const someMachine = setup({
+  // ...
+  actions: {
+    // highlight-start
+    recordEvent: assign({
+      event: ({ event }) => event
+    })
+    // highlight-end
+  }
+}).createMachine({
+  context: { event: undefined },
+  on: {
+    someEvent: {
+      // ...
+      // highlight-next-line
+      actions: ['recordEvent']
+    }
+  }
+});
+
+const someActor = createActor(someMachine);
+someActor.subscribe(snapshot => {
+  // highlight-next-line
+  console.log(snapshot.context.event);
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { interpret } from 'xstate';
+import { someMachine } from './someMachine';
+
+const actor = interpret(someMachine);
+actor.subscribe(state => {
+  // highlight-next-line
+  console.log(state.event); // Removed
+});
+```
+
+</TabItem>
+</Tabs>
+
+## 事件和转换
+
+### 实现函数接收单个参数
+
+:::breakingchange
+
+重大变更
+
+:::
+
+实现函数现在接收一个单一参数：一个包含 `context`、`event` 和其他属性的对象。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  entry: ({ context, event }) => {
+    // ...
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  entry: (context, event) => {
+    // ...
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### `send()` 已被移除；请使用 `raise()` 或 `sendTo()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`send(...)` 动作创建器已被移除。请使用 `raise(...)` 发送事件给自己，或使用 `sendTo(...)` 发送事件给其他演员。
+
+阅读有关 [`sendTo` 动作](actions.mdx#send-to-action) 和 [`raise` 动作](actions.mdx#raise-action) 的文档以获取更多信息。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  entry: [
+    // Send an event to self
+    raise({ type: 'someEvent' }),
+
+    // Send an event to another actor
+    sendTo('someActor', { type: 'someEvent' }),
+  ],
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  entry: [
+    // Send an event to self
+    send({ type: 'someEvent' }),
+
+    // Send an event to another actor
+    send({ type: 'someEvent' }, { to: 'someActor' }),
+  ],
+});
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目以使用 `sendTo` 或 `raise` 代替 `send`。
+
+### 使用 `enqueueActions()` 代替 `pure()` 和 `choose()`
+
+`pure()` 和 `choose()` 方法已被移除。请改用 `enqueueActions()`。
+
+对于 `pure()` 动作：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+entry: [
+  enqueueActions(({ context, event, enqueue }) => {
+    enqueue('action1');
+    enqueue('action2');
+  })
+];
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+entry: [
+  pure(() => {
+    return [
+      'action1',
+      'action2'
+    ]
+  })
+];
+```
+
+</TabItem>
+</Tabs>
+
+对于 `choose()` 动作：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+entry: [
+  enqueueActions(({ enqueue, check }) => {
+    if (check('someGuard')) {
+      enqueue('action1');
+      enqueue('action2');
+    }
+  })
+];
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+entry: [
+  choose([
+    {
+      guard: 'someGuard',
+      actions: ['action1', 'action2']
+    }
+  ]),
+];
+```
+
+</TabItem>
+</Tabs>
+
+### `actor.send()` 不再接受字符串类型
+
+:::breakingchange
+
+重大变更
+
+:::
+
+字符串事件类型不再可以发送，例如 `actor.send(event)`；您必须发送一个事件对象：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+actor.send({ type: 'someEvent' });
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+actor.send('someEvent');
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目以传递对象给 `.send()`。
+
+### `state.can()` 不再接受字符串类型
+
+:::breakingchange
+
+重大变更
+
+:::
+
+字符串事件类型不再可以发送，例如 `state.can(event)`；您必须发送一个事件对象：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+state.can({ type: 'someEvent' });
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+state.can('someEvent');
+```
+
+</TabItem>
+</Tabs>
+
+### 受保护的转换使用 `guard`，而不是 `cond`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+受保护转换的 `cond` 属性现在称为 `guard`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  on: {
+    someEvent: {
+      guard: 'someGuard',
+      target: 'someState',
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  on: {
+    someEvent: {
+      // renamed to `guard` in v5
+      cond: 'someGuard',
+      target: 'someState',
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `params` 传递参数给动作和守卫
+
+:::breakingchange
+
+重大变更
+
+:::
+
+动作对象和守卫对象中除了 `type` 之外的属性应该嵌套在 `params` 属性下；`{ type: 'someType', message: 'hello' }` 变为 `{ type: 'someType', params: { message: 'hello' }}`。这些 `params` 然后会作为动作或守卫实现的第二个参数传递：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  entry: {
+    type: 'greet',
+    params: {
+      message: 'Hello world',
+    },
+  },
+  on: {
+    someEvent: {
+      guard: { type: 'isGreaterThan', params: { value: 42 } },
+    },
+  },
+}).provide({
+  actions: {
+    greet: ({ context, event }, params) => {
+      console.log(params.message); // 'Hello world'
+    },
+  },
+  guards: {
+    isGreaterThan: ({ context, event }, params) => {
+      return event.value > params.value;
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine(
+  {
+    entry: {
+      type: 'greet',
+      message: 'Hello world',
+    },
+    on: {
+      someEvent: {
+        cond: { type: 'isGreaterThan', value: 42 },
+      },
+    },
+  },
+  {
+    actions: {
+      greet: (context, event, { action }) => {
+        console.log(action.message); // 'Hello world'
+      },
+    },
+    guards: {
+      isGreaterThan: (context, event, { guard }) => {
+        return event.value > guard.value;
+      },
+    },
+  },
+);
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目中的动作和守卫对象，将 `type` 之外的属性移动到 `params` 对象中。
+
+### 使用通配符 `*` 转换，而不是严格模式
+
+:::breakingchange
+
+重大变更
+
+:::
+
+严格模式已被移除。如果您希望在未处理的事件上抛出错误，您应该使用通配符转换：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  on: {
+    knownEvent: {
+      // ...
+    },
+    // highlight-start
+    '*': {
+      // unknown event
+      actions: ({ event }) => {
+        throw new Error(`Unknown event: ${event.type}`);
+      },
+    },
+    // highlight-end
+  },
+});
+
+const actor = createActor(machine);
+
+actor.subscribe({
+  // highlight-start
+  error: (err) => {
+    console.error(err);
+  }
+  // highlight-end
+});
+
+actor.start();
+
+actor.send({ type: 'unknownEvent' });
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  strict: true,
+  on: {
+    knownEvent: {
+      // ...
+    },
+  },
+});
+
+const service = interpret(machine);
+
+service.send({ type: 'unknownEvent' });
+```
+
+</TabItem>
+</Tabs>
+
+### 使用显式的无事件（`always`）转换
+
+:::breakingchange
+
+重大变更
+
+:::
+
+无事件（“always”）转换现在必须通过状态节点的 `always: { ... }` 属性定义；它们不能再通过空字符串定义：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  states: {
+    someState: {
+      always: {
+        target: 'anotherState',
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  states: {
+    someState: {
+      on: {
+        '': {
+          target: 'anotherState',
+        },
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目以使用 `always` 进行无事件转换。
+
+### 使用 `reenter: true`，而不是 `internal: false`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`internal: false` 现在是 `reenter: true`
+
+以前用 `internal: false` 指定的外部转换现在用 `reenter: true` 指定：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  on: {
+    someEvent: {
+      target: 'sameState',
+      reenter: true,
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  on: {
+    someEvent: {
+      target: 'sameState',
+      internal: false,
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 转换默认是内部的，而不是外部的
+
+:::breakingchange
+
+重大变更
+
+:::
+
+所有转换默认是**内部的**。此更改与在状态节点上定义的转换相关，这些状态节点具有 `entry` 或 `exit` 动作、调用的演员或延迟转换 (`after`)。如果您依赖于以前 XState v4 的行为，即转换隐式重新进入状态节点，请使用 `reenter: true`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      entry: 'someAction',
+      on: {
+        // highlight-start
+        someEvent: {
+          target: 'compoundState.childState',
+          // Reenters the `compoundState` state,
+          // just like an external transition
+          reenter: true,
+        },
+        selfEvent: {
+          target: 'childState',
+          reenter: true
+        }
+        // highlight-end
+      },
+      initial: 'childState',
+      states: {
+        childState: {},
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      entry: 'someAction',
+      on: {
+        // highlight-start
+        someEvent: {
+          // implicitly external
+          target: 'compoundState.childState', // non-relative target
+        },
+        selfEvent: {
+          target: 'compoundState'
+        }
+        // highlight-end
+      },
+      initial: 'childState',
+      states: {
+        childState: {},
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      after: {
+        1000: {
+          target: 'compoundState.childState',
+          reenter: true, // make it external explicitly!
+        },
+      },
+      initial: 'childState',
+      states: {
+        childState: {},
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      after: {
+        1000: {
+          // implicitly external
+          target: 'compoundState.childState', // non-relative target
+        },
+      },
+      initial: 'childState',
+      states: {
+        childState: {},
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 子状态节点总是重新进入
+
+:::breakingchange
+
+重大变更
+
+:::
+
+当复合状态节点上定义的转换（无论是外部还是内部）目标是子状态节点时，子状态节点总是重新进入。这一变化仅在子状态节点具有 `entry` 或 `exit` 动作、调用的演员或延迟转换 (`after`) 时相关。添加 `stateIn` 守卫以防止子状态的非预期重新进入：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      on: {
+        someEvent: {
+          guard: not(stateIn({ compoundState: 'childState' })),
+          target: '.childState',
+        },
+      },
+      initial: 'childState',
+      states: {
+        childState: {
+          entry: 'someAction',
+        },
+      },
+    },
+  },
+})
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+
+const machine = createMachine({
+  // ...
+  states: {
+    compoundState: {
+      on: {
+        someEvent: {
+          // Implicitly internal; childState not re-entered
+          target: '.childState',
+        },
+      },
+      initial: 'childState',
+      states: {
+        childState: {
+          entry: 'someAction',
+        },
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+
+</Tabs>
+
+### 使用 `stateIn()` 验证状态转换，而不是 `in`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`in: 'someState'` 转换属性已被移除。请改用 `guard: stateIn(...)`：
+
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  on: {
+    someEvent: {
+      guard: stateIn({ form: 'submitting' }),
+      target: 'someState',
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  on: {
+    someEvent: {
+      in: '#someMachine.form.submitting'
+      target: 'someState',
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `actor.subscribe()` 代替 `state.history`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`state.history` 属性已被移除。如果您需要前一个快照，应该通过 `actor.subscribe(...)` 来维护。
+
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+let previousSnapshot = actor.getSnapshot();
+
+actor.subscribe((snapshot) => {
+  doSomeComparison(previousSnapshot, snapshot);
+  previousSnapshot = snapshot;
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+actor.subscribe((state) => {
+  doSomeComparison(state.history, state);
+});
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目以使用 `actor.subscribe()` 跟踪历史记录。
+
+### 动作可以抛出错误而无需 `escalate`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`escalate` 动作创建器已被移除。在 XState v5 中，动作可以抛出错误，并且它们将按预期传播。错误可以使用 `onError` 转换进行处理。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const childMachine = createMachine({
+  // 这将发送到调用此子机器的父机器
+  // highlight-start
+  entry: () => {
+    throw new Error('This is some error')
+  }
+  // highlight-end
+});
+
+const parentMachine = createMachine({
+  invoke: {
+    src: childMachine,
+    // highlight-start
+    onError: {
+      actions: ({ context, event }) => {
+        console.log(event.error);
+        //  {
+        //    type: ...,
+        //    error: {
+        //      message: 'This is some error'
+        //    }
+        //  }
+      }
+    }
+    // highlight-end
+  }
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const childMachine = createMachine({
+  // highlight-start
+  entry: escalate('This is some error')
+  // highlight-end
+});
+
+/* ... */
+```
+
+</TabItem>
+</Tabs>
+
+## Actors
+
+### 使用 actor 逻辑创建器代替函数作为 `invoke.src`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+可用的 actor 逻辑创建器有：
+
+- `createMachine`
+- `fromPromise`
+- `fromObservable`
+- `fromEventObservable`
+- `fromTransition`
+- `fromCallback`
+
+有关更多信息，请参阅 [Actors](actors.mdx)。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import { fromPromise, setup } from 'xstate';
+
+const machine = setup({
+  actors: {
+    getUser: fromPromise(async ({ input }: { input: { userId: string } }) => {
+      const data = await getData(input.userId);
+      // ...
+      return data;
+    })
+  }
+}).createMachine({
+  invoke: {
+    src: 'getUser',
+    input: ({ context, event }) => ({
+      userId: context.userId,
+    }),
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  invoke: {
+    src: (context) => async () => {
+      const data = await getData(context.userId);
+
+      // ...
+      return data;
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import { fromCallback, createMachine } from 'xstate';
+
+const machine = createMachine({
+  invoke: {
+    src: fromCallback(({ sendBack, receive, input }) => {
+      // ...
+    }),
+    input: ({ context, event }) => ({
+      userId: context.userId,
+    }),
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  invoke: {
+    src: (context, event) => (sendBack, receive) => {
+      // context.userId
+      // ...
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import { fromEventObservable, createMachine } from 'xstate';
+import { interval, mapTo } from 'rxjs';
+
+const machine = createMachine({
+  invoke: {
+    src: fromEventObservable(() =>
+      interval(1000).pipe(mapTo({ type: 'tick' })),
+    ),
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { createMachine } from 'xstate';
+import { interval, mapTo } from 'rxjs';
+
+const machine = createMachine({
+  invoke: {
+    src: () => interval(1000).pipe(mapTo({ type: 'tick' })),
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `invoke.input` 代替 `invoke.data`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`invoke.data` 属性已被移除。如果您想为被调用的演员提供上下文，请使用 `invoke.input`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const someActor = createMachine({
+  // The input must be consumed by the invoked actor:
+  context: ({ input }) => input,
+  // ...
+});
+
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someActor',
+    input: {
+      value: 42,
+    },
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const someActor = createMachine({
+  // ...
+});
+
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someActor',
+    data: {
+      value: 42,
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 在最终状态中使用 `output` 代替 `data`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+要从达到最终状态的机器生成输出数据，请使用顶级 `output` 属性代替 `data`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+    },
+  },
+  output: {
+    answer: 42,
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+      data: {
+        answer: 42,
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+
+要提供动态生成的输出，请将 `invoke.data` 替换为 `invoke.output` 并添加顶级 `output` 属性：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+      output: ({ event }) => ({
+        answer: event.someValue,
+      }),
+    },
+  },
+  output: ({ event }) => event.output,
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+      data: (context, event) => {
+        answer: event.someValue,
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 不要在 `input` 或 `output` 中使用属性映射器
+
+:::breakingchange
+
+重大变更
+
+:::
+
+如果您想为被调用的演员提供动态上下文，或从最终状态生成动态输出，请使用函数而不是带有属性映射器的对象。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someActor',
+    input: ({ context, event }) => ({
+      value: event.value,
+    }),
+  },
+});
+
+// 被调用的 actor 必须消费 input：
+const someActor = createMachine({
+  // ...
+  context: ({ input }) => input,
+});
+
+// 生成机器输出
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+    },
+  },
+  output: ({ context, event }) => ({
+    answer: context.value,
+  }),
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  // ...
+  invoke: {
+    src: 'someActor',
+    data: {
+      value: (context, event) => event.value, // a property mapper
+    },
+  },
+});
+
+// 生成机器输出
+const machine = createMachine({
+  // ...
+  states: {
+    finished: {
+      type: 'final',
+      data: {
+        answer: (context, event) => context.value, // a property mapper
+      },
+    },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `options` 对象上的 `actors` 属性代替 `services`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`services` 已重命名为 `actors`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const specificMachine = machine.provide({
+  actions: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  actors: {
+    /* ... */
+  },
+  // ...
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const specificMachine = machine.withConfig({
+  actions: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  services: {
+    /* ... */
+  },
+  // ...
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `subscribe()` 监听变化，而不是 `onTransition()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`actor.onTransition(...)` 方法已被移除。请改用 `actor.subscribe(...)`。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const actor = createActor(machine);
+actor.subscribe((state) => {
+  // ...
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const actor = interpret(machine);
+actor.onTransition((state) => {
+  // ...
+});
+```
+
+</TabItem>
+</Tabs>
+
+### `createActor()`（原 `interpret()`）接受第二个参数来恢复状态
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`interpret(machine).start(state)` 现在是 `createActor(machine, { snapshot }).start()`
+
+要在特定状态下恢复演员，现在应将状态作为 `createActor(logic, options)` 的 `options` 参数的 `snapshot` 属性传递。`actor.start()` 方法不再接受 `state` 参数。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const actor = createActor(machine, { snapshot: someState });
+actor.start();
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const actor = interpret(machine);
+actor.start(someState);
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `actor.getSnapshot()` 获取演员的状态
+
+:::breakingchange
+
+重大变更
+
+:::
+
+在演员启动后订阅演员 (`actor.subscribe(...)`) 将不再立即发出当前快照。相反，请从 `actor.getSnapshot()` 读取当前快照：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const actor = createActor(machine);
+actor.start();
+
+const initialState = actor.getSnapshot();
+
+actor.subscribe((state) => {
+  // Snapshots from when the subscription was created
+  // Will not emit the current snapshot until a transition happens
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const actor = interpret(machine);
+actor.start();
+
+actor.subscribe((state) => {
+  // Current snapshot immediately emitted
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 遍历事件而不是使用 `actor.batch()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+用于批量处理事件的 `actor.batch([...])` 方法已被移除。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+for (const event of events) {
+  actor.send(event);
+}
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+actor.batch(events);
+```
+
+</TabItem>
+</Tabs>
+
+**迁移前提示：** 更新 v4 项目以循环遍历事件并将它们作为批处理发送。
+
+### 使用 `snapshot.status === 'done'` 代替 `snapshot.done`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`snapshot.done` 属性已被移除，该属性以前在状态机演员的快照对象中。请改用 `snapshot.status === 'done'`，它适用于所有演员：
+
+<Tabs>
+
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const actor = createActor(machine);
+actor.start();
+
+actor.subscribe((snapshot) => {
+  if (snapshot.status === 'done') {
+    // ...
+  }
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const actor = interpret(machine);
+actor.start();
+
+actor.subscribe((state) => {
+  if (state.done) {
+    // ...
+  }
+});
+```
+
+</TabItem>
+</Tabs>
+
+### `state.nextEvents` 已被移除
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`state.nextEvents` 属性已被移除，因为它不是确定可以发送给演员的下一个事件的完全安全/可靠的方法。如果您想根据以前的行为获取下一个事件，可以使用此辅助函数：
+
+```ts
+import type { AnyMachineSnapshot } from 'xstate';
+
+function getNextEvents(snapshot: AnyMachineSnapshot) {
+  return [...new Set([...snapshot._nodes.flatMap((sn) => sn.ownEvents)])];
+}
+
+// 代替 `state.nextEvents`:
+const nextEvents = getNextEvents(state);
+```
+
+## TypeScript
+
+### 使用 `types` 代替 `schema`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`machineConfig.schema` 属性已重命名为 `machineConfig.types`：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  types: {} as {
+    context: {
+      /* ...*/
+    };
+    events: {
+      /* ...*/
+    };
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  schema: {} as {
+    context: {
+      /* ...*/
+    };
+    events: {
+      /* ...*/
+    };
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### 使用 `types.typegen` 代替 `tsTypes`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+:::warningxstate
+
+XState Typegen 尚未完全支持 XState v5。然而，仍然可以在没有 Typegen 的情况下实现强类型的机器。
+
+:::
+
+`machineConfig.tsTypes` 属性已被重命名，现在位于 `machineConfig.types.typegen`。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+const machine = createMachine({
+  types: {} as {
+    typegen: {};
+    context: {
+      /* ...*/
+    };
+    events: {
+      /* ...*/
+    };
+  },
+});
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+const machine = createMachine({
+  tsTypes: {};
+  schema: {} as {
+    context: {
+      /* ...*/
+    };
+    events: {
+      /* ...*/
+    };
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+## `@xstate/react`
+
+### `useInterpret()` 现在是 `useActorRef()`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`useInterpret()` 钩子（用于返回 `actorRef`，在 XState v4 中称为 "service"）已重命名为 `useActorRef()`。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```ts
+// ✅
+import { useActorRef } from '@xstate/react';
+
+const actorRef = useActorRef(machine); // or any other logic
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```ts
+// ❌ 已弃用
+import { useInterpret } from '@xstate/react';
+
+const service = useInterpret(machine);
+```
+
+</TabItem>
+</Tabs>
+
+
+### `useActor(logic)` 现在接受 actor 逻辑，而不是 actor
+
+:::breakingchange
+
+重大变更
+
+:::
+
+`useActor(logic)` 钩子现在接受 _actor 逻辑_（例如 `fromPromise(...)`、`createMachine(...)` 等）而不是现有的 `ActorRef`。
+
+要使用现有的 `ActorRef`，请使用 `actor.send(...)` 发送事件，并使用 `useSelector(actor, ...)` 获取快照：
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```tsx
+// ✅
+import { useSelector } from '@xstate/react';
+
+function Component({ someActorRef }) {
+  const state = useSelector(someActorRef, (s) => s);
+
+  return (
+    <button onClick={() => someActorRef.send({ type: 'someEvent' })} />
+  );
+}
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```tsx
+// ❌ 已弃用
+import { useActor } from '@xstate/react';
+
+function Component({ someActorRef }) {
+  const [state, send] = useActor(someActorRef);
+
+  return (
+    <button onClick={() => send({ type: 'someEvent' })} />
+  );
+}
+```
+
+</TabItem>
+</Tabs>
+
+## 使用 `machine.provide()` 在钩子中提供实现
+
+:::breakingchange
+
+重大变更
+
+:::
+
+对于动态创建具有提供实现的机器，`useMachine(...)`、`useActor(...)` 和 `useActorRef(...)` 钩子不再接受：
+
+- 作为第一个参数的惰性机器创建器
+- 传递给第二个参数的实现
+
+相反，`machine.provide(...)` 应直接传递给第一个参数。
+
+`@xstate/react` 包将具有相同配置的机器视为相同的机器，因此它将最小化重新渲染，但仍会保持提供的实现是最新的。
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```tsx
+// ✅
+import { useMachine } from '@xstate/react';
+import { someMachine } from './someMachine';
+
+function Component(props) {
+  const [state, send] = useMachine(someMachine.provide({
+    actions: {
+      doSomething: () => {
+        props.onSomething?.(); // Kept up-to-date
+      }
+    }
+  }));
+
+  // ...
+}
+```
+
+</TabItem>
+
+<TabItem value="v4 arguments" label="XState v4">
+
+```tsx
+// ❌ 已弃用
+import { useMachine } from '@xstate/react';
+import { someMachine } from './someMachine';
+
+function Component(props) {
+  const [state, send] = useMachine(someMachine, {
+    actions: {
+      doSomething: () => {
+        props.onSomething?.();
+      }
+    }
+  });
+
+  // ...
+}
+```
+
+</TabItem>
+
+<TabItem value="v4 function" label="XState v4">
+
+```tsx
+// ❌ 已弃用
+import { useMachine } from '@xstate/react';
+import { someMachine } from './someMachine';
+
+function Component(props) {
+  const [state, send] = useMachine(() => someMachine.withConfig({
+    actions: {
+      doSomething: () => {
+        props.onSomething?.();
+      }
+    }
+  }));
+
+  // ...
+}
+```
+
+</TabItem>
+</Tabs>
+
+## `@xstate/vue`
+
+### `useMachine()` 现在返回 `snapshot` 而不是 `state`，并返回 `actor` 而不是 `service`
+
+:::breakingchange
+
+重大变更
+
+:::
+
+为了与 XState 和相关库保持一致的命名：
+
+- `state` 现在是 `snapshot`
+- `service` 现在是 `actor`
+
+<Tabs>
+<TabItem value="v5" label="XState v5">
+
+```tsx
+// ✅
+import { useMachine } from '@xstate/vue';
+
+// ...
+
+const {
+  // highlight-next-line
+  snapshot, // Renamed from `state`
+  send,
+  // highlight-next-line
+  actor // Renamed from `service`
+} = useMachine(someMachine)
+```
+
+</TabItem>
+
+<TabItem value="v4" label="XState v4">
+
+```tsx
+// ❌ 已弃用
+import { useMachine } from '@xstate/vue';
+
+// ...
+
+const {
+  // highlight-next-line
+  state, // Renamed to `snapshot` in @xstate/vue 3.0.0
+  send,
+  // highlight-next-line
+  service // Renamed to `actor` in @xstate/vue 3.0.0
+} = useMachine(someMachine)
+```
+
+</TabItem>
+</Tabs>
+
+
+## 新功能
+
+- [创建演员系统](system.mdx)
+- [新的演员逻辑创建器](/docs/actors#actor-logic-creators)
+- [为调用和生成的演员提供深度持久性](persistence.mdx)
+- [为状态机和演员提供输入数据](input.mdx)
+- [为演员指定输出“完成数据”](output.mdx)
+- [部分事件描述符（部分通配符）](/docs/transitions#partial-wildcard-transitions)
+- [排队动作](/docs/actions#enqueue-actions)
+- [更高级的守卫](/docs/guards#higher-level-guards)
+- [用于指定类型和强类型状态值的设置 API](/docs/machines#providing-implementations)
+- [检查 API](inspection.mdx)
+
+## 常见问题
+
+### Stately Studio 何时会兼容 XState v5？
+
+我们目前正在努力使 [Stately Studio](studio.mdx) 兼容 XState v5。导出到 XState v5（JavaScript 或 TypeScript）已经可用。我们正在努力支持 XState v5 的新功能，例如高阶守卫、部分事件通配符和机器输入/输出。
+
+在我们的路线图上为 [Stately Studio + XState v5 兼容性](https://feedback.stately.ai/editor/p/stately-studio-xstate-v5-compatibility) 点赞或发表评论，以随时了解我们的进展。
+
+### XState VS Code 扩展何时会兼容 XState v5？
+
+[XState VS Code 扩展](xstate-vscode-extension.mdx) 尚未兼容 XState v5。该扩展是我们的优先事项，相关工作已经在进行中。
+
+在我们的路线图上为 [VS Code 扩展的 XState v5 兼容性](https://feedback.stately.ai/devtools/p/xstate-v5-compatibility-for-vs-code-extension) 点赞或发表评论，以随时了解我们的进展。
+
+### XState v5 何时会有 typegen？
+
+XState v5 中的 TypeScript 推断功能得到了极大改进。特别是通过 `setup()` API 和动态参数等功能，主要的 typegen 用例不再需要。
+
+然而，我们认识到可能仍然存在一些特定的 typegen 用例。在我们的路线图上为 [XState v5 的 typegen](https://feedback.stately.ai/xstate/p/typegen-for-xstate-v5) 点赞或发表评论，以随时了解我们的进展。
+
+### 如何同时使用 XState v4 和 v5？
+
+您可以在同一个项目中同时使用 XState v4 和 v5，这对于逐步迁移到 XState v5 非常有用。要同时使用这两个版本，请手动或通过 CLI 将 `"xstate5": "npm:xstate@5"` 添加到您的 `package.json` 中：
+
+```bash
+npm i xstate5@npm:xstate@5
+```
+
+然后，您可以在代码中导入 XState v5 版本：
+
+```ts
+import { createMachine } from 'xstate5';
+// or { createMachine as createMachine5 } from 'xstate5';
+```
+
+如果您需要使用不同版本的集成包，例如 `@xstate/react`，您可以使用类似上面的策略，但需要在集成包中链接到正确版本的 XState。这可以通过使用脚本来完成：
+
+```bash
+npm i xstate5@npm:xstate@5 @xstate5/react@npm:@xstate/react@4 --force
+```
+
+```js
+// scripts/xstate5-react-script.js
+const fs = require('fs-extra');
+const path = require('path');
+
+const rootNodeModules = path.join(__dirname, '..', 'node_modules');
+
+fs.ensureSymlinkSync(
+  path.join(rootNodeModules, 'xstate5'),
+  path.join(rootNodeModules, '@xstate5', 'react', 'node_modules', 'xstate'),
+);
+```
+
+```json5
+// package.json
+"scripts": {
+  "postinstall": "node scripts/xstate5-react-script.js"
+}
+```
+
+然后，您可以在代码中使用兼容 XState v5 的 `@xstate/react` 版本：
+
+```ts
+import { useMachine } from '@xstate5/react';
+// or { useMachine as useMachine5 } from '@xstate5/react';
+import { createMachine } from 'xstate5';
+// or { createMachine as createMachine5 } from 'xstate5';
+
+// ...
+```

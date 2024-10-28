@@ -1,0 +1,64 @@
+---
+title: 可观察的 Actor
+---
+
+可观察的 actor 是表示可观察值流的 actor。这使得与像 RxJS 这样的可观察库进行互操作变得容易。
+
+:::tip
+
+所有 XState actor 都是可观察的。
+
+:::
+
+## 可观察的 actor 功能
+
+| | 功能 | 备注 |
+| --- | --- | --- |
+| ❌ | 接收事件 | 可观察的 actor 当前不能接收事件。 |
+| ✅ | 发送事件 | 可观察的 actor 可以向它有引用的其他 actor 发送事件，例如在其 `input` 中提供的那些。 |
+| ❌ | 生成 actor | 可观察的 actor 当前不能生成新的 actor。 |
+| ✅ | 输入 | 你可以向可观察的 actor 提供 `input`。 |
+| ❌ | 输出 | 可观察的 actor 当前不产生输出——它们会无限期地处于活动状态，直到它们被停止、完成或发生错误。 |
+
+## 可观察的 actor 逻辑
+
+你可以使用 `fromObservable(...)` actor 逻辑创建器定义可观察的 actor 逻辑，该创建器接受一个返回可观察对象的函数，并返回可用于创建可观察 actor 的 actor 逻辑。
+
+```ts
+import { fromObservable, createActor } from 'xstate';
+import { interval } from 'rxjs';
+
+// highlight-next-line
+const intervalLogic = fromObservable(() => interval(1000));
+
+const intervalActor = createActor(intervalLogic);
+intervalActor.subscribe(snapshot => {
+  console.log(snapshot.context);
+});
+
+intervalActor.start();
+// 每秒记录 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
+```
+
+## 可观察的 actor 输入
+
+你可以通过将 `input` 作为第二个参数的 `input` 属性传递给 `createActor(...)` 函数来向可观察的 actor 提供 `input`。在可观察逻辑 (`fromObservable(observableFn)`) 中，你可以读取传递给可观察函数的第一个参数的 `input` 属性：
+
+```ts
+import { fromObservable, createActor } from 'xstate';
+import { interval } from 'rxjs';
+
+// highlight-next-line
+const intervalLogic = fromObservable(({ input }) => interval(input.interval));
+
+const intervalActor = createActor(intervalLogic, {
+  // highlight-next-line
+  input: { interval: 10_000 }
+});
+intervalActor.subscribe(snapshot => {
+  console.log(snapshot.context);
+});
+
+intervalActor.start();
+// 每 10 秒记录 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
+```

@@ -1,0 +1,229 @@
+---
+title: 快速开始
+description: '从这里开始，直接进入 XState 和 Stately Studio。'
+---
+
+本快速入门指南将帮助你开始使用 XState 和 Stately Studio。你将学习如何创建状态机，从该状态机创建一个 actor，向该 actor 发送事件，并观察状态变化。
+
+:::studio
+
+开始使用 Stately Studio 的最快方法是访问 [state.new](https://state.new)。在那里，你会找到一个包含所有状态图基础知识的入门机器，供你编辑。[阅读更多关于 Stately Studio 的信息](studio.mdx)。
+
+:::
+
+## 安装 XState v5
+
+[XState](xstate.mdx) 是一个用于 JavaScript 和 TypeScript 的可视化状态管理和编排库。
+
+使用你喜欢的包管理器安装 XState v5：
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm install xstate
+```
+
+</TabItem>
+
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm install xstate
+```
+
+</TabItem>
+
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add xstate
+```
+
+</TabItem>
+</Tabs>
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+## 创建一个机器
+
+在 XState 中，[机器](machines.mdx) 是一个包含所有 [actor](actors.mdx) 逻辑的对象。在这个例子中，我们将创建一个简单的切换机器，它可以处于两种状态之一：`Active` 或 `Inactive`。`toggle` 事件将状态在 `Active` 和 `Inactive` 之间切换。
+
+```js
+import { createMachine } from 'xstate';
+
+const toggleMachine = createMachine({
+  id: 'toggle',
+  initial: 'Inactive',
+  states: {
+    Inactive: {
+      on: { toggle: 'Active' },
+    },
+    Active: {
+      on: { toggle: 'Inactive' },
+    },
+  },
+});
+```
+
+[阅读我们关于状态机和状态图的介绍](state-machines-and-statecharts.mdx) 以熟悉这些概念。
+
+## 创建一个 actor 并发送事件
+
+[机器逻辑](/docs/actors#actor-logic) 可用于创建一个 actor。[actor](actors.mdx) 是一个可以接收消息（事件）、发送消息并根据接收到的消息改变其行为的运行过程。
+
+```js
+import { createMachine, createActor } from 'xstate';
+
+const toggleMachine = createMachine({
+  // 上面的机器代码
+});
+
+// 创建一个可以发送事件的 actor。
+// 注意：actor 尚未启动！
+const actor = createActor(toggleMachine);
+
+// 订阅来自 actor 的快照（发出的状态变化）
+actor.subscribe((snapshot) => {
+  console.log('Value:', snapshot.value);
+});
+
+// 启动 actor
+actor.start(); // 记录 'Inactive'
+
+// 发送事件
+actor.send({ type: 'toggle' }); // 记录 'Active'
+actor.send({ type: 'toggle' }); // 记录 'Inactive'
+```
+
+## 使用延迟转换
+
+[延迟转换](delayed-transitions.mdx) 是在指定时间间隔后自动发生的转换。
+
+```js
+export const toggleMachine = createMachine({
+  id: 'toggle',
+  initial: 'Inactive',
+  states: {
+    Inactive: {
+      on: { toggle: 'Active' },
+    },
+    Active: {
+      on: { toggle: 'Inactive' },
+      after: { 2000: 'Inactive' },
+    },
+  },
+});
+```
+
+## 处理上下文数据
+
+[上下文](context.mdx) 是你在状态机 actor 中存储数据的方式。
+
+```ts
+import { assign, createMachine } from 'xstate';
+
+export const toggleMachine = createMachine({
+  id: 'toggle',
+  context: { count: 0 },
+  initial: 'Inactive',
+  states: {
+    Inactive: {
+      on: { toggle: 'Active' },
+    },
+    Active: {
+      entry: assign({
+        count: ({ context }) => context.count + 1
+      }),
+      on: { toggle: 'Inactive' },
+      after: { 2000: 'Inactive' },
+    },
+  },
+});
+```
+
+## 添加输入
+
+[输入](input.mdx) 是如何向机器 actor 提供初始数据的方式。
+
+[守卫](guards.mdx) 用于有条件地允许或禁止转换。
+
+```ts
+import { assign, createMachine } from 'xstate';
+
+export const toggleMachine = createMachine({
+  id: 'toggle',
+  // 高亮下一行
+  context: ({ input }) => ({
+    count: 0,
+    // 高亮下一行
+    maxCount: input.maxCount
+  }),
+  initial: 'Inactive',
+  states: {
+    Inactive: {
+      on: {
+        toggle: {
+          // 仅在 count 小于 maxCount 时触发切换转换
+          // 高亮下一行
+          guard: ({ context }) => context.count < context.maxCount,
+          target: 'Active'
+        }
+      }
+    },
+    Active: {
+      entry: assign({
+        count: ({ context }) => context.count + 1
+      }),
+      on: { toggle: 'Inactive' },
+      after: { 2000: 'Inactive' },
+    },
+  },
+});
+
+const actor = createActor(toggleMachine, {
+  // 高亮下一行
+  input: { maxCount: 10 }
+});
+
+actor.subscribe(snapshot => {
+  console.log('State:', snapshot.value);
+});
+
+actor.start();
+
+actor.send({ type: 'toggle' });
+```
+
+## 将你的机器与框架一起使用
+
+- [查看我们所有的包](/docs/category/xstate-packages)
+- [了解更多关于 `@xstate/react` 包的信息](xstate-react.mdx)
+
+```jsx
+import { useMachine } from '@xstate/react';
+import { toggleMachine } from './toggleMachine';
+
+const App = () => {
+  const [state, send] = useMachine(toggleMachine);
+
+  return (
+    <div>
+      <div>Value: {state.value}</div>
+      <button onClick={() => send({ type: 'toggle' })}>
+        Toggle
+      </button>
+    </div>
+  );
+};
+```
+
+- [使用 XState v5 模板](https://github.com/statelyai/xstate/tree/main/templates)
+- [查找更多示例](examples.mdx)
+- [从 XState V4 迁移到 XState V5](migration.mdx)

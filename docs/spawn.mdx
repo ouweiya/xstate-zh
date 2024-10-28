@@ -1,0 +1,192 @@
+---
+title: 'Spawn'
+description: '您可以使用生成来运行演员。使用生成创建的演员是生成演员，而使用调用创建的演员是调用演员。'
+---
+
+有时调用[演员](actors.mdx)可能不够灵活。例如，您可能希望：
+
+- 调用跨越_多个_状态的子机器
+- 调用_动态数量_的演员
+
+您可以通过**生成**演员而不是调用来实现这一点。通过生成创建的演员是**生成演员**，而通过调用创建的演员是**调用演员**。
+
+:::tip
+[阅读有关生成和调用演员之间的区别](actors.mdx#invoking-and-spawning-actors)。
+:::
+
+有两种生成方式：`spawnChild`动作创建器，或`assign`的`spawn`辅助函数。
+
+在大多数情况下，优先使用`spawnChild`，它会导致生成一个演员，并且可以接受一个可配置的ID以便稍后引用该演员：
+
+```ts
+createMachine({
+  entry: spawnChild(childMachine, {
+    id: 'child'
+  })
+})
+```
+
+您可以使用 `spawnChild` 生成多个演员：
+
+```ts
+createMachine({
+  entry: [
+    spawnChild(childMachine, { id: 'child-1' }),
+    spawnChild(childMachine, { id: 'child-2' }),
+    spawnChild(childMachine, { id: 'child-3' })
+  ]
+})
+```
+
+您还可以使用 `assign` 动作创建器提供的 `spawn` 辅助函数，它允许您将生成的演员的引用（`ActorRef`）存储在机器的 `context` 中：
+
+```ts
+const parentMachine = createMachine({
+  entry: [
+    assign({
+      childMachineRef: ({ spawn }) => spawn(childMachine, { id: 'child' })
+    })
+  ]
+});
+```
+
+但是，如果您使用 `spawn`，**请确保在不再需要生成的演员时将 ActorRef 从 `context` 中移除以防止内存泄漏**：
+
+```ts
+actions: [
+  stopChild('child'),
+  assign({ childMachineRef: undefined })
+]
+```
+
+您可以根据需要 `spawn` 任意数量的演员：
+
+```ts
+const childMachine = createMachine({
+  /* ... */
+});
+
+const parentMachine = createMachine({
+  entry: [
+    assign({
+      childMachineRefs: ({ spawn }) => [
+        // highlight-start
+        spawn(childMachine),
+        spawn(childMachine),
+        spawn(childMachine),
+        // highlight-end
+      ],
+    }),
+  ],
+});
+```
+
+如果您不需要跟踪生成演员的引用（例如：对于匿名生成的演员），您可以使用 `spawnChild` 动作创建器。它不会返回引用，但会向 XState 解释器指示应生成一个新演员：
+
+```ts
+createMachine({
+  entry: spawnChild('workflow', {
+    id: 'workflow'
+  })
+})
+```
+
+## API
+
+```ts
+actions: assign({
+  ref: ({ spawn }) => spawn(fromPromise(...), {
+    id: 'some-id',
+  })
+})
+```
+
+- `spawn(actorBehavior, options?)`
+  - `actorBehavior` - 要生成的演员的行为。这可以是函数、promise、observable 或回调。
+  - `options` - 生成演员的选项。
+    - `id` (可选) - 演员的 ID。这用于在状态机中引用演员。
+    - `input` (可选) - 传递给演员的输入。
+    - `systemId` (可选) - 标识演员的字符串，系统范围内唯一。
+
+## 来源
+
+- 内联: `spawn(fromPromise(...))`
+- 引用: `spawn('getUser')`
+  - `.provide({ actors })`
+
+## 生命周期
+
+- 在生成时创建并启动
+- 在机器停止时停止
+- 可以手动停止
+
+## 停止演员
+
+您可以通过“停止子演员”动作停止子演员。此动作由 `stopChild(id)` 动作创建器创建。
+
+```ts
+import { setup, stopChild, fromPromise } from 'xstate';
+
+const machine = setup({
+  actors: {
+    something: fromPromise(async () => {
+      // 一些演员逻辑
+      return 'Some response';
+    })
+  }
+}).createMachine({
+  context: ({ spawn }) => ({
+    something: spawn('something', { id: 'thing' })
+  }),
+  // ...
+  on: {
+    'thing.stop': {
+      // highlight-next-line
+      actions: stopChild('thing')
+    },
+    'thing.stopFromContext': {
+      // highlight-next-line
+      actions: stopChild(({ context }) => context.something)
+    }
+  }
+});
+```
+
+停止子演员并不会将其从 `context` 中移除。要将其从 context 中移除，请使用 [`assign(...)` 动作创建器](./context.mdx)：
+
+```ts
+import { setup, stopChild } from 'xstate';
+
+const machine = setup({
+  // ...
+}).createMachine({
+  context: ({ spawn }) => ({
+    something: spawn('something', { id: 'thing' })
+  }),
+  // ...
+  on: {
+    'thing.stop': {
+      actions: [
+        stopChild('thing'),
+        assign({ something: undefined })
+      ]
+    }
+  }
+});
+```
+
+## 生成和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+_即将推出_
+
+## 生成速查表
+
+_即将推出_

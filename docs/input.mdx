@@ -1,0 +1,425 @@
+---
+title: 'Input'
+---
+
+输入是指提供给状态机的数据，这些数据会影响其行为。在 [XState](xstate.mdx) 中，您可以在使用 `createActor(machine, { input })` 函数创建 [actor](actors.mdx) 时，通过第二个参数提供输入：
+
+```ts
+import { createActor, setup } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as {
+      userId: string;
+      feedback: string;
+      rating: number;
+    },
+    // highlight-start
+    input: {} as {
+      userId: string;
+      defaultRating: number;
+    }
+    // highlight-end
+  }
+}).createMachine({
+  // highlight-next-line
+  context: ({ input }) => ({
+    // highlight-next-line
+    userId: input.userId,
+    feedback: '',
+    // highlight-next-line
+    rating: input.defaultRating,
+  }),
+  // ...
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  // highlight-start
+  input: {
+    userId: '123',
+    defaultRating: 5,
+  },
+  // highlight-end
+});
+```
+
+:::studio
+
+输入功能即将登陆 Stately Studio 的编辑器。
+
+:::
+
+## 创建带有输入的 actor
+
+您可以通过从 actor 逻辑创建器的第一个参数的 `input` 属性读取输入，将 `input` 传递给任何类型的 actor，例如 `fromPromise()`、`fromTransition()`、`fromObservable()` 和其他 actor 逻辑创建器。
+
+**使用 `fromPromise()` 的输入：**
+
+```ts
+import { createActor, fromPromise } from 'xstate';
+
+const userFetcher = fromPromise(({ input }: { input: { userId: string } }) => {
+  return fetch(`/users/${input.userId}`).then((res) => res.json());
+});
+
+const userFetcherActor = createActor(userFetcher, {
+  // highlight-start
+  input: {
+    userId: '123',
+  },
+  // highlight-end
+}).start();
+
+userFetcherActor.onDone((data) => {
+  console.log(data);
+  // logs the user data for userId 123
+});
+```
+
+**Input with `fromTransition()`:**
+
+```ts
+import { createActor, fromTransition } from 'xstate';
+
+const counter = fromTransition((state, event)) => {
+  if (event.type === 'INCREMENT') {
+    return { count: state.count + 1 };
+  }
+  return state;
+}, ({ input }: { input: { startingCount?: number } }) => ({
+  count: input.startingCount ?? 0,
+});
+
+const counterActor = createActor(counter, {
+  // highlight-start
+  input: {
+    startingCount: 10,
+  }
+});
+```
+
+**Input with `fromObservable()`:**
+
+```ts
+import { createActor, fromObservable } from 'xstate';
+import { interval } from 'rxjs';
+
+const intervalLogic = fromObservable(({ input }: { input: { interval: number } }) => {
+  return interval(input.interval);
+});
+
+const intervalActor = createActor(intervalLogic, {
+  // highlight-start
+  input: {
+    interval: 1000,
+  },
+  // highlight-end
+})
+
+intervalActor.start();
+```
+
+## 初始事件输入
+
+当 actor 启动时，它会自动向自身发送一个名为 `xstate.init` 的特殊事件。如果在 `createActor(logic, { input })` 函数中提供了 `input`，它将包含在 `xstate.init` 事件中：
+
+```ts
+import { createActor, createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // highlight-start
+  entry: ({ event }) => {
+    console.log(event.input);
+    // logs { userId: '123', defaultRating: 5 }
+  },
+  // highlight-end
+  // ...
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  input: {
+    userId: '123',
+    defaultRating: 5,
+  },
+}).start();
+```
+
+## 使用输入调用 actor
+
+您可以通过 `invoke` 配置的 `input` 属性向被调用的 actor 提供输入：
+
+```ts
+import { createActor, setup } from 'xstate';
+
+const feedbackMachine = setup({
+  actors: {
+    liveFeedback: fromPromise(({ input }: { input: { domain: string } }) => {
+      return fetch(`https://${input.domain}/feedback`).then((res) =>
+        res.json(),
+      );
+    }),
+  }
+}).createMachine({
+  invoke: {
+    src: 'liveFeedback',
+    // highlight-start
+    input: {
+      domain: 'stately.ai',
+    },
+    // highlight-end
+  },
+});
+```
+
+`invoke.input` 属性可以是静态输入值，也可以是返回输入值的函数。该函数将接收一个包含当前 `context` 和 `event` 的对象：
+
+```ts
+import { createActor, setup } from 'xstate';
+
+const feedbackMachine = setup({
+  actors: {
+    // highlight-start
+    fetchUser: fromPromise(({ input }) => {
+      return fetch(`/users/${input.userId}`).then((res) => res.json());
+    }),
+    // highlight-end
+  },
+}).createMachine({
+  context: {
+    userId: '',
+    feedback: '',
+    rating: 0,
+  },
+  invoke: {
+    src: 'fetchUser',
+    // highlight-next-line
+    input: ({ context }) => ({ userId: context.userId }),
+  },
+  // ...
+});
+```
+
+## 生成带有输入的 actor
+
+您可以通过 `spawn` 配置的 `input` 属性向生成的 actor 提供输入：
+
+```ts
+import { createActor, setup, type AnyActorRef } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as {
+      userId: string;
+      feedback: string;
+      rating: number;
+      emailRef: AnyActorRef;
+    }
+  },
+  actors: {
+    // highlight-start
+    emailUser: fromPromise(({ input }: { input: { userId: string } }) => {
+      return fetch(`/users/${input.userId}`, {
+        method: 'POST',
+        // ...
+      });
+    }),
+    // highlight-end
+  },
+}).createMachine({
+  context: {
+    userId: '',
+    feedback: '',
+    rating: 0,
+    emailRef: null,
+  },
+  // ...
+  on: {
+    'feedback.submit': {
+      actions: assign({
+        emailRef: ({ context, spawn }) => {
+          return spawn('emailUser', {
+            // highlight-next-line
+            input: { userId: context.userId },
+          });
+        },
+      }),
+    },
+  },
+  // ...
+});
+```
+
+## 用例
+
+输入对于创建可使用不同输入值配置的可重用机器非常有用。
+
+- 替代了旧的为机器编写工厂函数的方法：
+
+```ts
+// 旧方法：使用工厂函数
+const createFeedbackMachine = (userId, defaultRating) => {
+  return createMachine({
+    context: {
+      userId,
+      feedback: '',
+      rating: defaultRating,
+    },
+    // ...
+  });
+};
+
+const feedbackMachine1 = createFeedbackMachine('123', 5);
+
+const feedbackActor1 = createActor(feedbackMachine1).start();
+
+// 新方法：使用输入
+const feedbackMachine = createMachine({
+  context: ({ input }) => ({
+    userId: input.userId,
+    feedback: '',
+    rating: input.defaultRating,
+  }),
+  // ...
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  input: {
+    userId: '123',
+    defaultRating: 5,
+  },
+});
+```
+
+### 传递新数据给 actor
+
+更改输入不会导致 actor 重新启动。您需要向 actor 发送一个事件以传递新数据给 actor：
+
+```tsx
+const Component = (props) => {
+  const feedbackActor = useActor(feedbackMachine, {
+    input: {
+      userId: props.userId,
+      defaultRating: props.defaultRating,
+    },
+  });
+
+  useEffect(() => {
+    feedbackActor.send({
+      type: 'userId.change',
+      userId: props.userId,
+    });
+  }, [props.userId]);
+
+  // ...
+};
+```
+
+## 输入和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+您可以在机器设置的 `types.input` 属性中强类型化机器的 `input`。
+
+```ts
+import { createActor, setup } from 'xstate';
+
+const machine = setup({
+  types: {
+    // highlight-start
+    input: {} as {
+      userId: string;
+      defaultRating: number;
+    };
+    // highlight-end
+    context: {} as {
+      userId: string;
+      feedback: string;
+      rating: number;
+    };
+  },
+}).createMachine({
+  context: ({ input }) => ({
+    userId: input.userId,
+    feedback: '',
+    rating: input.defaultRating,
+  }),
+});
+
+const actor = createActor(machine, {
+  input: {
+    userId: '123',
+    defaultRating: 5,
+  },
+});
+```
+
+## 输入速查表
+
+使用下面的 XState 输入速查表快速入门。
+
+### 速查表：提供输入
+
+```ts
+const feedbackActor = createActor(feedbackMachine, {
+  input: {
+    userId: '123',
+    defaultRating: 5,
+  },
+});
+```
+
+### 速查表：为被调用的 actor 提供输入
+
+```ts
+const feedbackMachine = createMachine({
+  invoke: {
+    src: 'liveFeedback',
+    input: {
+      domain: 'stately.ai',
+    },
+  },
+});
+```
+
+### 速查表：为被调用的 actor 提供动态输入
+
+```ts
+const feedbackMachine = createMachine({
+  context: {
+    userId: 'some-user-id',
+  },
+  invoke: {
+    src: 'fetchUser',
+    input: ({ context }) => ({ userId: context.userId }),
+  },
+});
+```
+
+### 速查表：为生成的 actor 提供输入
+
+```ts
+const feedbackMachine = createMachine({
+  context: {
+    userId: '',
+  },
+  // ...
+  on: {
+    'feedback.submit': {
+      actions: assign({
+        emailRef: ({ context, spawn }) => {
+          return spawn('emailUser', {
+            input: { userId: context.userId },
+          });
+        },
+      }),
+    },
+  },
+  // ...
+});
+```

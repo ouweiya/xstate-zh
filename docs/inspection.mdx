@@ -1,0 +1,111 @@
+---
+title: '检查'
+---
+
+检查 API 是一种检查状态机状态转换和演员系统中每个方面的方法。包括：
+
+- 演员生命周期
+- 演员事件通信
+- 演员快照更新
+
+:::new
+
+[我们最近发布了 Stately Inspector](/blog/2024-01-15-stately-inspector/)，这是一种通用工具，使您能够通过 Stately 编辑器的可视化功能来检查任何应用程序（前端或后端）的状态。
+
+[了解更多关于 Stately Inspector](inspector.mdx)
+
+:::
+
+检查 API 允许您将一个“检查器”（观察者）附加到演员系统的根部，以观察检查事件：
+
+```tsx
+const actor = createActor(machine, {
+  inspect: (inspectionEvent) => {
+  // type: '@xstate.actor' or
+  // type: '@xstate.snapshot' or
+  // type: '@xstate.event'
+  console.log(inspectionEvent);
+  }
+});
+```
+
+检查器将接收系统中每个演员的检查事件，使您能够详细了解从单个演员的变化到演员之间的通信的所有情况。
+
+## 检查事件
+
+检查事件是具有 `type` 属性的事件对象，该属性指示检查事件的类型。有三种类型的检查事件：
+
+- `@xstate.actor` 用于 [演员检查事件](#actor-inspection-events)
+- `@xstate.event` 用于 [事件检查事件](#event-inspection-events)
+- `@xstate.snapshot` 用于 [快照检查事件](#snapshot-inspection-events)
+
+## 演员检查事件
+
+演员检查事件 (`@xstate.actor`) 在系统中的演员被创建时发出。它包含以下属性：
+
+- `type` - 检查事件的类型，总是 `'@xstate.actor'`
+- `actorRef` - 演员的引用
+- `rootId` - 系统根演员的会话 ID
+
+演员检查事件的示例：
+
+```js
+{
+  type: '@xstate.actor',
+  actorRef: {/* Actor reference */},
+  rootId: 'x:0',
+}
+```
+
+## 事件检查事件
+
+事件检查事件 (`@xstate.event`) 在事件发送到演员时发出。它包含以下属性：
+
+- `type` - 检查事件的类型，总是 `'@xstate.event'`
+- `actorRef` - 事件目标演员的引用
+- `rootId` - 系统根演员的会话 ID
+- `event` - 被发送的事件对象
+- `sourceRef` - 发送事件的源演员的引用，如果源未知或事件直接发送到演员，则为 `undefined`
+
+事件检查事件的示例：
+
+```js
+{
+  type: '@xstate.event',
+  actorRef: {/* Actor reference */},
+  rootId: 'x:0',
+  event: {
+    type: 'someEvent',
+    message: 'hello'
+  },
+  sourceRef: {/* Actor reference */},
+}
+```
+
+## 快照检查事件
+
+快照检查事件 (`@xstate.snapshot`) 在演员的快照更新时发出。它包含以下属性：
+
+- `type` - 检查事件的类型，总是 `'@xstate.snapshot'`
+- `actorRef` - 演员的引用
+- `rootId` - 系统根演员的会话 ID
+- `snapshot` - 演员的最新快照
+- `event` - 导致快照更新的事件
+
+快照检查事件的示例：
+
+```js
+{
+  type: '@xstate.snapshot',
+  actorRef: {/* Actor reference */},
+  rootId: 'x:0',
+  snapshot: {
+    status: 'active',
+    context: { count: 31 },
+    // ...
+  },
+  event: {
+    type: 'increment'
+  }
+}
+```

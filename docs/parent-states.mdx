@@ -1,0 +1,193 @@
+---
+title: 父状态
+---
+
+状态可以包含更多状态，也称为**子状态**。这些子状态仅在父状态处于活动状态时才处于活动状态。
+
+子状态嵌套在其父状态内。父状态也称为**复合状态**。
+
+:::studio
+
+您可以在 Stately 的编辑器中轻松可视化和模拟父状态和子状态。[阅读更多关于 Stately 编辑器中的父状态](/docs/editor-states-and-transitions/#parent-and-child-states)。
+
+:::
+
+:::tip
+
+观看我们在 YouTube 上的[“父状态和子状态”视频](https://www.youtube.com/watch?v=aUhEdeIf_mQ&list=PLvWgkXBB3dd4I_l-djWVU2UGPyBgKfnTQ&index=5)（1 分 6 秒）。
+
+:::
+
+<EmbedMachine
+  name="视频播放器"
+  embedURL="https://stately.ai/registry/editor/embed/e13bef2b-bb13-4465-96ac-0bc25340688e?machineId=9ba5377c-aab3-4465-8909-4eea499622fa"
+/>
+
+在上面的视频播放器中，*Opened* 状态是 *Playing*、*Paused* 和 *Stopped* 状态的父状态。这些状态、它们的转换和事件都嵌套在 *Opened* 状态内。
+
+## 根状态
+
+状态机本身就是一个父状态！它是根状态，并且始终处于活动状态。
+
+拥有没有其他状态的状态机是正常的。这对于建模仅通过在转换中执行操作来处理事件的简单状态机非常有用。
+
+以下是一个简单的计数机示例，具有 `increment`、`decrement` 和 `reset` 事件，除了隐式顶级根状态外没有其他状态：
+
+```ts
+import { createMachine } from 'xstate';
+
+const countingMachine = createMachine({
+  id: 'counting',
+  on: {
+    increment: {
+      actions: assign({ count: ({ context }) => context.count + 1 }),
+    },
+    decrement: {
+      actions: assign({ count: ({ context }) => context.count - 1 }),
+    },
+    reset: {
+      actions: assign({ count: 0 }),
+    },
+  },
+  // No child states!
+});
+```
+
+## 初始状态
+
+父状态的[初始状态](initial-states.mdx)是进入父状态时进入的状态。父状态_必须_有一个初始状态。
+
+您可以通过父状态的 `initial` 属性指定初始状态，该属性是 `states` 对象中初始状态的键：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // highlight-next-line
+  initial: 'question',
+  states: {
+    // highlight-start
+    question: {
+      // ...
+    },
+    // highlight-end
+    form: {
+      // ...
+    },
+    thanks: {
+      // ...
+    },
+  },
+});
+```
+
+即使父状态从未被直接定位，而是其子状态被定位，也需要在 `.initial` 属性中指定初始状态。在这种情况下，`.initial` 属性可以是任何子状态。
+
+## 父状态的转换
+
+定位父状态的转换将进入父状态及其初始状态。如果该初始状态是父状态，则将进入该状态的初始状态，依此类推。
+
+当接收到事件时，首先检查最深层子节点上的转换，以查看是否有任何转换被该事件启用。如果没有转换被启用，则检查父状态上的转换。如果父状态上的转换没有被启用，则检查父状态的父状态上的转换，依此类推。
+
+父状态上的转换可以定位子（或后代）状态。这对于建模应该转到特定子状态的转换非常有用，无论当前活动的是哪个子状态。
+
+子状态上的转换可以定位父状态，尽管这并不常见。从子状态到其父状态（或祖先状态）的转换也将进入父状态的初始状态。
+
+## 子最终状态
+
+当父状态的子最终状态被达到时，该父状态被认为是“完成”的。该父状态的 `onDone` 转换将自动被执行。
+
+```ts
+import { createMachine } from 'xstate';
+
+const coffeeMachine = createMachine({
+  initial: 'preparation',
+  states: {
+    preparation: {
+      initial: 'weighing',
+      states: {
+        weighing: {
+          on: {
+            weighed: {
+              target: 'grinding'
+            }
+          }
+        },
+        grinding: {
+          on: {
+            ground: 'ready'
+          }
+        },
+        // highlight-start
+        ready: {
+            // 父状态 'preparation' 的子最终状态
+          type: 'final'
+        }
+        // highlight-end
+      },
+      // highlight-start
+      // 当子最终状态被达到时将执行转换
+      onDone: {
+        target: 'brewing'
+      }
+      // highlight-end
+    },
+    brewing: {
+      // ...
+    }
+  }
+});
+```
+
+## 建模
+
+_即将推出_
+
+- 从扁平结构开始；不要过早创建父状态
+- 如果许多状态有共同的外部转换，这是将它们放入父状态的一个好迹象
+- 父状态也代表子过程。
+
+## 父状态备忘单
+
+### 备忘单：创建父状态
+
+```ts
+// 机器是根级父状态
+const machine = createMachine({
+  // 机器的初始子状态
+  initial: 'parent',
+  states: {
+    parent: {
+      // 父状态的初始子状态
+      initial: 'child1',
+      states: {
+        child1: {
+          on: {
+            // 定位到兄弟状态
+            toSibling: {
+              target: 'child2',
+            },
+          },
+        },
+        child2: {
+          initial: 'grandchild1',
+          states: {
+            grandchild1: {},
+            grandchild2: {},
+          },
+        },
+      },
+      on: {
+        // 定位到子状态
+        toChild: {
+          target: '.child1',
+        },
+        // 定位到孙子状态
+        toGrandchild: {
+          target: '.child2.grandchild2',
+        },
+      },
+    },
+  },
+});
+```

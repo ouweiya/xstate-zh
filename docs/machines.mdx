@@ -1,0 +1,335 @@
+---
+title: '状态机'
+---
+
+[状态机](state-machines-and-statecharts.mdx) 是描述某物行为的模型，例如一个 [actor](actors.mdx)。[有限状态](finite-states.mdx) 机描述了当一个 [事件](transitions.mdx) 发生时，actor 的状态如何转换到另一个状态。
+
+:::tip
+
+如果你还没有阅读过我们的[状态机和状态图的介绍](state-machines-and-statecharts.mdx)，请先阅读！
+
+:::
+
+## 状态机的好处
+
+状态机有助于构建可靠和健壮的软件。[阅读更多关于状态机的好处](state-machines-and-statecharts.mdx#benefits-of-state-machines)。
+
+## 创建一个状态机
+
+在 [XState](xstate.mdx) 中，状态机（称为“机器”）是使用 `createMachine(config)` 函数创建的：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  id: 'feedback',
+  initial: 'question',
+  states: {
+    question: {
+      on: {
+        'feedback.good': {
+          target: 'thanks',
+        },
+      },
+    },
+    thanks: {
+      // ...
+    },
+    // ...
+  },
+});
+```
+
+在这个例子中，机器有两个状态：`question` 和 `thanks`。当 `feedback.good` 事件发送到机器时，`question` 状态会转换到 `thanks` 状态：
+
+```ts
+const feedbackActor = createActor(feedbackMachine);
+
+feedbackActor.subscribe((state) => {
+  console.log(state.value);
+});
+
+feedbackActor.start();
+// logs 'question'
+
+feedbackActor.send({ type: 'feedback.good' });
+// logs 'thanks'
+```
+
+## 从机器创建 actor
+
+机器包含 actor 的逻辑。[actor](actors.mdx) 是机器的运行实例；换句话说，它是由机器描述其逻辑的实体。可以从同一个机器创建多个 actor，每个 actor 都会表现出相同的行为（对接收到的事件的反应），但它们彼此独立并拥有自己的状态。
+
+要创建 actor，请使用 `createActor(machine)` 函数：
+
+```ts
+import { createActor } from 'xstate';
+
+const feedbackActor = createActor(feedbackMachine);
+
+feedbackActor.subscribe((state) => {
+  console.log(state.value);
+});
+
+feedbackActor.start();
+// logs 'question'
+```
+
+你还可以从[其他类型的逻辑](/docs/actors/#actor-logic)创建 actor，例如[函数](/docs/actors/#fromtransition)、[promise](/docs/actors/#frompromise) 和 [observable](/docs/actors/#fromobservable)。
+
+## 提供实现
+
+机器实现是与状态机逻辑（状态和转换）无直接关系的语言特定代码。这包括：
+
+- [动作](actions.mdx)，即一次性执行的副作用。
+- [actor](actors.mdx)，即可以与机器 actor 通信的实体。
+- [守卫](guards.mdx)，即决定是否应进行转换的条件。
+- [延迟](delayed-transitions.mdx)，即指定在延迟转换发生或延迟事件发送之前的时间。
+
+可以在创建机器时通过 `setup({...})` 函数提供默认实现，然后可以使用 JSON 可序列化的字符串和/或对象（例如 `{ type: 'doSomething' }`）引用这些实现。
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  // 默认实现
+  actions: {
+    doSomething: () => {
+      console.log('Doing something!');
+    },
+  },
+  actors: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  delays: {
+    /* ... */
+  },
+}).createMachine({
+  entry: { type: 'doSomething' },
+  // ... 机器的其余配置
+});
+
+const feedbackActor = createActor(feedbackMachine)
+
+feedbackActor.start();
+// logs 'Doing something!'
+```
+
+你可以通过 `machine.provide(...)` 提供实现来覆盖默认实现。此函数将创建一个具有相同配置但具有提供的实现的新机器：
+
+```ts
+const customFeedbackMachine = feedbackMachine.provide({
+  actions: {
+    doSomething: () => {
+      console.log('Doing something else!');
+    },
+  },
+});
+
+const feedbackActor = createActor(customFeedbackMachine)
+
+feedbackActor.start();
+// 记录 'Doing something else!'
+```
+
+## 确定下一个状态
+
+当你创建一个状态机 actor 时，下一个状态由机器的当前状态和发送到 actor 的事件决定。如果你想在 actor 之外确定下一个状态，可以使用 `getNextSnapshot(…)` 函数：
+
+```ts
+import { getNextSnapshot } from 'xstate';
+import { feedbackMachine } from './feedbackMachine';
+
+const nextSnapshot = getNextSnapshot(
+  feedbackMachine,
+  feedbackMachine.resolveState({ value: 'question' }),
+  { type: 'feedback.good' }
+);
+
+console.log(nextSnapshot.value);
+// logs 'thanks'
+```
+
+你还可以使用 `getInitialSnapshot(…)` 函数确定机器的初始状态：
+
+```ts
+import { getInitialSnapshot } from 'xstate';
+import { feedbackMachine } from './feedbackMachine';
+
+const initialSnapshot = getInitialSnapshot(
+  feedbackMachine,
+  // optional input
+  { defaultRating: 3 }
+);
+
+console.log(initialSnapshot.value);
+// logs 'question'
+```
+
+## 指定类型
+
+你可以在机器设置中使用 `.types` 属性指定 TypeScript 类型：
+
+```ts
+import { setup } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as { feedback: string },
+    events: {} as
+      | { type: 'feedback.good' }
+      | { type: 'feedback.bad' }
+  },
+  actions: {
+    logTelemetry: () => {
+      // TODO: 实现
+    }
+  }
+}).createMachine({
+  // ...
+});
+```
+
+这些类型将在整个机器配置以及创建的机器和 actor 中推断出来，以便诸如 `machine.transition(...)` 和 `actor.send(...)` 之类的方法将是类型安全的。
+
+## 类型生成
+
+[类型生成](/docs/developer-tools#xstate-typegen-files) 目前尚不支持 XState v5。然而，通过上述的 `setup(...)` 函数和/或 `.types` 属性，你可以为你的机器提供强类型支持。
+
+[阅读更多关于设置状态机的信息](./setup.mdx)。
+
+## API
+
+即将推出…
+
+## 机器和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+为你的机器提供强类型支持的最佳方式是使用 `setup(...)` 函数和/或 `.types` 属性。
+
+```ts
+import { setup, fromPromise } from 'xstate';
+
+const someAction = () => {/* ... */};
+
+const someGuard = ({ context }) => context.count <= 10;
+
+const someActor = fromPromise(async () => {
+  // ...
+  return 42;
+});
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as { count: number },
+    events: {} as
+      | { type: 'increment' }
+      | { type: 'decrement' }
+  },
+  actions: {
+    someAction
+  },
+  guards: {
+    someGuard
+  },
+  actors: {
+    someActor
+  }
+}).createMachine({
+  initial: 'counting',
+  states: {
+    counting: {
+      entry: { type: 'someAction' }, // 强类型
+      invoke: {
+        src: 'someActor', // 强类型
+        onDone: {
+          actions: ({ event }) => {
+        event.output; // 强类型为 number
+          }
+        }
+      },
+      on: {
+        increment: {
+          guard: { type: 'someGuard' }, // 强类型
+          actions: assign({
+            count: ({ context }) => context.count + 1
+          })
+        }
+      },
+    }
+  }
+});
+```
+
+## 机器速查表
+
+使用下面的 XState 机器速查表快速入门。
+
+### 速查表：创建一个机器
+
+```ts
+import { createMachine } from 'xstate';
+
+const machine = createMachine({
+  initial: 'start',
+  states: {
+    start: {},
+    // ...
+  },
+});
+```
+
+### 速查表：设置带有实现的机器
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  actions: {
+    someAction: () => {/* ... */}
+  },
+  guards: {
+    someGuard: ({ context }) => context.count <= 10
+  },
+  actors: {
+    someActor: fromPromise(async () => {/* ... */})
+  },
+  delays: {
+    someDelay: () => 1000
+  }
+}).createMachine({
+  // ... 机器的其余配置
+})
+```
+
+### 速查表：提供实现
+
+```ts
+import { createMachine } from 'xstate';
+import { someMachine } from './someMachine'
+
+const machineWithImpls = someMachine.provide({
+  actions: {
+    /* ... */
+  },
+  actors: {
+    /* ... */
+  },
+  guards: {
+    /* ... */
+  },
+  delays: {
+    /* ... */
+  },
+});
+```

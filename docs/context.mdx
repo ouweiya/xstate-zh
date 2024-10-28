@@ -1,0 +1,267 @@
+---
+title: '上下文'
+---
+
+在 XState 中，`context` 是你在状态机 [actor](actors.mdx) 中存储数据的方式。
+
+`context` 属性在所有状态中都可用，用于存储与 actor 相关的数据。`context` 对象是不可变的，因此你不能直接修改它。相反，对于状态机逻辑，你可以使用 `assign(...)` 动作来更新 `context`。
+
+`context` 属性是 _可选的_；如果状态机只指定了 [有限状态](finite-states.mdx) 而没有外部上下文数据，则可能不需要 `context`。
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  // 使用上下文初始化状态机
+  context: {
+    feedback: 'Some feedback',
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine);
+
+feedbackActor.subscribe((state) => {
+  console.log(state.context.feedback);
+});
+
+feedbackActor.start();
+// logs 'Some feedback'
+```
+
+## 初始上下文
+
+在状态机配置的 `context` 属性中设置初始上下文：
+
+```ts
+import { createMachine } from 'xstate';
+
+const feedbackMachine = createMachine({
+  context: {
+    feedback: '一些反馈',
+    rating: 5,
+    // 其他属性
+  },
+});
+```
+
+你传递给 `context` 的对象将成为从该状态机创建的任何 actor 的初始 `context` 值。
+
+:::warningxstate
+
+不要变异 `context` 对象。相反，你应该使用 `assign(...)` 动作来不可变地更新 `context`。如果你变异 `context` 对象，可能会出现意外行为，例如变异其他 actor 的 `context`。
+
+:::
+
+### 惰性初始上下文
+
+可以通过传递一个返回初始 `context` 值的函数来惰性地初始化上下文：
+
+```ts
+const feedbackMachine = createMachine({
+  context: () => ({
+    feedback: 'Some feedback',
+    createdAt: Date.now(),
+  }),
+});
+
+const feedbackActor = createActor(feedbackMachine).start();
+
+console.log(feedbackActor.getSnapshot().context.createdAt);
+// 记录当前时间戳
+```
+
+惰性初始上下文是针对每个 actor 评估的，因此每个 actor 都将拥有自己的 `context` 对象。
+
+### 输入
+
+你可以通过将 `input` 属性传递给 `createActor(machine, { input })` 函数，并在 `context` 函数的第一个参数中使用 `input` 属性，为状态机的初始 `context` 提供输入数据：
+
+```ts
+import { setup, createActor } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as {
+      feedback: string;
+      rating: number;
+    },
+    // highlight-start
+    input: {} as {
+      defaultRating: number
+    }
+    // highlight-end
+  }
+}).createMachine({
+  // highlight-next-line
+  context: ({ input }) => ({
+    feedback: '',
+    // highlight-next-line
+    rating: input.defaultRating,
+  }),
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  // highlight-start
+  input: {
+    defaultRating: 5,
+  },
+  // highlight-end
+}).start();
+
+console.log(feedbackActor.getSnapshot().context.rating);
+// logs 5
+```
+
+Learn more about [input](input.mdx).
+
+## 使用 `assign(...)` 更新上下文
+
+在转换中使用 `assign(...)` 动作来更新上下文：
+
+```ts
+import { createMachine, assign, createActor } from 'xstate';
+
+const feedbackMachine = createMachine({
+  context: {
+    feedback: 'Some feedback',
+  },
+  on: {
+    'feedback.update': {
+      actions: assign({
+        feedback: ({ event }) => event.feedback,
+      }),
+    },
+  },
+});
+
+const feedbackActor = createActor(feedbackMachine);
+
+feedbackActor.subscribe((state) => {
+  console.log(state.context.feedback);
+});
+
+feedbackActor.start();
+
+// logs 'Some feedback'
+
+feedbackActor.send({
+  type: 'feedback.update',
+  feedback: 'Some other feedback',
+});
+
+// logs 'Some other feedback'
+```
+
+## 上下文和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+你可以在 actor 设置的 `types.context` 属性中强类型化你的状态机 `context`。
+
+```ts
+import { setup } from 'xstate';
+
+const machine = setup({
+  types: {} as {
+    // highlight-start
+    context: {
+      feedback: string;
+      rating: number;
+    };
+    // highlight-end
+  }
+}).createMachine({
+  // Initial context
+  context: {
+    feedback: '',
+    rating: 5,
+  },
+  entry: ({ context }) => {
+    context.feedback; // string
+    context.rating; // number
+  },
+});
+```
+
+## 上下文速查表
+
+使用下面的 XState 上下文速查表快速入门。
+
+### 速查表：初始上下文
+
+```ts
+const machine = createMachine({
+  context: {
+    feedback: '',
+  },
+});
+```
+
+### 速查表：惰性初始上下文
+
+```ts
+const machine = createMachine({
+  context: () => ({
+    feedback: '',
+    createdAt: Date.now(),
+  }),
+});
+```
+
+### 速查表：使用 `assign(...)` 更新上下文
+
+```ts
+const machine = createMachine({
+  context: {
+    feedback: '',
+  },
+  on: {
+    'feedback.update': {
+      actions: assign({
+        feedback: ({ event }) => event.feedback,
+      }),
+    },
+  },
+});
+```
+
+### 速查表：输入
+
+```ts
+import { setup, createActor } from 'xstate';
+
+const feedbackMachine = setup({
+  types: {
+    context: {} as {
+      feedback: string;
+      rating: number;
+    },
+    // highlight-start
+    input: {} as {
+      defaultRating: number
+    }
+    // highlight-end
+  }
+}).createMachine({
+  // highlight-next-line
+  context: ({ input }) => ({
+    feedback: '',
+    // highlight-next-line
+    rating: input.defaultRating,
+  }),
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  // highlight-start
+  input: {
+    defaultRating: 5,
+  },
+  // highlight-end
+}).start();
+```

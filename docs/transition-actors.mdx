@@ -1,0 +1,88 @@
+---
+title: 转换演员
+---
+
+转换演员是其逻辑由**状态转换函数**表示的演员，这个函数在给定以下条件下返回演员的**下一个状态**：
+
+- 演员的**当前状态**
+- 触发转换的**事件**
+
+这与像 Redux 这样的库中的_减少函数_非常相似。
+
+## 转换演员的能力
+
+| | 能力 | 备注 |
+| --- | --- | --- |
+| ✅ | 接收事件 | 转换演员接收事件以修改其状态。 |
+| ✅ | 发送事件 | 转换演员可以向其引用的其他演员发送事件，例如那些在其`input`中提供的事件。请注意，这样做是不纯的。 |
+| ❌ | 生成演员 | 转换演员目前不能生成新演员。 |
+| ✅ | 输入 | 您可以向转换演员提供`input`。 |
+| ❌ | 输出 | 转换演员目前不产生输出——它们会无限期地活动，直到它们被停止或发生错误。 |
+
+## 转换演员逻辑
+
+您可以使用`fromTransition(...)`演员逻辑创建器定义转换演员逻辑，该创建器接受两个参数：
+
+- 返回演员下一个状态的**状态转换函数**
+- 演员的**初始状态**
+
+演员逻辑创建器返回可用于创建转换演员的演员逻辑。
+
+```ts
+import { fromTransition, createActor } from 'xstate';
+
+const countLogic = fromTransition((state, event) => {
+  switch (event.type) {
+    case 'increment': {
+      return { count: state.count + 1 };
+    }
+    case 'decrement': {
+      return { count: state.count - 1 };
+    }
+    default: {
+      return state;
+    }
+  }
+}, { count: 0 }); // 初始状态
+
+const countActor = createActor(countLogic);
+countActor.subscribe(snapshot => {
+  console.log(snapshot.context);
+});
+countActor.start();
+// logs { count: 0 }
+
+countActor.send({ type: 'increment' });
+// logs { count: 1 }
+
+countActor.send({ type: 'decrement' });
+// logs { count: 0 }
+```
+
+## 转换演员输入
+
+您可以向转换演员提供`input`，它将传递给解析初始状态的函数。
+
+```ts
+import { fromTransition, createActor } from 'xstate';
+
+const countLogic = fromTransition((state, event) => {
+  // ...
+// highlight-start
+}, ({ input }: { input: number }) => ({
+  count: input  // Initial state
+}));
+// highlight-end
+
+const countActor = createActor(countLogic, {
+  // highlight-next-line
+  input: 42
+});
+
+countActor.subscribe(snapshot => {
+  console.log(snapshot.context);
+  // logs { count: 42 }
+});
+
+countActor.start();
+```

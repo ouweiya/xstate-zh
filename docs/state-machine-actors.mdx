@@ -1,0 +1,103 @@
+---
+title: 状态机演员
+---
+
+状态机演员是其逻辑由有限状态机或状态图表示的演员。
+
+:::xstate
+
+本页面只是关于使用状态机表示演员逻辑的概述。阅读[状态机](./machines.mdx)的文档以深入了解状态机。
+
+:::
+
+## 状态机演员功能
+
+| | 功能 | 备注 |
+| --- | --- | --- |
+| ✅ | 接收事件 | 状态机演员可以直接接收事件 (`actor.send(event)`) 或从其他演员接收事件。 |
+| ✅ | 发送事件 | 状态机演员可以向其引用的其他演员发送事件。 |
+| ✅ | 生成演员 | 状态机演员可以生成/调用演员并拥有子演员。 |
+| ✅ | 输入 | 你可以向状态机演员提供`输入`。 |
+| ✅ | 输出 | 状态机演员可以产生`输出`。 |
+
+## 状态机演员逻辑
+
+你可以使用`createMachine(...)`演员逻辑创建器定义状态机演员逻辑，该创建器仅接受一个有限状态机或状态图配置对象作为其唯一参数。
+
+```ts
+import { createMachine, createActor } from 'xstate';
+
+const toggleMachine = createMachine({
+  initial: 'inactive',
+  states: {
+    inactive: {
+      on: {
+        toggle: {
+          target: 'active'
+        }
+      }
+    },
+    active: {
+      on: {
+        toggle: {
+          target: 'inactive'
+        }
+      }
+    }
+  }
+});
+
+const toggleActor = createActor(toggleMachine);
+toggleActor.subscribe(snapshot => {
+  console.log(snapshot.value); // 'inactive' 或 'active'
+});
+toggleActor.start();
+// 记录 'inactive'
+
+toggleActor.send({ type: 'toggle' });
+// 记录 'active'
+
+toggleActor.send({ type: 'toggle' });
+// 记录 'inactive'
+```
+
+## 状态机演员输入
+
+你可以通过将`input`作为第二个参数的`input`属性传递给`createActor(...)`函数来向状态机演员传递`input`。在状态机(`setupFiles(…).createMachine(…)`)中，你可以读取传递给`context`函数的第一个参数的`input`属性：
+
+```ts
+import { setup, createActor } from 'xstate';
+
+const feedbackMachine = setup({
+  // ...
+}).createMachine({
+  context: ({ input }) => ({
+    rating: input.defaultRating
+  }),
+  initial: 'question',
+  states: {
+    question: {/* ... */},
+    // ...
+  }
+});
+
+const feedbackActor = createActor(feedbackMachine, {
+  // highlight-start
+  input: {
+    defaultRating: 3
+  }
+  // highlight-end
+});
+
+feedbackActor.subscribe(snapshot => {
+  console.log(snapshot.context);
+});
+
+feedbackActor.start();
+// logs { rating: 3 }
+```
+
+## 状态机演员输出
+
+阅读[状态机输出](./output.mdx)以获取更多信息。
+

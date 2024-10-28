@@ -1,0 +1,109 @@
+---
+title: 回调演员
+---
+
+回调演员是其逻辑由一个函数表示的演员，该函数可以通过发送事件（通过 `sendBack(...)`）“回调”到父演员。它还可以通过 `receive(...)` 从其他演员接收事件。
+
+## 回调演员功能
+
+| | 功能 | 备注 |
+| --- | --- | --- |
+| ✅ | 接收事件 | 回调演员可以通过 `receive(event => {...})` 函数接收事件。 |
+| ✅ | 发送事件 | 回调演员可以通过 `sendBack(event)` 向其父演员发送事件，或向其有引用的其他演员发送事件，例如那些在其 `input` 中提供的演员。 |
+| ❌ | 生成演员 | 回调演员目前不能生成新演员。 |
+| ✅ | 输入 | 您可以向回调演员提供 `input`。 |
+| ❌ | 输出 | 回调演员目前不产生输出——它们会无限期地活动，直到它们被停止或发生错误。 |
+
+## 回调演员逻辑
+
+您可以使用 `fromCallback(...)` 演员逻辑创建器定义回调演员逻辑，该创建器接受一个回调函数并返回可用于创建回调演员的演员逻辑。
+
+```ts
+import { createActor, createMachine, fromCallback, sendTo, setup } from 'xstate';
+
+const resizeLogic = fromCallback(({ sendBack, receive }) => {
+  const resizeHandler = (event) => {
+    sendBack(event);
+  };
+
+  window.addEventListener('resize', resizeHandler);
+
+  const removeListener = () => {
+    window.removeEventListener('resize', resizeHandler);
+  }
+
+  receive(event => {
+    if (event.type === 'stopListening') {
+      console.log('Stopping listening');
+      removeListener();
+    }
+  })
+
+  // 清理函数
+  return () => {
+    console.log('Cleaning up');
+    removeListener();
+  }
+});
+
+const machine = setup({
+  actors: {
+    resizeLogic
+  }
+}).createMachine({
+  invoke: {
+    id: 'resize',
+    src: 'resizeLogic'
+  },
+  on: {
+    stop: {
+      actions: sendTo('resize', { type: 'stopListening' })
+    }
+  }
+});
+
+const actor = createActor(machine);
+actor.start();
+
+actor.send({ type: 'stop' });
+// 从回调演员日志 "Stopping listening"
+
+actor.stop();
+// 从回调演员日志 "Cleaning up"
+```
+
+## 回调演员输入
+
+您可以在创建回调演员时传递 `input`，它会作为第一个参数的 `input` 属性传递给回调演员逻辑。
+
+```ts
+import {
+  fromCallback,
+  createActor,
+  setup,
+  type EventObject
+} from 'xstate';
+
+const resizeLogic = fromCallback<EventObject, { defaultSize: number }>(({
+  sendBack,
+  receive,
+  input // 类型为 { defaultSize: number }
+}) => {
+  input.defaultSize; // 100
+  // ...
+});
+
+const machine = setup({
+  actors: {
+    resizeLogic
+  }
+}).createMachine({
+  // ...
+  invoke: {
+    src: 'resizeLogic',
+    input: {
+      defaultSize: 100
+    }
+  }
+});
+```

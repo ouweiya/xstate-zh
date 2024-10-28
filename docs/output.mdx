@@ -1,0 +1,85 @@
+---
+title: 'Output'
+---
+
+输出是指[actor](actors.mdx)生成的最终数据。当一个actor负责执行某些任务（例如进行网络请求或运行复杂计算）时，它将在完成任务后返回输出。输出代表actor工作的结果。actor只有在其状态为“done”时才会生成输出；即当它们处于[最终状态](final-states.mdx)时。
+
+某些actor可能会无限期运行，不会生成任何输出。
+
+## 机器actor中的输出
+
+阅读[最终状态](final-states.mdx)以获取有关如何在机器actor中指定输出的更多信息。
+
+## Promise actor中的输出
+
+当一个promise actor解析时，它可以生成输出数据。您可以在机器的`.output`属性中指定这些输出数据。
+
+```ts
+import { fromPromise, createActor } from 'xstate';
+
+const promiseLogic = fromPromise(async () => {
+  const response = await fetch('https://example.com');
+
+  return response.json() as { message: string };
+});
+
+const actor = createActor(promiseLogic);
+
+actor.subscribe(snapshot => {
+  if (snapshot.status === 'done') {
+    console.log(snapshot.output.message);
+  }
+});
+
+actor.start();
+```
+
+## 输出与TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+可以在机器设置的 `.types` 属性中为 `output` 属性指定类型：
+
+```ts
+import { setup, createActor } from 'xstate';
+
+const machine = setup({
+  // highlight-start
+  types: {
+    output: {} as { total: number }
+  }
+  // highlight-end
+}).createMachine({
+  // ...
+  output: ({ context }) => ({
+    total: context.items.reduce((total, item) => total + item.price, 0),
+  })
+});
+
+const actor = createActor(machine);
+
+actor.subscribe(snapshot => {
+  if (snapshot.status === 'done') {
+    console.log(snapshot.output.total);
+  }
+});
+```
+
+您可以使用 `OutputFrom<typeof actor>` 从任何 actor 中读取输出类型：
+
+```ts
+import type { OutputFrom } from 'xstate';
+import { machine } from './machine';
+
+const actor = createActor(machine);
+
+function acceptOutput<T>(output: OutputFrom<typeof actor>) {
+  console.log(output.total);
+}
+```

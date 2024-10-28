@@ -1,0 +1,85 @@
+---
+title: 'Setup'
+---
+
+在 XState 版本 5 中，您现在可以使用 `setup({ ... })` 函数来设置机器的类型和源。这有很多好处：
+
+- 减少强类型和提供命名源的样板代码
+- 更健壮的机器逻辑，因为命名源保证存在
+- 更好的类型推断，用于动作、演员、守卫、延迟、上下文、事件等
+- 强类型的演员快照和完成事件
+- 强类型的状态值
+- 源逻辑的可重用性
+
+示例用法：
+
+```ts
+import { setup, assign } from 'xstate';
+
+const machine = setup({
+  types: {
+    context: {} as { count: number },
+    events: {} as
+      | { type: 'inc' }
+      | { type: 'dec' }
+  },
+  actions: {
+    increment: assign({
+      count: ({ context }) => context.count + 1
+    }),
+    decrement: assign({
+      count: ({ context }) => context.count - 1
+    })
+  }
+}).createMachine({
+  context: { count: 0 },
+  on: {
+    inc: { actions: 'increment' },
+    dec: { actions: 'decrement' }
+  }
+})
+```
+
+:::warning
+
+确保您使用的是最新版本的 TypeScript（5.0 或更高版本）。有关更多信息，请参阅 [TypeScript 与 XState 的使用](./typescript.mdx) 文档。
+
+:::
+
+## 设置类型
+
+机器类型应在 `setup({ types })` 的 `types` 属性中设置。在这里，您可以设置机器的类型，包括：
+
+- `context` 的类型
+- `events` 的类型，包括事件负载
+- `input` 的类型
+- `actions` 的类型，包括动作 `params`
+- `guards` 的类型，包括守卫 `params`
+- `actors` 的类型
+
+
+
+## 从 `createMachine` 迁移
+
+从裸 `createMachine({ ... })` 迁移到 `setup({ ... }).createMachine({ ... })` 来创建机器非常简单。
+
+1. 从 `'xstate'` 导入 `setup` 而不是 `createMachine`
+1. 将 `types` 从 `createMachine(...)` 移动到 `setup(...)`
+1. 将动作、演员、守卫等源从 `createMachine(config, sources)` 的第二个参数移动到 `setup({ ... })`
+
+```ts
+import {
+// createMachine
+  setup
+} from 'xstate';
+
+const machine =
+  setup({
+    types: { ... },
+    actions: { ... },
+    guards: { ... }
+  })
+  .createMachine({
+    // types: { ... }
+  }, /* { actions, guards, ... } */);
+```

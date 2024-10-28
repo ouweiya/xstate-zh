@@ -1,0 +1,1028 @@
+---
+title: '调用'
+---
+
+[状态机](machines.mdx) 可以在给定状态下“调用”一个或多个[演员](actors.mdx)。调用的演员将在状态进入时启动，并在状态退出时停止。任何 XState 演员都可以被调用，包括简单的基于 Promise 的演员，甚至是复杂的基于机器的演员。
+
+调用演员对于管理状态机需要在高层次上协调和通信的同步或异步工作非常有用，但不需要详细了解。
+
+:::tip
+
+[阅读关于调用和生成演员之间的区别](actors.mdx#invoking-and-spawning-actors)。
+
+:::
+
+<EmbedMachine embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=7f8f7dfb-f9a0-4e37-9c2a-bbca9f093d21&mode=design" title="User" />
+
+:::studio
+
+您可以在我们的拖放式 Stately 编辑器中可视化您的状态机并轻松调用演员。[阅读更多关于 Stately 编辑器中的演员](editor-actions-and-actors.mdx)。
+
+:::
+
+演员可以在任何状态中调用，_除了_ [顶级最终状态](final-states.mdx)。在以下示例中，`loading` 状态调用了一个基于 Promise 的演员：
+
+```ts
+import { setup, createActor, fromPromise, assign } from 'xstate';
+
+const fetchUser = (userId: string) =>
+  fetch(`https://example.com/${userId}`).then((response) => response.text());
+
+const userMachine = setup({
+  types: {
+    context: {} as {
+      userId: string;
+      user: object | undefined;
+      error: unknown;
+    }
+  },
+  actors: {
+    fetchUser: fromPromise(async ({ input }) => {
+      const user = await fetchUser(input.userId);
+
+      return user;
+    })
+  }
+}).createMachine({
+  id: 'user',
+  initial: 'idle',
+  context: {
+    userId: '42',
+    user: undefined,
+    error: undefined,
+  },
+  states: {
+    idle: {
+      on: {
+        FETCH: { target: 'loading' },
+      },
+    },
+    loading: {
+      // highlight-start
+      invoke: {
+        id: 'getUser',
+        src: 'fetchUser',
+        input: ({ context: { userId } }) => ({ userId }),
+        onDone: {
+          target: 'success',
+          actions: assign({ user: ({ event }) => event.output }),
+        },
+        onError: {
+          target: 'failure',
+          actions: assign({ error: ({ event }) => event.error }),
+        },
+      },
+      // highlight-end
+    },
+    success: {},
+    failure: {
+      on: {
+        RETRY: { target: 'loading' },
+      },
+    },
+  },
+});
+```
+
+演员也可以在机器的_根_上调用，并且它们将在其父机器演员的生命周期内保持活动状态：
+
+```ts
+import { fromEventObservable, fromEvent } from 'rxjs';
+const interactiveMachine = createMachine({
+  // highlight-start
+  invoke: {
+    src: fromEventObservable(
+      () => fromEvent(document.body, 'click') as Subscribable<EventObject>,
+    ),
+  },
+  // highlight-end
+  on: {
+    click: {
+      actions: ({ event }) => console.log(event),
+    },
+  },
+});
+```
+
+并且 `invoke` 可以是一个数组，以调用[多个演员](#multiple-actors):
+
+```ts
+const vitalsWorkflow = createMachine({
+  states: {
+    CheckVitals: {
+      // highlight-start
+      invoke: [
+        { src: 'checkTirePressure' },
+        { src: 'checkOilPressure' },
+        { src: 'checkCoolantLevel' },
+        { src: 'checkBattery' },
+      ],
+      // highlight-end
+    },
+  },
+});
+```
+
+有关更多示例，请参见：
+
+- [重用函数和事件定义的工作流](https://github.com/statelyai/xstate/tree/main/examples/workflow-reusing-functions/main.ts)
+- [定期检查收件箱（基于cron的工作流）](https://github.com/statelyai/xstate/tree/main/examples/workflow-check-inbox/main.ts)
+- [汽车状态检查（子流程重复）工作流](https://github.com/statelyai/xstate/tree/main/examples/workflow-car-vitals)
+
+## 演员与动作有何不同？
+
+动作是“即发即弃”的；一旦它们开始执行，运行这些动作的状态机就会忘记它们。如果您将动作指定为 `async`，**在移动到下一个状态之前不会等待该动作**。请记住：转换始终是_零时间_的（状态同步转换）。
+
+调用的演员可以执行异步工作_并且_与其父机器演员通信。它们可以发送和接收事件。调用的机器演员甚至可以调用或生成自己的子演员。
+
+与动作不同，调用的演员抛出的错误可以直接处理：
+
+```ts
+invoke: {
+  src: 'fetchUser',
+  // highlight-start
+  onError: {
+    target: 'failure',
+    actions: assign({ error: ({ event }) => event.error })
+  }
+  // highlight-end
+}
+```
+
+而动作抛出的错误只能由其父状态机的订阅者全局处理：
+
+```ts
+actor.subscribe({
+  error: (err) => {
+    console.error(err);
+  },
+});
+```
+
+## 生命周期
+
+调用的演员的生命周期由它们被调用的状态管理。它们在状态进入时创建和启动，并在状态退出时停止。
+
+如果一个状态在进入后立即退出，例如由于无事件（“总是”）转换，那么该状态将不会调用任何演员。
+
+### 重新进入
+
+默认情况下，当状态机从父状态转换到相同的父状态或其子状态（或更深层次）时，它不会重新进入父状态。由于转换不是重新进入，父状态的现有调用演员将不会停止，新的调用演员也不会启动。
+
+但是，如果您希望转换重新进入父状态，请将转换的 `reenter` 属性设置为 `true`。重新进入状态的转换将停止现有的调用演员并启动新的调用演员。
+
+[阅读更多关于重新进入状态的信息](/docs/transitions#re-entering)。
+
+## `invoke` 属性 API {#api}
+
+在状态节点的配置中使用 `invoke` 属性定义调用，其值是一个包含以下内容的对象：
+
+- `src` - 创建演员时要调用的[演员逻辑](actors.mdx#actor-logic)的来源，或引用机器[提供的实现](machines.mdx#providing-implementations)中定义的演员逻辑的字符串。
+- `id` - 标识演员的字符串，在其父机器内唯一。
+- `input` - 传递给演员的输入。
+- `onDone` - 演员完成时发生的转换。
+- `onError` - 演员抛出错误时发生的转换。
+- `onSnapshot` - 演员发出新值时发生的转换。
+- `systemId` - 系统范围内唯一标识演员的字符串。
+
+### 来源 {#src}
+
+`src` 表示机器在创建演员时应使用的[演员逻辑](actors.mdx#actor-logic-creators)。XState 中有几种演员逻辑创建器可用：
+
+- [状态机逻辑 (`createMachine`)](/docs/actors/#createmachine)
+- [Promise 逻辑 (`fromPromise`)](/docs/actors/#frompromise)，其中在 `resolve` 时调用将采取 `onDone` 转换，在 `reject` 时调用将采取 `onError` 转换
+- [转换函数逻辑 (`fromTransition`)](/docs/actors/#fromtransition)，遵循 reducer 模式
+- [Observable 逻辑 (`fromObservable`)](/docs/actors/#fromobservable)，可以向父机器发送事件，并且在完成时调用将采取 `onDone` 转换
+- [事件 Observable 逻辑 (`fromEventObservable`)](/docs/actors/#fromeventobservable)，类似于 Observable 逻辑，但用于事件对象流
+- [回调逻辑 (`fromCallback`)](/docs/actors/#fromcallback)，可以向父机器发送事件并接收来自父机器的事件
+
+调用的 `src` 可以是_内联_或_提供_的。
+
+#### 内联 `src`
+
+可以直接内联：
+
+```ts
+invoke: {
+  src: fromPromise(…)
+}
+```
+
+或者从与机器相同范围内的一些逻辑：
+
+```ts
+const logic = fromPromise(…)
+const machine = createMachine({
+  // …
+  invoke: {
+    src: logic
+  }
+});
+```
+
+#### 提供的 `src`
+
+`src` 可以[在机器实现中提供](machines.mdx#providing-implementations)并使用字符串或对象引用。
+
+```ts
+const machine = createMachine({
+  // …
+  invoke: {
+    src: 'workflow', // 字符串引用
+  },
+});
+
+const actor = createActor(
+  machine.provide({
+    actors: {
+      workflow: fromPromise(/* ... */), // 提供的
+    },
+  }),
+);
+```
+
+### `onDone`
+
+- 调用的演员完成时发生的转换
+- 事件对象的 `output` 属性提供演员的输出数据
+- 不适用于回调演员
+
+:::warning
+不要将状态上的 `onDone` 属性与 `invoke.onDone` 混淆 - 它们是相似的转换，但指的是不同的事情。
+
+- 状态节点上的 `onDone` 属性指的是复合状态节点达到最终状态。
+- `invoke.onDone` 属性指的是调用的 `invoke.src` 完成。
+
+```js
+// ...
+loading: {
+  invoke: {
+    src: someSrc,
+    // 指的是 `someSrc` 完成
+    // highlight-next-line
+    onDone: {/* ... */}
+  },
+  initial: 'loadFoo',
+  states: {
+    loadFoo: {/* ... */},
+    loadBar: {/* ... */},
+    loadingComplete: { type: 'final' }
+  },
+  // 指的是 'loading.loadingComplete' 被达到
+  // highlight-next-line
+  onDone: { target: 'loaded' }
+}
+// ...
+```
+
+:::
+
+`onError` 转换可以是一个对象：
+
+```ts
+{
+  invoke: {
+    src: 'fetchItem',
+    onDone: {
+      target: 'success',
+      actions: ({ event }) => {
+        console.log(event.output);
+      }
+    },
+    // highlight-start
+    onError: {
+      target: 'error',
+      actions: ({ event }) => {
+        console.error(event.error);
+      }
+    }
+    // highlight-end
+  }
+}
+```
+
+或者，为了简单起见，仅目标转换可以是字符串：
+
+```ts
+{
+  invoke: {
+    src: 'fetchItem',
+    // highlight-start
+    onDone: 'success',
+    onError: 'error'
+    // highlight-end
+  }
+}
+```
+
+### `onError`
+
+- 当调用的演员抛出错误时发生转换，或者（对于基于 Promise 的演员）当 Promise 被拒绝时发生转换
+- 事件对象的 `error` 属性提供演员的错误数据
+
+```ts
+invoke: {
+  src: 'getUser',
+  // highlight-start
+  onError: {
+    target: 'failure',
+    actions: ({ event }) => {
+      console.error(event.error);
+    }
+  }
+  // highlight-end
+}
+```
+
+或者，为了简单起见，仅目标转换可以是字符串：
+
+```ts
+{
+  invoke: {
+    src: 'getUser',
+    // highlight-start
+    onError: 'failure'
+    // highlight-end
+  }
+}
+```
+
+### `onSnapshot`
+
+- 当调用的演员发出新快照时发生转换
+- 事件对象的 `snapshot` 属性提供演员的快照
+- 不适用于回调演员
+
+```ts
+invoke: {
+  src: 'getUser',
+  // highlight-start
+  onSnapshot: {
+    actions: ({ event }) => console.log(event.snapshot)
+  }
+  // highlight-end
+}
+```
+
+[阅读更多关于演员快照的信息](actors.mdx#actor-snapshots)。
+
+### 输入
+
+要定义传递给调用演员的输入，请使用 `input` 属性。
+
+`input` 属性可以是一个静态输入值，或者是一个返回输入值的函数。该函数将接收一个包含当前 `context` 和 `event` 的对象。
+
+:::tip
+在幕后，输入通过一个事件传递给演员：
+`{ type: 'xstate.init', input: ... }`。
+:::
+
+#### 来自静态值的输入
+
+```ts
+invoke: {
+  src: 'liveFeedback',
+  // highlight-start
+  input: {
+    domain: 'stately.ai'
+  }
+  // highlight-end
+}
+```
+
+#### 来自函数的输入
+
+```ts
+invoke: {
+  src: fromPromise(({ input: { endpoint, userId } }) => {
+    return fetch(`${endpoint}/${userId}`).then((res) => res.json());
+  }),
+  // highlight-start
+  input: ({ context, event }) => ({
+    endpoint: context.endpoint,
+    userId: event.userId
+  })
+  // highlight-end
+}
+```
+
+请参阅 [输入](input.mdx) 了解更多。
+
+## 调用 Promise
+
+您将调用的最常见类型的演员是 Promise 演员。Promise 演员允许您在决定下一步操作之前等待 Promise 的结果。
+
+XState 可以使用 `fromPromise` 演员逻辑创建器将 Promises 调用为演员。Promises 可以：
+
+- `resolve()`，这将采取 `onDone` 转换
+- `reject()`（或抛出错误），这将采取 `onError` 转换
+
+如果在调用的 Promise 处于活动状态的状态退出之前 Promise 解决，则 Promise 的结果将被丢弃。
+
+```ts
+import { setup, createActor, fromPromise, assign } from 'xstate';
+
+// 返回一个 Promise 的函数
+// 该 Promise 会解析为一些有用的值
+// e.g.: { name: 'David', location: 'Florida' }
+const fetchUser = (userId: string) =>
+  fetch(`/api/users/${userId}`).then((response) => response.json());
+
+const userMachine = setup({
+  types: {
+    context: {} as {
+      userId: string;
+      user: object | undefined;
+      error: unknown;
+    }
+  }
+}).createMachine({
+  id: 'user',
+  initial: 'idle',
+  context: {
+    userId: '42',
+    user: undefined,
+    error: undefined,
+  },
+  states: {
+    idle: {
+      on: {
+        FETCH: { target: 'loading' },
+      },
+    },
+    loading: {
+      // highlight-start
+      invoke: {
+        id: 'getUser',
+        src: fromPromise(({ input }) => fetchUser(input.userId)),
+        input: ({ context: { userId } }) => ({ userId }),
+        onDone: {
+          target: 'success',
+          actions: assign({ user: ({ event }) => event.output }),
+        },
+        onError: {
+          target: 'failure',
+          actions: assign({ error: ({ event }) => event.error }),
+        },
+      },
+      // highlight-end
+    },
+    success: {},
+    failure: {
+      on: {
+        RETRY: { target: 'loading' },
+      },
+    },
+  },
+});
+```
+
+解析后的输出被放置在 `'xstate.done.actor.<id>'` 事件中，位于 `output` 属性下，例如：
+
+```js
+{
+  type: 'xstate.done.actor.getUser',
+  output: {
+    name: 'David',
+    location: 'Florida'
+  }
+}
+```
+
+### Promise 拒绝
+
+如果 Promise 被拒绝，`onError` 转换将会被触发，并带有 `{ type: 'xstate.error.actor.<id>' }` 事件。错误数据可以通过事件的 `error` 属性获取：
+
+```ts
+import { setup, createActor, fromPromise, assign } from 'xstate';
+
+const search = (query: string) =>
+  new Promise((resolve, reject) => {
+    if (!query.length) {
+      return reject('No query specified');
+      // or:
+      // throw new Error('No query specified');
+    }
+
+    return resolve(getSearchResults(query));
+  });
+
+// ...
+const searchMachine = setup({
+  types: {
+    context: {} as {
+      results: object | undefined;
+      errorMessage: unknown;
+    }
+  }
+}).createMachine({
+  id: 'search',
+  initial: 'idle',
+  context: {
+    results: undefined,
+    errorMessage: undefined,
+  },
+  states: {
+    idle: {
+      on: {
+        SEARCH: { target: 'searching' },
+      },
+    },
+    searching: {
+      // highlight-start
+      invoke: {
+        id: 'search',
+        src: fromPromise(({ input: { query } }) => search(query)),
+        input: ({ event }) => ({ query: event.query }),
+        onError: {
+          target: 'failure',
+          actions: assign({
+            errorMessage: ({ context, event }) => {
+              // event is:
+              // { type: 'xstate.error.actor.<id>', error: 'No query specified' }
+              return event.error;
+            },
+          }),
+        },
+        onDone: {
+          target: 'success',
+          actions: assign({ results: ({ event }) => event.output }),
+        },
+      },
+      // highlight-end
+    },
+    success: {},
+    failure: {},
+  },
+});
+```
+
+如果缺少 `onError` 转换，并且 Promise 被拒绝，则会抛出错误。但是，您可以通过订阅一个带有 `error` 函数的观察者对象来处理演员的所有抛出错误：
+
+```ts
+actor.subscribe({
+  error: (err) => { ... }
+})
+```
+
+## 调用回调
+
+您可以通过以下方式调用[回调演员逻辑](./callback-actors.mdx)：
+
+1. 在 `setup({ actors: { ... } })` 调用的 `actors` 对象中设置回调演员逻辑
+2. 在状态的 `invoke` 属性中通过其源名称 (`src`) 调用回调演员逻辑
+
+```ts
+import { setup, fromCallback } from 'xstate';
+
+const machine = setup({
+  actors: {
+    // highlight-start
+    someCallback: fromCallback(({ input, sendBack, receive }) => {
+      // ...
+    })
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  // highlight-start
+  invoke: {
+    src: 'someCallback',
+    input: {/* ... */}
+  }
+  // highlight-end
+});
+```
+
+阅读 [回调演员逻辑](./callback-actors.mdx) 了解更多关于回调演员的信息。
+
+## 调用 Observables
+
+您可以通过以下方式调用 [observable 逻辑](./observable-actors.mdx)：
+
+1. 在 `setup({ actors: { ... } })` 调用的 `actors` 对象中设置 observable 逻辑
+2. 在状态的 `invoke` 属性中通过其源名称 (`src`) 调用 observable 逻辑
+
+```ts
+import { setup, fromObservable } from 'xstate';
+import { interval } from 'rxjs';
+
+const machine = setup({
+  actors: {
+    // highlight-start
+    someObservable: fromObservable(({ input }: { input: number }) => {
+      return interval(input.ms);
+    })
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  // highlight-start
+  invoke: {
+    src: 'someObservable',
+    input: { ms: 1000 },
+    onSnapshot: {
+      actions: ({ event }) => {
+        console.log(event.snapshot.context); // 1, 2, 3, ...
+      }
+    }
+  }
+  // highlight-end
+});
+```
+
+阅读 [observable 演员逻辑](./observable-actors.mdx) 了解更多关于 observable 演员的信息。
+
+## 调用事件 Observable
+
+您可以通过使用 `fromEventObservable(...)` 演员逻辑创建器来调用 [事件 Observable](TODO)。事件 Observable 逻辑类似于 observable 逻辑，因为父演员订阅事件 Observable；然而，事件 Observable 的发出值预期是直接发送给调用（父）演员的事件。
+
+```ts
+import { setup, fromEventObservable } from 'xstate';
+
+const mouseClicks = fromEventObservable(/* ... */);
+
+const machine = setup({
+  actors: {
+    mouseClicks
+  }
+}).createMachine({
+  // ...
+  invoke: {
+    src: 'mouseClicks'
+    // 不需要 `onSnapshot` 或 `onDone`; 事件直接发送到
+    // 机器演员
+  },
+  on: {
+    // 由事件 Observable 演员发送
+    click: {
+      // ...
+    }
+  }
+})
+```
+
+## 调用转换
+
+您可以通过以下方式调用[转换演员逻辑](./transition-actors.mdx)：
+
+1. 在 `setup({ actors: { ... } })` 调用的 `actors` 对象中设置转换演员逻辑
+2. 在状态的 `invoke` 属性中通过其源名称 (`src`) 调用转换演员逻辑
+
+```ts
+import { setup, fromTransition } from 'xstate';
+
+const machine = setup({
+  actors: {
+    // highlight-start
+    someTransition: fromTransition((state, event, { input }) => {
+      // ...
+      return state;
+    })
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  // highlight-start
+  invoke: {
+    src: 'someTransition',
+    input: {/* ... */},
+    onSnapshot: {
+      actions: ({ event }) => {
+        console.log(event.context);
+      }
+    }
+  }
+  // highlight-end
+});
+```
+
+阅读 [转换演员逻辑](./transition-actors.mdx) 了解更多关于转换演员的信息。
+
+## 调用状态机
+
+您可以通过以下方式调用[状态机演员逻辑](./state-machine-actors.mdx)：
+
+1. 在 `setup({ actors: { ... } })` 调用的 `actors` 对象中设置状态机演员逻辑
+2. 在状态的 `invoke` 属性中通过其源名称 (`src`) 调用状态机演员逻辑
+
+```ts
+import { setup } from 'xstate';
+
+const childMachine = setup({/* ... */}).createMachine({
+  context: ({ input }) => ({
+    // ...
+  }),
+  // ...
+});
+
+const machine = setup({
+  actors: {
+    // highlight-start
+    someMachine: childMachine
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  // highlight-start
+  invoke: {
+    src: 'someMachine',
+    input: {/* ... */}
+  }
+  // highlight-end
+});
+```
+
+阅读 [状态机演员逻辑](./state-machine-actors.mdx) 了解更多关于状态机演员的信息。
+
+## 发送响应
+
+一个被调用的演员（或[生成的演员](./spawn.mdx)）可以_响应_另一个演员；即，它可以发送一个事件_响应_另一个演员发送的事件。为此，请在发送的事件对象上提供对发送演员的引用作为自定义属性。在以下示例中，我们使用 `event.sender`，但任何名称都可以。
+
+
+```js
+// 父演员
+actions: sendTo('childActor', ({ self }) => ({
+  type: 'ping',
+  // highlight-next-line
+  sender: self,
+}));
+
+// 子演员
+actions: sendTo(
+  // highlight-next-line
+  ({ event }) => event.sender,
+  { type: 'pong' },
+);
+```
+
+在以下示例中，下面的 `'client'` 状态机向被调用的 `'auth-server'` 演员发送 `'CODE'` 事件，后者在 1 秒后响应 `'TOKEN'` 事件。
+
+```js
+import { createActor, createMachine, sendTo } from 'xstate';
+
+const authServerMachine = createMachine({
+  id: 'server',
+  initial: 'waitingForCode',
+  states: {
+    waitingForCode: {
+      on: {
+        CODE: {
+          // highlight-start
+          actions: sendTo(
+            ({ event }) => event.sender,
+            { type: 'TOKEN' },
+            { delay: 1000 },
+          ),
+          // highlight-end
+        },
+      },
+    },
+  },
+});
+
+const authClientMachine = createMachine({
+  id: 'client',
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        AUTH: { target: 'authorizing' },
+      },
+    },
+    authorizing: {
+      invoke: {
+        id: 'auth-server',
+        src: authServerMachine,
+      },
+      // highlight-start
+      entry: sendTo('auth-server', ({ self }) => ({
+        type: 'CODE',
+        sender: self,
+      })),
+      // highlight-end
+      on: {
+        TOKEN: { target: 'authorized' },
+      },
+    },
+    authorized: {
+      type: 'final',
+    },
+  },
+});
+```
+
+请注意，默认情况下 `sendTo` 将匿名发送事件，在这种情况下接收者将不知道事件的来源。
+
+:::note
+在 XState v4 中，`respond(...)` 动作创建器用于此目的。在 XState v5 中，请使用 `sendTo(...)` 代替。
+:::
+
+## 多个演员
+
+您可以通过在数组中指定每个演员来调用多个演员：
+
+```ts
+invoke: [
+  { id: 'actor1', src: 'someActor' },
+  { id: 'actor2', src: 'someActor' },
+  { id: 'logActor', src: 'logActor' },
+];
+```
+
+每次调用都会创建该演员的新实例，因此即使多个演员的 `src` 相同（例如上面的 `someActor`），也会调用 `someActor` 的多个实例。
+
+## 测试
+
+您可以通过断言父演员从被调用的演员接收到预期的事件来测试被调用的演员。
+
+```ts
+
+const machine = setup({
+  actors: {
+    countLogic
+  }
+}).createMachine({
+  invoke: {
+    src: 'countLogic'
+  }
+})
+```
+
+## 引用调用的演员
+
+演员可以通过 `snapshot.children.<actorId>` 读取。返回的值是一个 `ActorRef` 对象，具有以下属性：
+
+- `id` - 演员的 ID
+- `send()`
+- `getSnapshot()`
+
+```ts
+actor.subscribe({
+  next(snapshot) {
+    console.log(Object.keys(snapshot.children));
+  },
+});
+```
+
+`snapshot.children` 是一个键值对象，其中键是演员 ID，值是 `ActorRef`。
+
+## 调用和 TypeScript
+
+:::typescript
+
+**XState v5 需要 TypeScript 版本 5.0 或更高版本。**
+
+为了获得最佳效果，请使用最新的 TypeScript 版本。[阅读更多关于 XState 和 TypeScript 的信息](typescript.mdx)
+
+:::
+
+您应该使用 `setup({ ... })` API 来正确推断调用演员逻辑的类型。
+
+```ts
+import { setup, fromPromise, assign } from 'xstate';
+
+interface User {
+  id: string;
+  name: string;
+}
+
+const machine = setup({
+  actors: {
+    // highlight-start
+    fetchUser: fromPromise<User, { userId: string }>(async ({ input }) => {
+      const response = await fetch(`https://example.com/${input.userId}`);
+
+      return response.json();
+    })
+    // highlight-end
+  }
+}).createMachine({
+  // ...
+  context: {
+    user: null,
+    userId: 42
+  },
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        editUserDetails: { target: 'loadingUser' }
+      }
+    },
+    loadingUser: {
+      invoke: {
+        // highlight-start
+        src: 'fetchUser',
+        input: ({ context }) => ({
+          userId: context.userId // Type enforced to be string
+        }),
+        onDone: {
+          actions: assign({
+            user: ({ event }) => event.output // Strongly typed as User
+          })
+        }
+        // highlight-end
+      }
+    }
+  }
+});
+```
+
+阅读关于[设置状态机](./setup.mdx)的文档以获取更多信息。
+
+## 调用速查表
+
+### 速查表：调用一个演员
+
+```ts
+import { setup, createActor, fromPromise, assign } from 'xstate';
+
+const fetchUser = (userId: string) =>
+  fetch(`https://example.com/${userId}`).then((response) => response.text());
+
+const userMachine = setup({
+  actors: {
+    getUser: fromPromise(async ({ input }: { input: { userId: string }}) => {
+      const data = await fetchUser(input.userId);
+
+      return data
+    })
+  }
+}).createMachine({
+  // …
+  states: {
+    idle: {
+      on: {
+        FETCH: { target: 'loading' },
+      },
+    },
+    loading: {
+      // highlight-start
+      invoke: {
+        id: 'getUser',
+        src: 'getUser',
+        input: ({ context: { userId } }) => ({ userId }),
+        onDone: {
+          target: 'success',
+          actions: assign({ user: ({ event }) => event.output }),
+        },
+        onError: {
+          target: 'failure',
+          actions: assign({ error: ({ event }) => event.error }),
+        },
+      },
+      // highlight-end
+    },
+    success: {},
+    failure: {
+      on: {
+        RETRY: { target: 'loading' },
+      },
+    },
+  },
+});
+```
+
+### 速查表：在机器的根上调用一个演员
+
+```ts
+import { createMachine } from 'xstate';
+import { fromEventObservable, fromEvent } from 'rxjs';
+
+const interactiveMachine = createMachine({
+  // highlight-start
+  invoke: {
+    src: fromEventObservable(
+      () => fromEvent(document.body, 'click') as Subscribable<EventObject>,
+    ),
+  },
+  // highlight-end
+  on: {
+    click: {
+      actions: ({ event }) => console.log(event),
+    },
+  },
+});
+```
+
+### 速查表：以数组形式调用多个演员
+
+```ts
+import { createMachine } from 'xstate';
+
+const vitalsWorkflow = createMachine({
+  states: {
+    CheckVitals: {
+      // highlight-start
+      invoke: [
+        { src: 'checkTirePressure', /* ... */ },
+        { src: 'checkOilPressure', /* ... */ },
+        { src: 'checkCoolantLevel', /* ... */ },
+        { src: 'checkBattery', /* ... */ },
+      ],
+      // highlight-end
+    },
+  },
+});
+```
