@@ -1,0 +1,104 @@
+---
+title: 什么是Actor模型以及何时使用它？
+description: '在Stately，Actor模型是我们最喜欢的编程范式之一，我们认为这是有充分理由的！'
+tags:
+  [
+    actor model,
+    modeling,
+    statechart,
+    tutorials,
+    state machine,
+    typescript,
+    blog,
+  ]
+authors: [gavin]
+slug: what-is-the-actor-model
+image: /blog/2023-5-30-what-is-the-actor-model-and-when-should-i-use-it.png
+date: 2023-05-30
+---
+
+在Stately， [Actor模型](https://en.wikipedia.org/wiki/Actor_model) 是我们最喜欢的编程范式之一，我们认为这是有充分理由的！Actor模型允许开发人员通过使用_actors_进行通信来构建可靠的基于消息的系统。这与状态机和状态图非常契合，它们也可以建模为actors并以相同的方式进行通信。继续阅读以了解什么是Actor模型，它试图解决的问题，以及如何在项目中使用它来可靠地跨不同实体进行通信。{/* truncate */}
+
+## 什么是Actor模型？
+
+Actor模型已经存在了相当长的一段时间，可以追溯到1970年代。它被用于像[Akka](https://akka.io/)这样的框架，并且内置于像[Erlang](https://www.erlang.org/)这样的语言中，这些都证明了它的实用性。在研究Actor模型时，常常会看到“万物皆为actor”这句话，因为这是Actor模型哲学的核心原则。这仅仅意味着在给定的系统中，_actor_是核心的执行单元。系统中发生的每一个动作都是由actor驱动的。actor可以通过消息与其他actors通信，并且它们也可以与外部系统交互。具体来说，actor可以执行以下基本任务：
+
+- actor可以管理自己的内部状态
+- actor可以生成其他actors
+- actor可以向其他actors发送消息
+
+这听起来很简单，但这种编程模型允许开发高度可扩展和并发的系统。不过也有一些限制，其中最重要的是actor_不能_直接修改另一个actor的内部状态。这可以通过消息隐式地完成（即actor在响应消息时更新其状态），但_绝不能直接_。
+
+## 何时使用它？
+
+Actor模型在分解可以并行处理的工作时非常有用。它非常适合[“fan-out/fan-in”](https://java-design-patterns.com/patterns/fanout-fanin/)场景，在这些场景中，多个函数需要同时运行并在最终处理之前合并其结果。它也非常适合构建[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)系统，在这些系统中，多个actors可以作为“工人”，等待来自“发布者”的消息。最后一个例子，但绝不是最不重要的，是在需要管理多个相似实体的系统中，比如每个玩家都表示为一个actor的多人游戏。当分布和并发是核心需求时，至少考虑一下Actor模型是一个好的经验法则。
+
+## 何时不使用它
+
+与任何模式一样，理解其弱点与理解其优点同样重要。通常，当顺序非常重要时，你可能不想使用Actor模式。顺序通常在Actor模式中不被保证，如果其中一个actor失败，你将不得不处理回滚事件的问题。当处理同步问题时，Actor模型通常是不必要的，并且可能增加不必要的开销。此外，错误处理在actors中可能很棘手。Erlang普及了“让它崩溃”的哲学，但考虑到问题，这可能并不总是最合理的答案。
+
+## XState如何与Actor模型协作？
+
+在XState中，我们提供了创建机器实例作为actors的能力！看下面的例子，我们可以看到在定义了我们的机器及其属性之后，我们只需要使用`interpret()`来实例化一个actor（称为`toggleActor`）并向其发送消息。
+
+```typescript
+import { createMachine, interpret } from 'xstate';
+
+// 状态机定义
+const toggleMachine = createMachine({
+  id: 'toggle',
+  initial: 'inactive',
+  states: {
+    inactive: { on: { TOGGLE: 'active' } },
+    active: { on: { TOGGLE: 'inactive' } },
+  },
+});
+
+// 具有内部状态的机器实例
+const toggleActor = interpret(toggleMachine);
+toggleActor.subscribe((state) => {
+  console.log(state.value);
+});
+toggleActor.start();
+// => 记录 'inactive'
+
+toggleActor.send({ type: 'TOGGLE' });
+// => 记录 'active'
+
+toggleActor.send({ type: 'TOGGLE' });
+// => 记录 'inactive'
+```
+
+这个actor有自己的状态和上下文，并且它可以在接收到事件时更新。当然，为了更新actor的内部状态，事件必须是机器定义的合法转换。
+
+### 生成Actors
+
+XState还可以用于生成其他actors并相互通信：
+
+```typescript
+import { createMachine, spawn } from 'xstate';
+import { todoMachine } from './todoMachine';
+
+const todosMachine = createMachine({
+  // ...
+  on: {
+    'NEW_TODO.ADD': {
+      actions: assign({
+        todos: ({ context, event }) => [
+          ...context.todos,
+          {
+            todo: event.todo,
+            // 添加一个具有唯一名称的新todoMachine actor
+            ref: spawn(todoMachine, `todo-${event.id}`),
+          },
+        ],
+      }),
+    },
+    // ...
+  },
+});
+```
+
+通过使用`spawn()`和`assign()`，我们在提供机器逻辑和唯一标识符时创建一个新的actor实例。由于其本质，动作是["fire and forget"效果](../docs/xstate-v4/xstate/actions)，这意味着它们在执行时不期望接收到返回给actor的事件。这对于创建一个新的actor是有意义的，但我们可能仍然希望父actor有一个对其子actor的引用，因此我们使用`assign()`将其保存在上下文中。`spawn()`是实际创建新actor的函数。父actor可以通过调用对子actor的引用上的`getSnapshot()`轻松访问此状态。
+
+有关在XState中使用actors的更详细示例，例如基于回调或承诺的actor生成、发送更新以及actors之间的通信，请[查看我们关于actors的文档](../docs/xstate-v4/actions-and-actors/actors)。
