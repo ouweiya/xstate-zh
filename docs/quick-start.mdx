@@ -159,10 +159,10 @@ import { assign, createMachine } from 'xstate';
 
 export const toggleMachine = createMachine({
   id: 'toggle',
-  // 高亮下一行
+  // highlight-next-line
   context: ({ input }) => ({
     count: 0,
-    // 高亮下一行
+    // highlight-next-line
     maxCount: input.maxCount
   }),
   initial: 'Inactive',
@@ -171,7 +171,7 @@ export const toggleMachine = createMachine({
       on: {
         toggle: {
           // 仅在 count 小于 maxCount 时触发切换转换
-          // 高亮下一行
+          // highlight-next-line
           guard: ({ context }) => context.count < context.maxCount,
           target: 'Active'
         }
@@ -188,7 +188,7 @@ export const toggleMachine = createMachine({
 });
 
 const actor = createActor(toggleMachine, {
-  // 高亮下一行
+  // highlight-next-line
   input: { maxCount: 10 }
 });
 

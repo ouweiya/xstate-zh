@@ -48,7 +48,8 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
 
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/statelyai/docs/tree/main/',
+          // editUrl: 'https://github.com/statelyai/docs/tree/main/',
+          editUrl: 'https://github.com/ouweiya/xstate-zh/tree/main/',
 
           lastVersion: 'current',
           includeCurrentVersion: true,
