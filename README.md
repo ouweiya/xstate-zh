@@ -2,6 +2,7 @@
 
 - [XState 中文文档](https://ouweiya.github.io/xstate-zh)
 - [XState 官方文档](https://stately.ai)
+- [XState 官方GitHub库](https://github.com/statelyai/xstate)
 
 # 欢迎来到 Stately 文档
 
