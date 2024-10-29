@@ -128,10 +128,6 @@ const config = {
           //   from: '/docs/xstate/typescript/type-helpers',
           // },
 
-          // {
-          //   from: '/xstate-zh',
-          //   to: '/xstate-zh/docs',
-          // },
           {
             to: '/docs/states',
             from: '/docs/states/intro',
