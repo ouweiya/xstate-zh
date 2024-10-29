@@ -10,7 +10,7 @@ export function FinalCallToAction() {
             </SectionTitle>
           </div>
           <div className="flex justify-center pt-24 gap-4">
-            <ButtonLink href="/registry/signup" background="blue" size="large">
+            <ButtonLink href="https://stately.ai/registry/signup" background="blue" size="large">
               免费注册
             </ButtonLink>
             <ButtonLink

@@ -107,7 +107,7 @@ export function Navbar() {
                       />
                     </a>
                     <a
-                      href="https://github.com/statelyai/xstate"
+                      href="https://github.com/ouweiya/xstate-zh"
                       className={classNames(
                         linkStyles,
                         'self-center opacity-60 hover:opacity-100 cursor-pointer',

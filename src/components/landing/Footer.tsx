@@ -29,34 +29,34 @@ function AllLinks() {
         </a>
         <p className="text-white/60 mt-5 text-base">&copy; 2024 Stately</p>
       </div>
-      <LinkList title="Product">
-        <LinkItem href="#design">Features</LinkItem>
-        <LinkItem href="/docs/">Documentation</LinkItem>
-        <LinkItem href="https://github.com/statelyai/xstate">XState</LinkItem>
-        <LinkItem href="/agent/">Stately Agent</LinkItem>
-        <LinkItem href="https://stately.ai/blog/tags/case-study">
-          Case studies
-        </LinkItem>
-        <LinkItem href="/pricing/">Pricing</LinkItem>
-      </LinkList>
-      <LinkList title="Company">
-        <LinkItem href="/blog/tags/changelog">Changelog</LinkItem>
-        <LinkItem href="/blog/">Blog</LinkItem>
-        <LinkItem href="mailto:support@stately.ai">Contact</LinkItem>
-      </LinkList>
-      <LinkList title="Resources">
-        <LinkItem href="/privacy/">Privacy policy</LinkItem>
-        <LinkItem href="/code-of-conduct/">Code of conduct</LinkItem>
-      </LinkList>
+      <LinkList title="产品">
+              <LinkItem href="#design">功能</LinkItem>
+              <LinkItem href="/docs/">文档</LinkItem>
+              <LinkItem href="https://github.com/statelyai/xstate">XState</LinkItem>
+              <LinkItem href="/agent/">Stately Agent</LinkItem>
+              <LinkItem href="https://stately.ai/blog/tags/case-study">
+                案例研究
+              </LinkItem>
+              <LinkItem href="/pricing/">定价</LinkItem>
+            </LinkList>
+            <LinkList title="公司">
+              <LinkItem href="/blog/tags/changelog">更新日志</LinkItem>
+              <LinkItem href="/blog/">博客</LinkItem>
+              <LinkItem href="mailto:support@stately.ai">联系</LinkItem>
+            </LinkList>
+            <LinkList title="资源">
+              <LinkItem href="/privacy/">隐私政策</LinkItem>
+              <LinkItem href="/code-of-conduct/">行为准则</LinkItem>
+            </LinkList>
 
-      <LinkList title="Community">
-        <LinkItem href="https://discord.gg/xstate">Discord</LinkItem>
-        <LinkItem href="https://twitter.com/statelyai">Twitter</LinkItem>
-        <LinkItem href="https://youtube.com/c/statelyai">YouTube</LinkItem>
-        <LinkItem href="https://www.linkedin.com/company/statelyai">
-          LinkedIn
-        </LinkItem>
-      </LinkList>
+            <LinkList title="社区">
+              <LinkItem href="https://discord.gg/xstate">Discord</LinkItem>
+              <LinkItem href="https://twitter.com/statelyai">Twitter</LinkItem>
+              <LinkItem href="https://youtube.com/c/statelyai">YouTube</LinkItem>
+              <LinkItem href="https://www.linkedin.com/company/statelyai">
+                LinkedIn
+              </LinkItem>
+            </LinkList>
     </nav>
   );
 }
@@ -82,10 +82,10 @@ function Newsletter() {
   return (
     <aside>
       <h3 className="text-2xl font-black text-white/90 mb-4">
-        Get updates by email
+                通过电子邮件获取更新
       </h3>
       <form
-        action="registry/api/newsletter/signup"
+        action="https://stately.ai/registry/api/newsletter/signup"
         method="post"
         target="popupwindow"
         className="embeddable-buttondown-form state"
@@ -95,7 +95,7 @@ function Newsletter() {
           htmlFor="bd-email"
           className="text-base text-white/60 font-semibold"
         >
-          Subscribe to our newsletter
+         订阅我们的新闻通讯
         </label>
         <div className="fields pt-2">
           <input
@@ -110,7 +110,7 @@ function Newsletter() {
           <input
             type="submit"
             className="text-blue-900 ml-2 bg-blue-300 rounded-md px-3 py-2 text-base font-medium cursor-pointer hover:bg-blue-200 shadow-sm"
-            value="Subscribe"
+            value="订阅"
           />
         </div>
       </form>
