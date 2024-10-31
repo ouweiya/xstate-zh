@@ -12,7 +12,7 @@
 
 
 <script src="https://plausible.io/js/script.tagged-events.js" defer="defer" data-domain="stately.ai"></script><link rel="stylesheet" href="/xstate-zh/assets/css/styles.f1a9c123.css">
-<script src="/xstate-zh/assets/js/runtime~main.ee42b961.js" defer="defer"></script>
+<script src="/xstate-zh/assets/js/runtime~main.66c1b638.js" defer="defer"></script>
 <script src="/xstate-zh/assets/js/main.dd2d4552.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -48,10 +48,10 @@
 </ul>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="后端开发中的-actor-模型">后端开发中的 actor 模型<a href="#后端开发中的-actor-模型" class="hash-link" aria-label="Direct link to heading" title="Direct link to heading">​</a></h2>
 <p>Actor 模型通常用于协调后端系统。有直接实现 Actor 模型的框架，如 JVM 的 <a href="https://doc.akka.io/docs/akka/current/typed/guide/introduction.html" target="_blank" rel="noopener noreferrer">Akka</a>。在 <a href="https://www.erlang.org/docs" target="_blank" rel="noopener noreferrer">Erlang</a> 中，进程可以被视为 actors，它们可以发送和接收消息并生成新的进程。Erlang 被用于大规模分布式系统，如 Discord 和 WhatsApp。</p>
-<p>在 <a href="https://stately.ai/docs/stately-sky-getting-started" target="_blank" rel="noopener noreferrer">Stately Sky</a> 中，状态机 actor 可以用于管理长时间运行的后端流程，如医疗患者入职流程、库存管理或多玩家协作体验，如白板画布或游戏。</p>
+<p>在 <a href="/xstate-zh/docs/stately-sky-getting-started">Stately Sky</a> 中，状态机 actor 可以用于管理长时间运行的后端流程，如医疗患者入职流程、库存管理或多玩家协作体验，如白板画布或游戏。</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="前端开发中的-actor-模型">前端开发中的 actor 模型<a href="#前端开发中的-actor-模型" class="hash-link" aria-label="Direct link to heading" title="Direct link to heading">​</a></h2>
 <p>Actor 模型对于协调前端 Web 应用程序的众多活动部分特别有用。</p>
-<p><strong>你的前端应用程序始终是一个分布式系统</strong>，而管理分布式系统正是 actor 模型的优势所在。这是因  为在浏览器环境中<strong>你从来没有一个“全局真理源”</strong>，而是有<strong>许多独立的状态和事件源</strong>：第三方组件、本地组件状态、本地存储、查询参数、路由器、网络 I/O、DOM 事件及其监听器等。</p>
+<p><strong>你的前端应用程序始终是一个分布式系统</strong>，而管理分布式系统正是 actor 模型的优势所在。这是因为在浏览器环境中<strong>你从来没有一  个“全局真理源”</strong>，而是有<strong>许多独立的状态和事件源</strong>：第三方组件、本地组件状态、本地存储、查询参数、路由器、网络 I/O、DOM 事件及其监听器等。</p>
 <blockquote>
 <p>[…] 在任何非平凡的应用程序中，都不存在单一的真理源。所有应用程序，即使是前端应用程序，在某种程度上都是分布式的。– 引自：<a href="https://dev.to/davidkpiano/redux-is-half-of-a-pattern-2-2-4jo3" target="_blank" rel="noopener noreferrer">Redux is Half of a Pattern (2/2)</a></p>
 </blockquote>
@@ -63,9 +63,9 @@
 <li><strong>在状态机内创建更多的 actors</strong>，使用 <code>spawn</code> 在 <a href="/xstate-zh/docs/actions#assign-action"><code>assign</code></a> 中，或者使用 <code>spawnChild</code> 动作创建器。详情请参阅 <a href="/xstate-zh/docs/spawn">Spawn</a>。</li>
 <li><strong>发送更多的消息</strong> 作为事件，使用 <code>self.send</code> 在其自己的逻辑中，或者使用状态机中的<a href="/xstate-zh/docs/actions">动作创建器</a>如 <a href="/xstate-zh/docs/actions#send-to-action"><code>sendTo</code></a> 或 <a href="/xstate-zh/docs/actions#raise-action"><code>raise</code></a>。</li>
 </ul>
-<p>XState 中的 actors 具有自己的<a href="/xstate-zh/docs/actors#actor-logic">actor 逻辑</a>，他 们使用这些逻辑来：</p>
+<p>XState 中的 actors 具有自己的<a href="/xstate-zh/docs/actors#actor-logic">actor 逻辑</a>，他们使用这些逻辑来：</p>
 <ul>
-<li><strong>做出本地决策</strong></li>
+<li><strong>  做出本地决策</strong></li>
 <li><strong>确定如何响应接收到的下一个消息</strong></li>
 <li><strong>修改自己的私有状态</strong>（但只能通过消息传递相互影响）</li>
 </ul>
