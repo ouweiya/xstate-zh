@@ -1,41 +1,41 @@
 ---
-title: Embed machines using their embed URL
-description: You can embed your machines anywhere that supports iframes. Embed mode is a focused non-editable view of your machine in Stately Studio’s editor, which can be zoomed and panned.
+title: 使用嵌入 URL 嵌入机器
+description: 您可以在任何支持 iframes 的地方嵌入您的机器。嵌入模式是 Stately Studio 编辑器中一个专注的不可编辑视图，可以缩放和平移。
 ---
 
-You can embed your machines anywhere that supports [`<iframe>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe). Embed mode is a focused non-editable view of your machine in Stately Studio’s editor, which can be zoomed and panned.
+您可以在任何支持 [`<iframe>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe) 的地方嵌入您的机器。嵌入模式是 Stately Studio 编辑器中一个专注的不可编辑视图，可以缩放和平移。
 
-We love to use embedded machines in our docs! Below is an example of an embedded machine:
+我们喜欢在文档中使用嵌入的机器！下面是一个嵌入机器的示例：
 
 <EmbedMachine
-  name="Embed feature machine"
+  name="嵌入功能机器"
   embedURL="https://stately.ai/registry/editor/embed/9e7f6b1e-416a-491f-a4a0-bba386a02d8d?mode=Design&machineId=e94d5674-7ab7-4a4e-b7a8-781609bfe523"
 />
 
-Your machine will only be embeddable if:
+您的机器只有在以下情况下才可以嵌入：
 
-- the project visibility is **public**
-- the project visibility is **unlisted**
+- 项目可见性为 **公开**
+- 项目可见性为 **未列出**
 
-Embed URLs are not available for private machines.
+私有机器无法使用嵌入 URL。
 
-Read [how to change a project’s visibility settings](/docs/projects/#change-a-projects-visibility).
+阅读[如何更改项目的可见性设置](/docs/projects/#change-a-projects-visibility)。
 
 :::tip
 
-You can also [get your machine as an image](image.mdx) for platforms where `<iframe>` is not supported.
+您还可以[将您的机器作为图像获取](image.mdx)，以便在不支持 `<iframe>` 的平台上使用。
 
 :::
 
-## Copy the embed URL
+## 复制嵌入 URL
 
-1. Use the **Share** button in Stately Studio’s top bar to open the Share dialog.
-2. Use the **Copy embed URL** button to copy the machine’s embed URL to your clipboard.
-3. Use the embed URL in an `<iframe>` to embed the machine anywhere that supports iframes. [Find some example code below](#example-iframe-code).
+1. 使用 Stately Studio 顶部栏中的 **分享** 按钮打开分享对话框。
+2. 使用 **复制嵌入 URL** 按钮将机器的嵌入 URL 复制到剪贴板。
+3. 在 `<iframe>` 中使用嵌入 URL，以便在任何支持 iframes 的地方嵌入机器。[在下面找到一些示例代码](#example-iframe-code)。
 
-## Example `<iframe>` code
+## 示例 `<iframe>` 代码
 
-The following HTML embeds the same machine at the top of this page in dark mode:
+以下 HTML 在页面顶部以暗模式嵌入相同的机器：
 
 ```html
 <iframe
@@ -46,25 +46,25 @@ The following HTML embeds the same machine at the top of this page in dark mode:
   <a
     href="https://stately.ai/registry/editor/embed/9e7f6b1e-416a-491f-a4a0-bba386a02d8d?mode=Design&machineId=e94d5674-7ab7-4a4e-b7a8-781609bfe523"
   >
-    View the <em>Embed feature machine</em> machine in Stately Studio </a
+    在 Stately Studio 查看 <em>嵌入功能机器</em> 机器 </a
   >.
 </iframe>
 ```
 
 :::note
 
-In the future, we plan to provide configurable embeds with copy-and-paste code.
+将来，我们计划提供可配置的嵌入代码，供复制和粘贴。
 
-If you want us to prioritize improving embed mode, please [upvote it on our feedback page](https://github.com/statelyai/feedback/issues/94).
+如果您希望我们优先改进嵌入模式，请在我们的反馈页面上[投票](https://github.com/statelyai/feedback/issues/94)。
 
 :::
 
-## URL parameters, including color mode
+## URL 参数，包括颜色模式
 
-The embed URL has some of the same parameters as the [machine URL](url.mdx).
+嵌入 URL 具有与[机器 URL](url.mdx) 相同的一些参数。
 
-- **machineId**: the unique ID for the machine. For example, `machineId=491a4c60-5300-4e22-92cf-8a32a8ffffca`
-- **mode**: the current machine mode. For example, `mode=Design` or `mode=Simulate`
-- **colorMode**: the color mode for the embedded machine. For example, `colorMode=light` or `colorMode=dark`
+- **machineId**：机器的唯一 ID。例如，`machineId=491a4c60-5300-4e22-92cf-8a32a8ffffca`
+- **mode**：当前机器模式。例如，`mode=Design` 或 `mode=Simulate`
+- **colorMode**：嵌入机器的颜色模式。例如，`colorMode=light` 或 `colorMode=dark`
 
-By default, the color mode will be the same as your chosen Stately Studio color mode. Add `&colorMode=light` or `&colorMode=dark` to the URL to force that color mode.
+默认情况下，颜色模式将与您选择的 Stately Studio 颜色模式相同。添加 `&colorMode=light` 或 `&colorMode=dark` 到 URL 以强制使用该颜色模式。

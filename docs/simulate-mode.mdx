@@ -1,41 +1,41 @@
 ---
-title: 'Simulate mode'
-description: 'Tour the features in Stately editor’s Simulate mode, including a guide to all the panels and how to simulate your machines.'
+title: '模拟模式'
+description: '参观 Stately 编辑器的模拟模式功能，包括所有面板的指南以及如何模拟您的机器。'
 ---
 
-You can simulate your machine as if it were live using the <Play size={18}/> **Simulate** button. Your machine will start in the initial state, and any possible events that can be triggered are highlighted in blue.
+您可以使用 <Play size={18}/> **模拟** 按钮模拟您的机器，就像它是实时运行的一样。您的机器将从初始状态开始，任何可以触发的事件都会以蓝色突出显示。
 
 <EmbedMachine
-  name="Simulate mode"
+  name="模拟模式"
   embedURL="https://stately.ai/registry/editor/embed/c447d996-cef1-421d-a422-8be695668764?machineId=e5fbd908-42af-440f-8d11-91ca16a4fbda&mode=Simulate"
 />
 
-## Simulate events
+## 模拟事件
 
-Press any available event to walk through your machine on the canvas or using the event buttons in the <ListOrderedIcon size={12} /> **Simulation controls** panel. Use <RefreshCcw size={12}/> **Reset** in the canvas tools to return to the initial state and clear the [event log](#event-log).
+按下任何可用事件以在画布上或使用 <ListOrderedIcon size={12} /> **模拟控制** 面板中的事件按钮来逐步执行您的机器。使用画布工具中的 <RefreshCcw size={12}/> **重置** 返回初始状态并清除[事件日志](#event-log)。
 
 :::warning
 
-Simulate mode is disabled if your machine contains errors. States and events with errors are marked with an <AlertCircle size={12} /> error icon in **Design** mode. Hover over any error icon to find out more about the error. Fix all the errors to enable Simulate mode.
+如果您的机器包含错误，模拟模式将被禁用。带有错误的状态和事件在 **设计** 模式中会标有 <AlertCircle size={12} /> 错误图标。将鼠标悬停在任何错误图标上以了解更多关于错误的信息。修复所有错误以启用模拟模式。
 
 :::
 
-### Simulate eventless (always) events
+### 模拟无事件（始终）事件
 
-[Eventless (always) events](/docs/editor-states-and-transitions/#eventless-always-events) will be triggered instantly upon entering their source state unless they’re guarded with a condition.
+[无事件（始终）事件](/docs/editor-states-and-transitions/#eventless-always-events)将在进入其源状态后立即触发，除非它们受到条件的保护。
 
-### Simulate delayed (after) events
+### 模拟延迟（之后）事件
 
-[Delayed (after) events](/docs/editor-states-and-transitions/#delayed-after-events) will be taken automatically after completing the timer.
+[延迟（之后）事件](/docs/editor-states-and-transitions/#delayed-after-events)将在计时器完成后自动触发。
 
-## Event log
+## 事件日志
 
-All triggered events are recorded, in order, in the <ListOrderedIcon size={12} /> **Simulation controls** panel, along with their target state. Press any event in the log panel list to return to that event. Press any state in the log panel list to return to that state.
+所有触发的事件都会按顺序记录在 <ListOrderedIcon size={12} /> **模拟控制** 面板中，以及它们的目标状态。按下日志面板列表中的任何事件以返回到该事件。按下日志面板列表中的任何状态以返回到该状态。
 
-Use <RefreshCcw size={12}/> **Reset** to return to the initial state and clear the event log.
+使用 <RefreshCcw size={12}/> **重置** 返回初始状态并清除事件日志。
 
 :::studio
 
-[Live simulation mode](live-simulation.mdx) ([premium feature](studio-pro-plan.mdx)) helps you share your simulated machine with your team without screen sharing or screenshots.
+[实时模拟模式](live-simulation.mdx)（[高级功能](studio-pro-plan.mdx)）帮助您与团队共享您的模拟机器，而无需屏幕共享或截图。
 
 :::

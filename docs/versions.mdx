@@ -1,91 +1,91 @@
 ---
-title: Version history
+title: 版本历史
 ---
 
-# Version history
+# 版本历史
 
-Version history is helpful if you want to save checkpoints while modeling machines or mirror version changes in the rest of your codebase. New versions can be saved from the current machine using the **Version history** panel in the lower left of the canvas.
+版本历史在建模机器或在代码库中镜像版本更改时非常有用。可以使用画布左下角的 **版本历史** 面板从当前机器保存新版本。
 
-All users can view versions of public machines. Users on our premium plans can view and create versions for machines in team projects and their own machines in **My Projects**. [Read more about team roles and versions](#team-roles-and-versions).
+所有用户都可以查看公共机器的版本。我们的高级计划用户可以查看和创建团队项目中的机器版本以及他们自己项目中的机器版本。 [了解更多关于团队角色和版本的信息](#team-roles-and-versions)。
 
 :::studio
 
-Version history is a premium feature of Stately Studio. You can try Stately Studio’s premium plans with a free trial. [Check out the features on our Pro plan](studio-pro-plan.mdx), [Team plan](studio-team-plan.mdx), [Enterprise plan](studio-enterprise-plan.mdx) or [upgrade your existing plan](https://stately.ai/registry/billing).
+版本历史是 Stately Studio 的高级功能。您可以通过免费试用来体验 Stately Studio 的高级计划。 [查看我们的专业计划功能](studio-pro-plan.mdx)、[团队计划](studio-team-plan.mdx)、[企业计划](studio-enterprise-plan.mdx)或[升级您的现有计划](https://stately.ai/registry/billing)。
 
 :::
 
-## Save a version
+## 保存版本
 
-Save a new version of your machine from the <History size={18} /> **Version history** panel in the lower left corner of the canvas.
+从画布左下角的 <History size={18} /> **版本历史** 面板保存机器的新版本。
 
 :::tip
 
-The **Save** button will be disabled unless you have changed your machine since you created the latest version.
+除非您自创建最新版本以来更改了机器，否则 **保存** 按钮将被禁用。
 
 :::
 
-Versions are named sequentially by default and have the version creator’s avatar. The version’s timestamp is always shown under the version name.
+版本默认按顺序命名，并带有版本创建者的头像。版本名称下方始终显示版本的时间戳。
 
-### Rename a version
+### 重命名版本
 
-You can rename any version after double-clicking or focusing on the version name.
+双击或聚焦版本名称后，您可以重命名任何版本。
 
-## Auto-saved versions
+## 自动保存的版本
 
-There are some cases where versions will automatically be created for a machine Auto-saved versions are indicated in the list of versions with the Stately bot icon.
+在某些情况下，机器的版本会自动创建。自动保存的版本在版本列表中以 Stately 机器人图标表示。
 
-### Initial versions
+### 初始版本
 
-An initial version is automatically saved for new machines when:
+在以下情况下，新机器会自动保存初始版本：
 
-- you fork a machine from an existing machine or project
-- you duplicate an existing machine in its project
+- 您从现有机器或项目派生机器
+- 您在项目中复制现有机器
 
-These versions are labeled “Initial version”.
+这些版本标记为“初始版本”。
 
-### Generated versions
+### 生成的版本
 
-An version is also automatically saved for machines when you generate a flow from your existing machine. These versions are labeled with the text description used to generate the flow.
+当您从现有机器生成流程时，也会自动保存一个版本。这些版本标记为用于生成流程的文本描述。
 
-### Periodic snapshot versions
+### 定期快照版本
 
-To reduce the likelihood of data loss, versions are automatically saved hourly as long as edits have been made to the project machine. These versions are labeled sequentially. They work just like other versions that you can view, restore, or delete.
+为了减少数据丢失的可能性，只要对项目机器进行了编辑，版本就会每小时自动保存一次。这些版本按顺序标记。它们的工作方式与其他版本相同，您可以查看、恢复或删除它们。
 
-In the version list, these auto-saved versions are hidden by default but you can toggle their visibility to show them along with versions you explicitly save.
+在版本列表中，这些自动保存的版本默认隐藏，但您可以切换其可见性以显示它们以及您显式保存的版本。
 
-## View a version
+## 查看版本
 
-You can view any version by selecting that version in the **Version history**. The version will be shown in the Editor and read-only unless you restore that version using the <ArchiveRestore size={18}/> **Restore** button.
+您可以通过在 **版本历史** 中选择该版本来查看任何版本。该版本将在编辑器中以只读方式显示，除非您使用 <ArchiveRestore size={18}/> **恢复** 按钮恢复该版本。
 
-You can return to viewing the current version of your machine from the <X size={18}/> close icon button in the top bar or by selecting **Current Version** from the **Version history** panel.
+您可以通过顶部栏中的 <X size={18}/> 关闭图标按钮或从 **版本历史** 面板中选择 **当前版本** 返回查看当前机器版本。
 
-## Restore a version
+## 恢复版本
 
-You can restore your current machine to any version from the <History size={18}/> **Version history** panel using the <ArchiveRestore size={18}/> restore icon button or using the <ArchiveRestore size={18}/> **Restore** button in the top bar when [viewing a version](#view-a-version).
+您可以使用 <History size={18}/> **版本历史** 面板中的 <ArchiveRestore size={18}/> 恢复图标按钮或在[查看版本](#view-a-version)时使用顶部栏中的 <ArchiveRestore size={18}/> **恢复** 按钮将当前机器恢复到任何版本。
 
 :::tip
 
-You cannot restore a version when a machine is [locked](lock-machines.mdx). Unlock the machine from the machine <Info size={18} /> **Details** panel to re-enable restoring versions.
+当机器[被锁定](lock-machines.mdx)时，您无法恢复版本。请从机器 <Info size={18} /> **详细信息** 面板解锁机器以重新启用恢复版本。
 
 :::
 
-## Create a new machine from a version
+## 从版本创建新机器
 
-You can also create a new machine from a version in your version history using the <Copy size={18}/> copy button in the top bar when [viewing a version](#view-a-version).
+您还可以使用[查看版本](#view-a-version)时顶部栏中的 <Copy size={18}/> 复制按钮从版本历史中的版本创建新机器。
 
-Your new machine will be created and opened in the same project with the same name appended with “(copy).”
+您的新机器将在同一项目中创建并打开，名称后缀为“(副本)”。
 
-## Delete a version
+## 删除版本
 
-Delete a machine version using the <Trash size={18}/> trash button in the top bar when [viewing a version](#view-a-version).
+使用[查看版本](#view-a-version)时顶部栏中的 <Trash size={18}/> 垃圾按钮删除机器版本。
 
-## Team roles and versions
+## 团队角色和版本
 
-All team members can view past versions of machines in their team’s projects. Team owners, Admins, and Editors can also create and restore versions. Only Owners and Admins can delete versions.
+所有团队成员都可以查看其团队项目中机器的过去版本。团队所有者、管理员和编辑者还可以创建和恢复版本。只有所有者和管理员可以删除版本。
 
-| Capability                           | Owner  | Admin  | Editor | Viewer |
+| 功能                                 | 所有者 | 管理员 | 编辑者 | 查看者 |
 | ------------------------------------ | ------ | ------ | ------ | ------ |
-| View team machine versions           | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Create new versions of team machines | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Restore versions of team machines    | ✅ Yes | ✅ Yes | ✅ Yes | 🚫 No  |
-| Delete versions of team machines     | ✅ Yes | ✅ Yes | 🚫 No  | 🚫 No  |
+| 查看团队机器版本                     | ✅ 是  | ✅ 是  | ✅ 是  | ✅ 是  |
+| 创建团队机器的新版本                 | ✅ 是  | ✅ 是  | ✅ 是  | ✅ 是  |
+| 恢复团队机器的版本                   | ✅ 是  | ✅ 是  | ✅ 是  | 🚫 否  |
+| 删除团队机器的版本                   | ✅ 是  | ✅ 是  | 🚫 否  | 🚫 否  |
