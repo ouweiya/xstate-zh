@@ -1,10 +1,10 @@
 ---
-title: '速查表'
+title: '备忘单'
 ---
 
-使用此速查表快速查找 XState v5 的语法。
+使用此备忘单快速查找 XState v5 的语法。
 
-## 安装 XState
+## Installing XState (安装 XState)
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -34,32 +34,33 @@ yarn add xstate
 
 [阅读更多关于安装 XState 的内容](installation.mdx)。
 
-## 创建状态机
+## Creating a state machine (创建状态机)
 
 ```ts
 import { setup, createActor, assign } from 'xstate';
 
-const machine = setup({/* ... */})
-  .createMachine({
-    id: 'toggle',
-    initial: 'active',
-    context: { count: 0 },
-    states: {
-      active: {
-        entry: assign({
-          count: ({ context }) => context.count + 1,
-        }),
-        on: {
-          toggle: { target: 'inactive' },
-        },
-      },
-      inactive: {
-        on: {
-          toggle: { target: 'active' },
-        },
+const machine = setup({
+  /* ... */
+}).createMachine({
+  id: 'toggle',
+  initial: 'active',
+  context: { count: 0 },
+  states: {
+    active: {
+      entry: assign({
+        count: ({ context }) => context.count + 1,
+      }),
+      on: {
+        toggle: { target: 'inactive' },
       },
     },
-  });
+    inactive: {
+      on: {
+        toggle: { target: 'active' },
+      },
+    },
+  },
+});
 
 const actor = createActor(machine);
 actor.subscribe((snapshot) => {
@@ -77,9 +78,9 @@ actor.send({ type: 'toggle' });
 // logs 'inactive' with context { count: 2 }
 ```
 
-[阅读更多关于 Actor 模型的内容](actor-model.mdx)。
+[了解更多关于角色模型](actor-model.mdx)。
 
-## 创建 Promise 逻辑
+## Creating promise logic (创建 Promise 逻辑)
 
 ```ts
 import { fromPromise, createActor } from 'xstate';
@@ -103,11 +104,11 @@ actor.start();
 // }
 ```
 
-[阅读更多关于 Promise Actor 逻辑的内容](/docs/actors#actors-as-promises)。
+[了解更多关于Promise角色逻辑](/docs/actors#actors-as-promises)。
 
-## 创建 Transition 逻辑
+## Creating transition logic (创建转换逻辑)
 
-Transition 函数就像一个 reducer。
+转换函数就像一个 reducer。
 
 ```ts
 import { fromTransition, createActor } from 'xstate';
@@ -142,9 +143,9 @@ actor.send({ type: 'inc' });
 // logs { count: 2 }
 ```
 
-[阅读更多关于 Transition Actor 逻辑的内容](/docs/actors#fromtransition)。
+[了解更多关于转换器角色](/docs/actors#fromtransition)。
 
-## 创建 Observable 逻辑
+## Creating observable logic (创建可观察逻辑)
 
 ```ts
 import { fromObservable, createActor } from 'xstate';
@@ -163,9 +164,9 @@ actor.start();
 // every second
 ```
 
-[阅读更多关于 Observable Actor 逻辑的内容](/docs/actors#fromobservable)。
+[了解更多关于可观察器角色](/docs/actors#fromobservable)。
 
-## 创建回调逻辑
+## Creating callback logic (创建回调逻辑)
 
 ```ts
 import { fromCallback, createActor } from 'xstate';
@@ -195,35 +196,36 @@ actor.send({ type: 'cancel' });
 // logs 'canceled'
 ```
 
-[阅读更多关于回调 Actor 的内容](/docs/actors#fromcallback)。
+[了解更多关于回调器角色](/docs/actors#fromcallback)。
 
-## 父状态
+## Parent states (父状态)
 
 ```ts
 import { setup, createActor } from 'xstate';
 
-const machine = setup({/* ... */})
-  .createMachine({
-    id: 'parent',
-    initial: 'active',
-    states: {
-      active: {
-        initial: 'one',
-        states: {
-          one: {
-            on: {
-              NEXT: { target: 'two' }
-            }
+const machine = setup({
+  /* ... */
+}).createMachine({
+  id: 'parent',
+  initial: 'active',
+  states: {
+    active: {
+      initial: 'one',
+      states: {
+        one: {
+          on: {
+            NEXT: { target: 'two' },
           },
-          two: {},
         },
-        on: {
-          NEXT: { target: 'inactive' }
-        }
+        two: {},
       },
-      inactive: {},
+      on: {
+        NEXT: { target: 'inactive' },
+      },
     },
-  });
+    inactive: {},
+  },
+});
 
 const actor = createActor(machine);
 
@@ -241,19 +243,25 @@ actor.send({ type: 'NEXT' });
 // logs 'inactive'
 ```
 
-[阅读更多关于父状态的内容](parent-states.mdx)。
+[了解更多关于父状态](parent-states.mdx)。
 
-## 动作
+## Actions (动作)
 
 ```ts
 import { setup, createActor } from 'xstate';
 
 const machine = setup({
   actions: {
-    activate: () => {/* ... */},
-    deactivate: () => {/* ... */},
-    notify: (_, params: { message: string }) => {/* ... */},
-  }
+    activate: () => {
+      /* ... */
+    },
+    deactivate: () => {
+      /* ... */
+    },
+    notify: (_, params: { message: string }) => {
+      /* ... */
+    },
+  },
 }).createMachine({
   id: 'toggle',
   initial: 'active',
@@ -320,9 +328,9 @@ actor.send({ type: 'toggle' });
 // logs 'Activating'
 ```
 
-[阅读更多关于动作的内容](actions.mdx)。
+[了解更多关于动作](actions.mdx)。
 
-## 守卫
+## Guards (守卫)
 
 ```ts
 import { setup, createActor } from 'xstate';
@@ -385,9 +393,9 @@ actor.start();
 // logs 'Cannot be toggled'
 ```
 
-[阅读更多关于守卫的内容](guards.mdx)。
+[了解更多关于守卫](guards.mdx)。
 
-## 调用 Actor
+## Invoking actors (调用角色)
 
 ```ts
 import { setup, fromPromise, createActor, assign } from 'xstate';
@@ -400,7 +408,7 @@ const loadUserLogic = fromPromise(async () => {
 
 const machine = setup({
   // highlight-next-line
-  actors: { loadUserLogic }
+  actors: { loadUserLogic },
 }).createMachine({
   id: 'toggle',
   initial: 'loading',
@@ -422,9 +430,9 @@ const machine = setup({
         onError: {
           target: 'failure',
           actions: ({ event }) => {
-            console.log(event.error)
-          }
-        }
+            console.log(event.error);
+          },
+        },
       },
       // highlight-end
     },
@@ -448,9 +456,9 @@ actor.start();
 // { id: 1, name: 'Leanne Graham', ... }
 ```
 
-[阅读更多关于调用 Actor 的内容](invoke.mdx)。
+[了解更多关于调用角色](invoke.mdx)。
 
-## 生成 Actor
+## Spawning actors (生成角色)
 
 ```ts
 import { setup, fromPromise, createActor, assign } from 'xstate';
@@ -463,8 +471,8 @@ const loadUserLogic = fromPromise(async () => {
 
 const machine = setup({
   actors: {
-    loadUserLogic
-  }
+    loadUserLogic,
+  },
 }).createMachine({
   context: {
     userRef: undefined,
@@ -492,9 +500,9 @@ actor.send({ type: 'loadUser' });
 // { id: 1, name: 'Leanne Graham', ... }
 ```
 
-[阅读更多关于生成 Actor 的内容](spawn.mdx)。
+[了解更多关于生成角色](spawn.mdx)。
 
-## 输入和输出
+## Input and output (输入和输出)
 
 ```ts
 import { setup, createActor } from 'xstate';
@@ -503,7 +511,7 @@ const greetMachine = setup({
   types: {
     context: {} as { message: string },
     input: {} as { name: string },
-  }
+  },
 }).createMachine({
   // highlight-start
   context: ({ input }) => ({
@@ -527,9 +535,9 @@ actor.start();
 // logs 'Hello, David'
 ```
 
-[阅读更多关于输入的内容](input.mdx)。
+[了解更多关于输入](input.mdx)。
 
-## 调用带有输入的 Actor
+## Invoking actors with input (带输入的角色调用)
 
 ```ts
 import { setup, createActor, fromPromise } from 'xstate';
@@ -544,8 +552,8 @@ const loadUserLogic = fromPromise(async ({ input }) => {
 
 const machine = setup({
   actors: {
-    loadUserLogic
-  }
+    loadUserLogic,
+  },
 }).createMachine({
   initial: 'loading user',
   states: {
@@ -571,13 +579,13 @@ const machine = setup({
 const actor = createActor(machine);
 
 actor.start();
-// eventually logs:
+// 最终记录:
 // { id: 3, name: 'Clementine Bauch', ... }
 ```
 
-[阅读更多关于带有输入的调用 Actor 的内容](input.mdx#invoking-actors-with-input)。
+[了解更多关于带输入的角色调用](input.mdx#invoking-actors-with-input)。
 
-## 类型
+## Types (类型)
 
 ```ts
 import { setup, fromPromise } from 'xstate';

@@ -79,12 +79,12 @@ const sidebars = {
       items: [
         {
           type: 'doc',
-          label: '状态机',
+          label: 'State machines(状态机)',
           id: 'state-machines-and-statecharts',
         },
         {
           type: 'doc',
-          label: 'Actor 模型',
+          label: 'Actor model(执行者模型)',
           id: 'actor-model',
         },
         {
@@ -134,12 +134,12 @@ const sidebars = {
         },
         {
           type: 'doc',
-          label: '状态和转换',
+          label: 'States and transitions(状态和转换)',
           id: 'editor-states-and-transitions',
         },
         {
           type: 'doc',
-          label: '动作和 actors',
+          label: 'Actions and actors(动作和执行者)',
           id: 'editor-actions-and-actors',
         },
         {
@@ -404,7 +404,7 @@ const sidebars = {
         slug: '/category/guides',
         keywords: ['指南'],
       },
-      collapsed: false,
+      collapsed: true,
       collapsible: true,
       items: ['testing', 'immer'],
     },
@@ -418,7 +418,7 @@ const sidebars = {
         slug: '/category/xstate-packages',
         keywords: ['指南'],
       },
-      collapsed: true,
+      collapsed: false,
       collapsible: true,
       items: [
         'xstate-store',
@@ -432,7 +432,7 @@ const sidebars = {
     {
       type: 'category',
       label: '开发者工具',
-      collapsed: false,
+      collapsed: true,
       collapsible: true,
       link: {
         type: 'generated-index',
